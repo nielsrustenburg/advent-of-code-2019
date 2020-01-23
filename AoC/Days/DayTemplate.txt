@@ -1,0 +1,21 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Linq;
+
+namespace AoC
+{
+    static class Day[DayNum]
+    {
+        public static int SolvePartOne()
+        {
+            return 0;
+        }
+
+        public static int SolvePartTwo()
+        {
+            return 0;
+        }
+    }
+}
+
