@@ -22,7 +22,7 @@ namespace AoC.Tests
             if (charGrid.Height != expectedHeight) throw new Exception($"Expected height of: {expectedHeight}, found: {charGrid.Height}");
 
             int expectedNonDefault = example.Aggregate(0, (a, b) => a + b.Where(x => x != defaultChar).Count());
-            if (charGrid.Count != expectedNonDefault) throw new Exception($"Expected: {expectedNonDefault} occurrences of non '{defaultChar}', found:{charGrid.Count}");
+            if (charGrid.Count() != expectedNonDefault) throw new Exception($"Expected: {expectedNonDefault} occurrences of non '{defaultChar}', found:{charGrid.Count()}");
 
             List<string> representation = charGrid.RowsAsStrings();
             for(int i =0; i < example.Count; i++)

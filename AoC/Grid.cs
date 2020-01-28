@@ -10,10 +10,8 @@ namespace AoC
         public T DefaultTile { get; private set; }
         int xMin, xMax, yMin, yMax;
         HashSet<T> allTileTypes;
-        private int size;
         Dictionary<T, int> tileCount;
         Dictionary<int, Dictionary<int, T>> content;
-        public int Count { get { return tileCount.Values.Sum(); } private set {; } }
         public int Width { get { return xMax - xMin + 1; } private set {; } }
         public int Height { get { return yMax - yMin + 1; } private set {; } }
 
@@ -29,10 +27,10 @@ namespace AoC
         public Grid(IEnumerable<IEnumerable<T>> filledGrid, T defaultTile) : this(defaultTile)
         {
             int y = 0;
-            foreach(IEnumerable<T> row in filledGrid)
+            foreach (IEnumerable<T> row in filledGrid)
             {
                 int x = 0;
-                foreach(T tile in row)
+                foreach (T tile in row)
                 {
                     SetTile(x, y, tile);
                     x++;
@@ -83,7 +81,7 @@ namespace AoC
 
         private void UpdateTileCount(T tileType, int incBy)
         {
-            if(!tileType.Equals(DefaultTile))
+            if (!tileType.Equals(DefaultTile))
             {
                 tileCount.TryGetValue(tileType, out int countVal);
                 countVal += incBy;
@@ -99,7 +97,6 @@ namespace AoC
                 if (content[y].ContainsKey(x))
                 {
                     UpdateTileCount(content[y][x], -1);
-                    Count--;
                     content[y].Remove(x);
                 }
             }
@@ -113,18 +110,24 @@ namespace AoC
             if (y > yMax) yMax = y;
         }
 
-        public int TileCount(T tile)
+        public int Count()
+        {
+            return tileCount.Values.Sum();
+        }
+        public int Count(T tile)
         {
             return tileCount.ContainsKey(tile) ? tileCount[tile] : 0;
         }
 
         public Dictionary<string, T> GetNeighbours(int x, int y, bool includeDiagonal = false)
         {
-            Dictionary<string, T> nb = new Dictionary<string, T>();
-            nb.Add("N", GetTile(x, y + 1));
-            nb.Add("E", GetTile(x + 1, y));
-            nb.Add("S", GetTile(x, y - 1));
-            nb.Add("W", GetTile(x - 1, y));
+            Dictionary<string, T> nb = new Dictionary<string, T>
+            {
+                { "N", GetTile(x, y + 1) },
+                { "E", GetTile(x + 1, y) },
+                { "S", GetTile(x, y - 1) },
+                { "W", GetTile(x - 1, y) }
+            };
             if (includeDiagonal)
             {
                 nb.Add("NE", GetTile(x + 1, y + 1));
