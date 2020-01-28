@@ -43,11 +43,11 @@ namespace AoC
 
         public T GetTile(int x, int y)
         {
-            if (content.ContainsKey(x))
+            if (content.ContainsKey(y))
             {
-                if (content[x].ContainsKey(y))
+                if (content[y].ContainsKey(x))
                 {
-                    return content[x][y];
+                    return content[y][x];
                 }
             }
             return DefaultTile;
@@ -72,13 +72,13 @@ namespace AoC
 
         private void UpdateTile(int x, int y, T tileType)
         {
-            if (!content.ContainsKey(x)) content.Add(x, new Dictionary<int, T>());
-            if (content[x].TryGetValue(y, out T value))
+            if (!content.ContainsKey(y)) content.Add(y, new Dictionary<int, T>());
+            if (content[y].TryGetValue(x, out T value))
             {
-                UpdateTileCount(content[x][y], -1);
+                UpdateTileCount(content[y][x], -1);
             }
             UpdateTileCount(tileType, 1);
-            content[x][y] = tileType;
+            content[y][x] = tileType;
         }
 
         private void UpdateTileCount(T tileType, int incBy)
@@ -94,13 +94,13 @@ namespace AoC
         private void RemoveTile(int x, int y)
         {
             //Potentially leaves empty columns in the Grid
-            if (content.ContainsKey(x))
+            if (content.ContainsKey(y))
             {
-                if (content[x].ContainsKey(y))
+                if (content[y].ContainsKey(x))
                 {
-                    UpdateTileCount(content[x][y], -1);
+                    UpdateTileCount(content[y][x], -1);
                     Count--;
-                    content[x].Remove(y);
+                    content[y].Remove(x);
                 }
             }
         }
@@ -138,13 +138,13 @@ namespace AoC
         public (bool found, int x, int y) FindLocationOf(T findMe)
         {
             if (findMe.Equals(DefaultTile)) throw new ArgumentException("Trying to find the DefaultTile, which is every unfilled Tile");
-            foreach (var column in content)
+            foreach (var row in content)
             {
-                foreach (var tile in column.Value)
+                foreach (var tile in row.Value)
                 {
                     if (findMe.Equals(tile.Value))
                     {
-                        return (true, column.Key, tile.Key);
+                        return (true, tile.Key, row.Key);
                     }
                 }
             }
@@ -155,13 +155,13 @@ namespace AoC
         {
             if (findUs.Contains(DefaultTile)) throw new ArgumentException("Trying to find the DefaultTile, which is every unfilled Tile");
             List<(int, int)> results = new List<(int, int)>();
-            foreach (var column in content)
+            foreach (var row in content)
             {
-                foreach (var tile in column.Value)
+                foreach (var tile in row.Value)
                 {
                     if (findUs.Contains(tile.Value))
                     {
-                        results.Add((column.Key, tile.Key));
+                        results.Add((tile.Key, row.Key));
                     }
                 }
             }
