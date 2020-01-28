@@ -38,6 +38,23 @@ namespace AoC.Tests
             GridTests.TestGrid();
         }
 
+        public static void Test<T,V>(T expected, V received, string testName)
+        {
+            if (expected.ToString() != received.ToString()) throw new Exception($"{testName} failed: \n expected value: \n {expected.ToString()} \n received value \n {received.ToString()}");
+        }
+
+        public static void Test<T, G>(T expected, Func<G> function)
+        {
+            string output = function().ToString();
+            if (expected.ToString() != output) throw new Exception($"{function.Method.Name} failed: \n expected value: \n {expected.ToString()} \n received value \n {output}");
+        }
+
+        public static void Test<T,V,G>(T expected, V input, Func<V,G> function) 
+        {
+            string output = function(input).ToString();
+            if (expected.ToString() != output) throw new Exception($"{function.Method.Name} failed: \n expected value: \n {expected.ToString()} \n received value \n {output}");
+        }
+
         public static string GetCurrentMethod()
         {
             var st = new StackTrace();
