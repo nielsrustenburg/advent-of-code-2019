@@ -8,30 +8,40 @@ namespace AoC.Tests
     static class Day20Tests
     {
         public static void RunAll()
-    {
-        //TestSolvePartOne();
-        TestSolvePartTwo();
-        Console.WriteLine("Day20Tests Completed!");
-    }
-
-    public static void TestSolvePartOne()
-    {
-        void Test(int expectedOutput)
         {
-            int output = Day20.SolvePartOne();
-            if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
+            //TestSolvePartOne();
+            TestSolvePartTwo();
+            Console.WriteLine("Day20Tests Completed!");
         }
-        Test(668);
-    }
 
-    public static void TestSolvePartTwo()
-    {
-        void Test(int expectedOutput)
+        //public static void TestSolvePartOne()
+        //{
+        //    void Test(int expectedOutput)
+        //    {
+        //        int output = Day20.SolvePartOne();
+        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
+        //    }
+        //    Test(668);
+        //}
+
+        //public static void TestSolvePartTwo()
+        //{
+        //    void Test(int expectedOutput)
+        //    {
+        //        int output = Day20.SolvePartTwo();
+        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
+        //    }
+        //    Test(7778);
+        //}
+
+        static void TestSolvePartOne()
         {
-            int output = Day20.SolvePartTwo();
-            if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
+            TestSuite.Test(668, Day20.SolvePartOne);
         }
-        Test(7778);
+
+        static void TestSolvePartTwo()
+        {
+            TestSuite.Test(7778, Day20.SolvePartTwo);
+        }
     }
-}
 }

@@ -35,15 +35,15 @@ namespace AoC.Tests
             Console.WriteLine("Day22Tests Completed!");
         }
 
-        public static void TestSolvePartOne()
-        {
-            void Test(int expectedOutput)
-            {
-                int output = Day22.SolvePartOne();
-                if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-            }
-            Test(5755);
-        }
+        //public static void TestSolvePartOne()
+        //{
+        //    void Test(int expectedOutput)
+        //    {
+        //        int output = Day22.SolvePartOne();
+        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
+        //    }
+        //    Test(5755);
+        //}
 
         public static void TestCardCut()
         {
@@ -301,15 +301,25 @@ namespace AoC.Tests
             }
         }
 
-        public static void TestSolvePartTwo()
+        //public static void TestSolvePartTwo()
+        //{
+        //    void Test(string expectedString)
+        //    {
+        //        BigInteger expectedOutput = BigInteger.Parse(expectedString);
+        //        BigInteger output = Day22.SolvePartTwo();
+        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
+        //    }
+        //    Test("42152620178084");
+        //}
+
+        static void TestSolvePartOne()
         {
-            void Test(string expectedString)
-            {
-                BigInteger expectedOutput = BigInteger.Parse(expectedString);
-                BigInteger output = Day22.SolvePartTwo();
-                if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-            }
-            Test("42152620178084");
+            TestSuite.Test(5755, Day22.SolvePartOne);
+        }
+
+        static void TestSolvePartTwo()
+        {
+            TestSuite.Test("42152620178084", Day22.SolvePartTwo);
         }
     }
 }

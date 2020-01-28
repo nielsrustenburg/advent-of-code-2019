@@ -15,22 +15,12 @@ namespace AoC.Tests
 
         static void TestSolvePartOne()
         {
-            void Test(int expectedOutput)
-            {
-                int output = Day3.SolvePartOne();
-                if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-            }
-            Test(352);
+            TestSuite.Test(352, Day3.SolvePartOne);
         }
 
         static void TestSolvePartTwo()
         {
-            void Test(int expectedOutput)
-            {
-                int output = Day3.SolvePartTwo();
-                if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-            }
-            Test(43848);
+            TestSuite.Test(43848, Day3.SolvePartTwo);
         }
     }
 }

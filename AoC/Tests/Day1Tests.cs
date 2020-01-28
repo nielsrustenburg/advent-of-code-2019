@@ -18,47 +18,27 @@ namespace AoC.Tests
 
         static void TestFuelForModule()
         {
-            void Test(int input, int expectedOutput)
-            {
-                int output = Day1.FuelForModule(input);
-                if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}({input}): {output}, expected {expectedOutput}");
-            }
-            Test(12, 2);
-            Test(14, 2);
-            Test(1969, 654);
-            Test(100756, 33583);
+            TestSuite.Test(2, 12, Day1.FuelForModule);
+            TestSuite.Test(2, 14, Day1.FuelForModule);
+            TestSuite.Test(654, 1969, Day1.FuelForModule);
+            TestSuite.Test(33583, 100756, Day1.FuelForModule);
         }
 
         static void TestTotalFuelForModule()
         {
-            void Test(int input, int expectedOutput)
-            {
-                int output = Day1.TotalFuelForModule(input);
-                if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}({input}): {output}, expected {expectedOutput}");
-            }
             int module_mass = 100756;
             int initial_fuel = Day1.FuelForModule(module_mass);
-            Test(initial_fuel, 50346);
+            TestSuite.Test(50346, initial_fuel, Day1.TotalFuelForModule);
         }
 
         static void TestSolvePartOne()
         {
-            void Test(int expectedOutput)
-            {
-                int output = Day1.SolvePartOne();
-                if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-            }
-            Test(3362507);
+            TestSuite.Test(3362507, Day1.SolvePartOne);
         }
 
         static void TestSolvePartTwo()
         {
-            void Test(int expectedOutput)
-            {
-                int output = Day1.SolvePartTwo();
-                if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-            }
-            Test(5040874);
+            TestSuite.Test(5040874, Day1.SolvePartTwo);
         }
     }
 }

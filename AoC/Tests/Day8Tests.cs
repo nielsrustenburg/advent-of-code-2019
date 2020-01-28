@@ -12,15 +12,25 @@ namespace AoC.Tests
             Console.WriteLine("Day8Tests Completed!");
         }
 
-        public static void TestSolvePartOne()
+        //public static void TestSolvePartOne()
+        //{
+        //    void Test(int expectedOutput)
+        //    {
+        //        int output = Day8.SolvePartOne();
+        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
+        //    }
+        //    Test(1441);
+        //}
+
+        static void TestSolvePartOne()
         {
-            void Test(int expectedOutput)
-            {
-                int output = Day8.SolvePartOne();
-                if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-            }
-            Test(1441);
+            TestSuite.Test(1441, Day8.SolvePartOne);
         }
+
+        //static void TestSolvePartTwo()
+        //{
+        //    TestSuite.Test(, Day8.SolvePartTwo);
+        //}
     }
 }
 

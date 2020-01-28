@@ -27,25 +27,25 @@ namespace AoC.Tests
             Test(new List<int> { 1, 2, 3, 4}, 24);
         }
 
-        public static void TestSolvePartOne()
-        {
-            void Test(int expectedOutput)
-            {
-                int output = Day7.SolvePartOne();
-                if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-            }
-            Test(567045);
-        }
+        //public static void TestSolvePartOne()
+        //{
+        //    void Test(int expectedOutput)
+        //    {
+        //        int output = Day7.SolvePartOne();
+        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
+        //    }
+        //    Test(567045);
+        //}
 
-        public static void TestSolvePartTwo()
-        {
-            void Test(int expectedOutput)
-            {
-                int output = Day7.SolvePartTwo();
-                if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-            }
-            Test(39016654);
-        }
+        //public static void TestSolvePartTwo()
+        //{
+        //    void Test(int expectedOutput)
+        //    {
+        //        int output = Day7.SolvePartTwo();
+        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
+        //    }
+        //    Test(39016654);
+        //}
 
         public static void TestEnumerator()
         {
@@ -62,6 +62,16 @@ namespace AoC.Tests
                     enumer = oneTwoThree.GetEnumerator();
                 }
             }
+        }
+
+        static void TestSolvePartOne()
+        {
+            TestSuite.Test(567045, Day7.SolvePartOne);
+        }
+
+        static void TestSolvePartTwo()
+        {
+            TestSuite.Test(39016654, Day7.SolvePartTwo);
         }
     }
 }

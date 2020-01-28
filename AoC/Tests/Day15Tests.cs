@@ -14,24 +14,34 @@ namespace AoC.Tests
             Console.WriteLine("Day15Tests Completed!");
         }
 
-        public static void TestSolvePartOne()
+        //public static void TestSolvePartOne()
+        //{
+        //    void Test(int expectedOutput)
+        //    {
+        //        int output = Day15.SolvePartOne();
+        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
+        //    }
+        //    Test(0);
+        //}
+
+        //public static void TestSolvePartTwo()
+        //{
+        //    void Test(int expectedOutput)
+        //    {
+        //        int output = Day15.SolvePartTwo();
+        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
+        //    }
+        //    Test(0);
+        //}
+
+        static void TestSolvePartOne()
         {
-            void Test(int expectedOutput)
-            {
-                int output = Day15.SolvePartOne();
-                if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-            }
-            Test(0);
+            TestSuite.Test(0, Day15.SolvePartOne);
         }
 
-        public static void TestSolvePartTwo()
+        static void TestSolvePartTwo()
         {
-            void Test(int expectedOutput)
-            {
-                int output = Day15.SolvePartTwo();
-                if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-            }
-            Test(0);
+            TestSuite.Test(0, Day15.SolvePartTwo);
         }
     }
 }

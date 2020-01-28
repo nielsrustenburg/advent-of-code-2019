@@ -44,24 +44,34 @@ namespace AoC.Tests
             }
         }
 
-        public static void TestSolvePartOne()
+        //public static void TestSolvePartOne()
+        //{
+        //    void Test(int expectedOutput)
+        //    {
+        //        int output = Day16.SolvePartOne();
+        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
+        //    }
+        //    Test(34694616);
+        //}
+
+        //public static void TestSolvePartTwo()
+        //{
+        //    void Test(int expectedOutput)
+        //    {
+        //        int output = Day16.SolvePartTwo();
+        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
+        //    }
+        //    Test(17069048);
+        //}
+
+        static void TestSolvePartOne()
         {
-            void Test(int expectedOutput)
-            {
-                int output = Day16.SolvePartOne();
-                if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-            }
-            Test(34694616);
+            TestSuite.Test(34694616, Day16.SolvePartOne);
         }
 
-        public static void TestSolvePartTwo()
+        static void TestSolvePartTwo()
         {
-            void Test(int expectedOutput)
-            {
-                int output = Day16.SolvePartTwo();
-                if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-            }
-            Test(17069048);
+            TestSuite.Test(17069048, Day16.SolvePartTwo);
         }
     }
 }

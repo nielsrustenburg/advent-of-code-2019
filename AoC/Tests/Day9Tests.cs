@@ -19,25 +19,25 @@ namespace AoC.Tests
             Console.WriteLine("Day9Tests Completed!");
         }
 
-        public static void TestSolvePartOne()
-        {
-            void Test(BigInteger expectedOutput)
-            {
-                BigInteger output = Day9.SolvePartOne();
-                if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-            }
-            Test(2453265701);
-        }
+        //public static void TestSolvePartOne()
+        //{
+        //    void Test(BigInteger expectedOutput)
+        //    {
+        //        BigInteger output = Day9.SolvePartOne();
+        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
+        //    }
+        //    Test(2453265701);
+        //}
 
-        public static void TestSolvePartTwo()
-        {
-            void Test(BigInteger expectedOutput)
-            {
-                BigInteger output = Day9.SolvePartTwo();
-                if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-            }
-            Test(80805);
-        }
+        //public static void TestSolvePartTwo()
+        //{
+        //    void Test(BigInteger expectedOutput)
+        //    {
+        //        BigInteger output = Day9.SolvePartTwo();
+        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
+        //    }
+        //    Test(80805);
+        //}
 
         public static void TestQuine()
         {
@@ -102,6 +102,16 @@ namespace AoC.Tests
             BigIntCode ic = new BigIntCode(program.Select(x => (BigInteger)x).ToList());
             ic.Run(new List<BigInteger> { (BigInteger) 8 });
 
+        }
+
+        static void TestSolvePartOne()
+        {
+            TestSuite.Test(2453265701, Day9.SolvePartOne);
+        }
+
+        static void TestSolvePartTwo()
+        {
+            TestSuite.Test(80805, Day9.SolvePartTwo);
         }
     }
 }

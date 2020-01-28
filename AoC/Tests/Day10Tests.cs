@@ -15,25 +15,25 @@ namespace AoC.Tests
             Console.WriteLine("Day10Tests Completed!");
         }
 
-        public static void TestSolvePartOne()
-        {
-            void Test(int expectedOutput)
-            {
-                int output = Day10.SolvePartOne();
-                if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-            }
-            Test(282);
-        }
+        //public static void TestSolvePartOne()
+        //{
+        //    void Test(int expectedOutput)
+        //    {
+        //        int output = Day10.SolvePartOne();
+        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
+        //    }
+        //    Test(282);
+        //}
 
-        public static void TestSolvePartTwo()
-        {
-            void Test(int expectedOutput)
-            {
-                int output = Day10.SolvePartTwo();
-                if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-            }
-            Test(1008);
-        }
+        //public static void TestSolvePartTwo()
+        //{
+        //    void Test(int expectedOutput)
+        //    {
+        //        int output = Day10.SolvePartTwo();
+        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
+        //    }
+        //    Test(1008);
+        //}
 
         public static void TestAngleDegs()
         {
@@ -50,6 +50,16 @@ namespace AoC.Tests
             Test((2, 6), 161);
             Test((-2, 6), 198);
             Test((-2, -6), 341);
+        }
+
+        static void TestSolvePartOne()
+        {
+            TestSuite.Test(282, Day10.SolvePartOne);
+        }
+
+        static void TestSolvePartTwo()
+        {
+            TestSuite.Test(1008, Day10.SolvePartTwo);
         }
     }
 }

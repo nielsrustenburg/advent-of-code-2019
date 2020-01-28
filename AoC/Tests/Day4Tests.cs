@@ -45,26 +45,35 @@ namespace AoC.Tests
             if (!Day4.DoubleDigits(t4)) throw new Exception($"{t4} should've succeeded DoubleDigits test");
         }
 
+        //static void TestSolvePartOne()
+        //{
+        //    void Test(int expectedOutput)
+        //    {
+        //        int output = Day4.SolvePartOne();
+        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
+        //    }
+        //    Test(544);
+        //}
+
+        //static void TestSolvePartTwo()
+        //{
+        //    void Test(int expectedOutput)
+        //    {
+        //        int output = Day4.SolvePartTwo();
+        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
+        //    }
+        //    Test(334);
+        //}
+
         static void TestSolvePartOne()
         {
-            void Test(int expectedOutput)
-            {
-                int output = Day4.SolvePartOne();
-                if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-            }
-            Test(544);
+            TestSuite.Test(544, Day4.SolvePartOne);
         }
 
         static void TestSolvePartTwo()
         {
-            void Test(int expectedOutput)
-            {
-                int output = Day4.SolvePartTwo();
-                if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-            }
-            Test(334);
+            TestSuite.Test(334, Day4.SolvePartTwo);
         }
-
 
     }
 }

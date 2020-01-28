@@ -16,25 +16,25 @@ namespace AoC.Tests
             Console.WriteLine("Day12Tests Completed!");
         }
 
-        public static void TestSolvePartOne()
-        {
-            void Test(int expectedOutput)
-            {
-                int output = Day12.SolvePartOne();
-                if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-            }
-            Test(10635);
-        }
+        //public static void TestSolvePartOne()
+        //{
+        //    void Test(int expectedOutput)
+        //    {
+        //        int output = Day12.SolvePartOne();
+        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
+        //    }
+        //    Test(10635);
+        //}
 
-        public static void TestSolvePartTwo()
-        {
-            void Test(BigInteger expectedOutput)
-            {
-                BigInteger output = Day12.SolvePartTwo();
-                if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-            }
-            Test(BigInteger.Parse("583523031727256"));
-        }
+        //public static void TestSolvePartTwo()
+        //{
+        //    void Test(BigInteger expectedOutput)
+        //    {
+        //        BigInteger output = Day12.SolvePartTwo();
+        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
+        //    }
+        //    Test(BigInteger.Parse("583523031727256"));
+        //}
 
         public static void TestSimulateStep()
         {
@@ -51,6 +51,16 @@ namespace AoC.Tests
                   jmoons[1].X == 3 && jmoons[1].Y == -7 && jmoons[1].Z == -4 &&
                   jmoons[2].X == 1 && jmoons[2].Y == -7 && jmoons[2].Z == 5 &&
                   jmoons[3].X == 2 && jmoons[3].Y == 2 && jmoons[3].Z == 0)) throw new Exception("Moons are not updated to correct coordinates");
+        }
+
+        static void TestSolvePartOne()
+        {
+            TestSuite.Test(10635, Day12.SolvePartOne);
+        }
+
+        static void TestSolvePartTwo()
+        {
+            TestSuite.Test(BigInteger.Parse("583523031727256"), Day12.SolvePartTwo);
         }
     }
 }
