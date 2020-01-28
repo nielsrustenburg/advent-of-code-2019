@@ -1,0 +1,183 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Linq;
+
+namespace AoC
+{
+    class Grid<T>
+    {
+        public T DefaultTile { get; private set; }
+        int xMin, xMax, yMin, yMax;
+        HashSet<T> allTileTypes;
+        private int size;
+        Dictionary<T, int> tileCount;
+        Dictionary<int, Dictionary<int, T>> content;
+        public int Count { get { return tileCount.Values.Sum(); } private set {; } }
+        public int Width { get { return xMax - xMin + 1; } private set {; } }
+        public int Height { get { return yMax - yMin + 1; } private set {; } }
+
+        public Grid(T defaultTile)
+        {
+            xMin = xMax = yMin = yMax = 0;
+            DefaultTile = defaultTile;
+            allTileTypes = new HashSet<T> { DefaultTile };
+            content = new Dictionary<int, Dictionary<int, T>>();
+            tileCount = new Dictionary<T, int>();
+        }
+
+        public Grid(IEnumerable<IEnumerable<T>> filledGrid, T defaultTile) : this(defaultTile)
+        {
+            int y = 0;
+            foreach(IEnumerable<T> row in filledGrid)
+            {
+                int x = 0;
+                foreach(T tile in row)
+                {
+                    SetTile(x, y, tile);
+                    x++;
+                }
+                y--;
+            }
+        }
+
+        public T GetTile(int x, int y)
+        {
+            if (content.ContainsKey(x))
+            {
+                if (content[x].ContainsKey(y))
+                {
+                    return content[x][y];
+                }
+            }
+            return DefaultTile;
+        }
+
+        public void SetTile(int x, int y, T tileType)
+        {
+            EnsureBordersInclude(x, y);
+            bool addingDefault = tileType.Equals(DefaultTile);
+
+            if (!addingDefault)
+            {
+                UpdateTile(x, y, tileType);
+            }
+            else
+            {
+                RemoveTile(x, y);
+            }
+
+            allTileTypes.Add(tileType);
+        }
+
+        private void UpdateTile(int x, int y, T tileType)
+        {
+            if (!content.ContainsKey(x)) content.Add(x, new Dictionary<int, T>());
+            if (content[x].TryGetValue(y, out T value))
+            {
+                UpdateTileCount(content[x][y], -1);
+            }
+            UpdateTileCount(tileType, 1);
+            content[x][y] = tileType;
+        }
+
+        private void UpdateTileCount(T tileType, int incBy)
+        {
+            if(!tileType.Equals(DefaultTile))
+            {
+                tileCount.TryGetValue(tileType, out int countVal);
+                countVal += incBy;
+                tileCount[tileType] = countVal;
+            }
+        }
+
+        private void RemoveTile(int x, int y)
+        {
+            //Potentially leaves empty columns in the Grid
+            if (content.ContainsKey(x))
+            {
+                if (content[x].ContainsKey(y))
+                {
+                    UpdateTileCount(content[x][y], -1);
+                    Count--;
+                    content[x].Remove(y);
+                }
+            }
+        }
+
+        private void EnsureBordersInclude(int x, int y)
+        {
+            if (x < xMin) xMin = x;
+            if (x > xMax) xMax = x;
+            if (y < yMin) yMin = y;
+            if (y > yMax) yMax = y;
+        }
+
+        public int TileCount(T tile)
+        {
+            return tileCount.ContainsKey(tile) ? tileCount[tile] : 0;
+        }
+
+        public Dictionary<string, T> GetNeighbours(int x, int y, bool includeDiagonal = false)
+        {
+            Dictionary<string, T> nb = new Dictionary<string, T>();
+            nb.Add("N", GetTile(x, y + 1));
+            nb.Add("E", GetTile(x + 1, y));
+            nb.Add("S", GetTile(x, y - 1));
+            nb.Add("W", GetTile(x - 1, y));
+            if (includeDiagonal)
+            {
+                nb.Add("NE", GetTile(x + 1, y + 1));
+                nb.Add("SE", GetTile(x + 1, y - 1));
+                nb.Add("SW", GetTile(x - 1, y - 1));
+                nb.Add("NW", GetTile(x - 1, y + 1));
+            }
+            return nb;
+        }
+
+        public (bool found, int x, int y) FindLocationOf(T findMe)
+        {
+            if (findMe.Equals(DefaultTile)) throw new ArgumentException("Trying to find the DefaultTile, which is every unfilled Tile");
+            foreach (var column in content)
+            {
+                foreach (var tile in column.Value)
+                {
+                    if (findMe.Equals(tile.Value))
+                    {
+                        return (true, column.Key, tile.Key);
+                    }
+                }
+            }
+            return (false, 0, 0);
+        }
+
+        public List<(int x, int y)> FindAllLocationsOff(List<T> findUs)
+        {
+            if (findUs.Contains(DefaultTile)) throw new ArgumentException("Trying to find the DefaultTile, which is every unfilled Tile");
+            List<(int, int)> results = new List<(int, int)>();
+            foreach (var column in content)
+            {
+                foreach (var tile in column.Value)
+                {
+                    if (findUs.Contains(tile.Value))
+                    {
+                        results.Add((column.Key, tile.Key));
+                    }
+                }
+            }
+            return results;
+        }
+
+        public List<string> RowsAsStrings()
+        {
+            List<string> rows = new List<string>();
+            List<int> xCoords = Enumerable.Range(xMin, Width).ToList();
+            for (int y = yMax; y >= yMin; y--)
+            {
+                string row = string.Concat(xCoords.Select(x => GetTile(x, y).ToString()));
+                rows.Add(row);
+            }
+            return rows;
+        }
+    }
+}
