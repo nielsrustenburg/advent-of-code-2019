@@ -22,7 +22,12 @@ namespace AoC
             return c;
         }
 
-        public static int SolvePartTwo(bool draw = false)
+        public static int SolvePartTwo()
+        {
+            return SolvePartTwo(false);
+        }
+
+        public static int SolvePartTwo(bool draw)
         {
             string line = InputReader.StringFromLine("d13input.txt");
             List<BigInteger> program = line.Split(',').Select(x => BigInteger.Parse(x)).ToList();
