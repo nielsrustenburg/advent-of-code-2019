@@ -15,7 +15,7 @@ namespace AoC
         public bool Halted { get; private set; }
         IEnumerator<BigInteger> inputEnum;
 
-        public BigIntCode(List<BigInteger> vals)
+        public BigIntCode(IEnumerable<BigInteger> vals)
         {
             this.memory = new List<BigInteger>(vals);
             pointer = 0;
@@ -23,7 +23,7 @@ namespace AoC
             relativeBase = 0;
         }
 
-        public List<BigInteger> Run(List<BigInteger> input = null)
+        public List<BigInteger> Run(IEnumerable<BigInteger> input = null)
         {
             input = input ?? new List<BigInteger>();
             output = new List<BigInteger>();

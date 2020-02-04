@@ -14,7 +14,7 @@ namespace AoC
         public bool Halted { get; private set; }
         IEnumerator<int> inputEnum;
 
-        public IntCode(List<int> vals)
+        public IntCode(IEnumerable<int> vals)
         {
             this.memory = new List<int>(vals);
             pointer = 0;
@@ -22,7 +22,7 @@ namespace AoC
             relativeBase = 0;
         }
 
-        public List<int> Run(List<int> input = null)
+        public List<int> Run(IEnumerable<int> input = null)
         {
             input = input ?? new List<int>();
             output = new List<int>();
