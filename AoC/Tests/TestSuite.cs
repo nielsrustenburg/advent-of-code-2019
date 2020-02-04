@@ -60,7 +60,7 @@ namespace AoC.Tests
         {
             List<T> output = function(input).ToList();
             List<T> expList = expected.ToList();
-            string errorMessage = "function.Method.Name} failed: \n ";
+            string errorMessage = $"{function.Method.Name} failed: \n ";
             bool equalLength = output.Count == expList.Count;
 
             IEnumerable<int> missingIndices = null;
@@ -85,7 +85,10 @@ namespace AoC.Tests
             if (!equalContent)
             {
                 errorMessage = errorMessage + indexErrorMessage;
-                errorMessage = errorMessage + string.Join(',', missingIndices.Select(x => x.ToString()));
+                if (!equalLength)
+                {
+                    errorMessage = errorMessage + string.Join(',', missingIndices.Select(x => x.ToString()));
+                }
                 throw new Exception(errorMessage);
             }
         }
