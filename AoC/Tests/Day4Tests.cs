@@ -18,52 +18,23 @@ namespace AoC.Tests
 
         public static void TestIncreasingDigits()
         {
-            int t1 = 223450;
-            int t2 = 123789;
-
-            if (Day4.IncreasingDigits(t1)) throw new Exception($"{t1} should not succeed IncreasingDigits test");
-            if (!Day4.IncreasingDigits(t2)) throw new Exception($"{t1} should've succeeded IncreasingDigits test");
+            TestSuite.Test(false, 223450, Day4.IncreasingDigits);
+            TestSuite.Test(true, 123789, Day4.IncreasingDigits);
         }
+
         public static void TestMatchingDigits()
         {
-            int t1 = 223450;
-            int t2 = 123789;
-
-            if(!Day4.MatchingDigits(t1)) throw new Exception($"{t1} should've succeeded MatchingDigits test");
-            if(Day4.MatchingDigits(t2)) throw new Exception($"{t2} should not succeed MatchingDigits test");
+            TestSuite.Test(true, 223450, Day4.MatchingDigits);
+            TestSuite.Test(false, 123789, Day4.MatchingDigits);
         }
+
         public static void TestDoubleDigits()
         {
-            int t1 = 112233;
-            int t2 = 123444;
-            int t3 = 111122;
-            int t4 = 778888;
-
-            if (!Day4.DoubleDigits(t1)) throw new Exception($"{t1} should've succeeded DoubleDigits test");
-            if (Day4.DoubleDigits(t2)) throw new Exception($"{t2} should've failed DoubleDigits test");
-            if (!Day4.DoubleDigits(t3)) throw new Exception($"{t3} should've succeeded DoubleDigits test");
-            if (!Day4.DoubleDigits(t4)) throw new Exception($"{t4} should've succeeded DoubleDigits test");
+            TestSuite.Test(true, 112233, Day4.DoubleDigits);
+            TestSuite.Test(false, 123444, Day4.DoubleDigits);
+            TestSuite.Test(true, 111122, Day4.DoubleDigits);
+            TestSuite.Test(true, 778888, Day4.DoubleDigits);
         }
-
-        //static void TestSolvePartOne()
-        //{
-        //    void Test(int expectedOutput)
-        //    {
-        //        int output = Day4.SolvePartOne();
-        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-        //    }
-        //    Test(544);
-        //}
-
-        //static void TestSolvePartTwo()
-        //{
-        //    void Test(int expectedOutput)
-        //    {
-        //        int output = Day4.SolvePartTwo();
-        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-        //    }
-        //    Test(334);
-        //}
 
         static void TestSolvePartOne()
         {
