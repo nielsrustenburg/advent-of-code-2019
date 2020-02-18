@@ -50,6 +50,11 @@ namespace AoC
             return Mod(aInv, b);
         }
 
+        public static int ManhattanDistance((int x, int y) pointA, (int x, int y) pointB)
+        {
+            return Math.Abs(pointA.x - pointB.x) + Math.Abs(pointA.y - pointB.y);
+        }
+
         private static (BigInteger,BigInteger) ModInvHelper(BigInteger greater, BigInteger smaller, (BigInteger a, BigInteger b) g, (BigInteger a, BigInteger b) s)
         {
             //Find the modular inverse A^-1 for A mod B
