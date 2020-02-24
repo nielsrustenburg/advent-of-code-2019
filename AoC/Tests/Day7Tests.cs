@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace AoC.Tests
@@ -18,30 +19,9 @@ namespace AoC.Tests
 
         private static void TestPermutations()
         {
-            void Test(List<int> input, int expectedOutput)
-            {
-                int output = Day7.Permutations(input).Count;
-                if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}({input}): {output}, expected {expectedOutput}");
-            }
-            Test(new List<int> { 1, 2, 3 }, 6);
-            Test(new List<int> { 1, 2, 3, 4}, 24);
-        }
-
-        public static void TestEnumerator()
-        {
-            List<int> oneTwoThree = new List<int> { 1, 2, 3 };
-            IEnumerator<int> enumer = oneTwoThree.GetEnumerator();
-
-            for(int i =1; i < 5; i++)
-            {
-                enumer.MoveNext();
-                if (enumer.Current == i) Console.WriteLine($"Yay {enumer.Current} is {i}");
-                if(i == 3)
-                {
-                    oneTwoThree.Add(4);
-                    enumer = oneTwoThree.GetEnumerator();
-                }
-            }
+            TestSuite.TestCount(6, new List<int> { 1, 2, 3 }, SetHelper.Permutations);
+            TestSuite.TestCount(24, new List<int> { 1, 2, 3 , 4}, SetHelper.Permutations);
+            TestSuite.TestCount(120, new List<char> { 'a', 'b', 'c', 'd', 'e' }, SetHelper.Permutations);
         }
 
         static void TestSolvePartOne()
