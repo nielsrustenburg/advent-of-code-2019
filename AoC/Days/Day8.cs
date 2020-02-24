@@ -9,59 +9,68 @@ namespace AoC
     {
         public static int SolvePartOne()
         {
+            string input = InputReader.StringFromLine("d8input.txt");
+
             int width = 25;
             int height = 6;
-            int layerSize = width * height;
-            string input = InputReader.StringFromLine("d8input.txt");
-            List<string> layers = Enumerable.Range(0, input.Length / layerSize).
-                                    Select(x => input.Substring(x * layerSize, layerSize)).ToList();
+            int pixelsPerLayer = width * height;
+
+            List<string> layers = Enumerable.Range(0, input.Length / pixelsPerLayer).
+                                    Select(x => input.Substring(x * pixelsPerLayer, pixelsPerLayer)).ToList();
+
             int leastZeros = int.MaxValue;
-            string lzLayer = null;
-            foreach(string layer in layers)
+            string leastZerosLayer = null;
+            foreach (string layer in layers)
             {
                 int zeros = layer.Count(f => f == '0');
                 if (zeros < leastZeros)
                 {
-                    lzLayer = layer;
+                    leastZerosLayer = layer;
                     leastZeros = zeros;
                 }
             }
-            int ones = lzLayer.Count(f => f == '1');
-            int twos = lzLayer.Count(f => f == '2');
-            return ones*twos;
+            int ones = leastZerosLayer.Count(f => f == '1');
+            int twos = leastZerosLayer.Count(f => f == '2');
+            return ones * twos;
         }
 
-        public static int SolvePartTwo()
+        public static List<string> SolvePartTwo()
+        {
+            return SolvePartTwo(false);
+        }
+
+        public static List<string> SolvePartTwo(bool print)
         {
             int width = 25;
             int height = 6;
-            int layerSize = width * height;
+            int pixelsPerLayer = width * height;
             string input = InputReader.StringFromLine("d8input.txt");
-            int[] solution = Enumerable.Repeat(2, layerSize).ToArray();
-            List<string> layers = Enumerable.Range(0, input.Length / layerSize).
-                        Select(x => input.Substring(x * layerSize, layerSize)).ToList();
-            foreach(string layer in layers)
+            char[] solution = new char[pixelsPerLayer];
+            List<string> layers = Enumerable.Range(0, input.Length / pixelsPerLayer).
+                        Select(x => input.Substring(x * pixelsPerLayer, pixelsPerLayer)).ToList();
+
+            for (int i = 0; i < pixelsPerLayer; i++)
             {
-                for(int i = 0; i < layerSize; i++)
+                for (int d = 0; d < layers.Count; d++)
                 {
-                    if(solution[i] == 2)
+                    char pixel = layers[d][i];
+                    if (pixel != '2')
                     {
-                        solution[i] = (int)Char.GetNumericValue(layer[i]);
+                        solution[i] = pixel;
+                        break;
                     }
                 }
             }
 
-            void PrintImage(int[] img)
+            List<string> image = new List<string>();
+            for (int i = 0; i < height; i++)
             {
-                for(int i = 0; i < height; i++)
-                {
-                    string row = img.Skip(i * width).Take(width).Aggregate("", (a, x) => a + (x == 1 ? "1" : " "));
-                    Console.WriteLine(row);
-                }
+                string row = solution.Skip(i * width).Take(width).Aggregate("", (a, x) => a + (x == '1' ? "1" : " "));
+                image.Add(row);
+                if(print) Console.WriteLine(row);
             }
 
-            PrintImage(solution);
-            return 0;
+            return image;
         }
     }
 }
