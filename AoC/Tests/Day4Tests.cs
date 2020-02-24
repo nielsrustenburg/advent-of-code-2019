@@ -18,8 +18,11 @@ namespace AoC.Tests
 
         public static void TestIncreasingDigits()
         {
+            TestSuite.Test(false, 923456, Day4.IncreasingDigits);
             TestSuite.Test(false, 223450, Day4.IncreasingDigits);
             TestSuite.Test(true, 123789, Day4.IncreasingDigits);
+            TestSuite.Test(true, 1234, Day4.IncreasingDigits);
+            TestSuite.Test(true, -1234, Day4.IncreasingDigits);
         }
 
         public static void TestMatchingDigits()

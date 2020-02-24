@@ -35,18 +35,16 @@ namespace AoC
 
         public static bool IncreasingDigits(int number)
         {
-            int lowest_allowed_digit = 0;
-            int divisor = 100000;
+            int lowestAllowedDigit = 0;
+            int nDigits = (int) Math.Floor(Math.Log10(number) + 1);
+            int divisor = (int) Math.Pow(10, nDigits); 
 
-            int num = number;
-            int next_dig;
-            //Assuming 6digit numbers
             while(divisor > 0)
             {
-                next_dig = num / divisor;
-                if (next_dig < lowest_allowed_digit) return false;
-                lowest_allowed_digit = next_dig;
-                num = num % divisor;
+                int currentDigit = number / divisor;
+                if (currentDigit < lowestAllowedDigit) return false;
+                lowestAllowedDigit = currentDigit;
+                number = number % divisor;
                 divisor /= 10;
             }
             return true;
