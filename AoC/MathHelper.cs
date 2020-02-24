@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using System.Numerics;
 
 namespace AoC
@@ -17,6 +18,11 @@ namespace AoC
         {
             BigInteger res = a % b;
             return res + (res < 0 ? b : 0);
+        }
+
+        public static int ManhattanDistance((int x, int y) pointA, (int x, int y) pointB)
+        {
+            return Math.Abs(pointA.x - pointB.x) + Math.Abs(pointA.y - pointB.y);
         }
 
         public static BigInteger GCD(BigInteger a, BigInteger b)
@@ -48,11 +54,6 @@ namespace AoC
                 ModInvHelper(b, a, (0, 1), (1, 0));
             }
             return Mod(aInv, b);
-        }
-
-        public static int ManhattanDistance((int x, int y) pointA, (int x, int y) pointB)
-        {
-            return Math.Abs(pointA.x - pointB.x) + Math.Abs(pointA.y - pointB.y);
         }
 
         private static (BigInteger,BigInteger) ModInvHelper(BigInteger greater, BigInteger smaller, (BigInteger a, BigInteger b) g, (BigInteger a, BigInteger b) s)
