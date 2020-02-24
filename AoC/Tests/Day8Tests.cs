@@ -9,28 +9,29 @@ namespace AoC.Tests
         public static void RunAll()
         {
             TestSolvePartOne();
+            TestSolvePartTwo();
             Console.WriteLine("Day8Tests Completed!");
         }
-
-        //public static void TestSolvePartOne()
-        //{
-        //    void Test(int expectedOutput)
-        //    {
-        //        int output = Day8.SolvePartOne();
-        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-        //    }
-        //    Test(1441);
-        //}
 
         static void TestSolvePartOne()
         {
             TestSuite.Test(1441, Day8.SolvePartOne);
         }
 
-        //static void TestSolvePartTwo()
-        //{
-        //    TestSuite.Test(, Day8.SolvePartTwo);
-        //}
+        static void TestSolvePartTwo()
+        {
+            List<string> expectedImage = new List<string>
+            {
+                "111  1  1 1111 111  111  ",
+                "1  1 1  1    1 1  1 1  1 ",
+                "1  1 1  1   1  111  1  1 ",
+                "111  1  1  1   1  1 111  ",
+                "1 1  1  1 1    1  1 1    ",
+                "1  1  11  1111 111  1    "
+            };//RUZBP
+
+            TestSuite.TestSequence(expectedImage, 0,  (int _) => { return Day8.SolvePartTwo(); } );
+        }
     }
 }
 
