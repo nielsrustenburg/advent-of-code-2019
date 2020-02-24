@@ -10,71 +10,67 @@ namespace AoC
         public static int SolvePartOne()
         {
             List<int> program = InputReader.IntsFromCSVLine("d7input.txt");
-            List<List<int>> ampSettingPermutations = Permutations(Enumerable.Range(0, 5).ToList());
+            List<int> ampOptions = Enumerable.Range(0, 5).ToList();
+            List<List<int>> ampSettingPermutations = SetHelper.Permutations(ampOptions);
 
             int bestOutput = 0;
-            List<int> bestSettings = null;
-            foreach(List<int> ampSettings in ampSettingPermutations)
+            List<int> bestSetting = null;
+
+            foreach (List<int> ampSetting in ampSettingPermutations)
             {
                 List<IntCode> amplifiers = Enumerable.Range(0, 5).Select(_ => new IntCode(program)).ToList();
-                int prevOutput = 0;
-                for(int i = 0; i < ampSettings.Count; i++)
+
+                List<List<int>> intcodeInstructions = SetHelper.AsSingletons(ampSetting);
+                int output = RunAmplifiersWithInstructions(amplifiers, intcodeInstructions, 0);
+
+                if (output > bestOutput)
                 {
-                    prevOutput = amplifiers[i].Run(new List<int> { ampSettings[i], prevOutput }).Last();
-                }
-                if(prevOutput > bestOutput)
-                {
-                    bestOutput = prevOutput;
-                    bestSettings = ampSettings;
+                    bestOutput = output;
+                    bestSetting = ampSetting;
                 }
             }
+
             return bestOutput;
         }
 
         public static int SolvePartTwo()
         {
-            //Read input
             List<int> program = InputReader.IntsFromCSVLine("d7input.txt");
-            List<List<int>> ampSettingPermutations = Permutations(Enumerable.Range(5, 5).ToList());
+            List<int> ampOptions = Enumerable.Range(5, 5).ToList(); //6-10
+            List<List<int>> ampSettingPermutations = SetHelper.Permutations(ampOptions);
 
             int bestOutput = 0;
-            List<int> bestSettings = null;
-            foreach (List<int> ampSettings in ampSettingPermutations)
+            List<int> bestSetting = null;
+
+            foreach (List<int> ampSetting in ampSettingPermutations)
             {
                 List<IntCode> amplifiers = Enumerable.Range(0, 5).Select(_ => new IntCode(program)).ToList();
+
                 int prevOutput = 0;
-                bool first_iter = true;
+                List<List<int>> intcodeInstructions = SetHelper.AsSingletons(ampSetting);
                 while (!amplifiers.Last().Halted)
                 {
-                    for (int i = 0; i < ampSettings.Count; i++)
-                    {
-                        var instructions = first_iter ? new List<int> { ampSettings[i], prevOutput } : new List<int> { prevOutput };
-                        prevOutput = amplifiers[i].Run(instructions).Last();
-                    }
-                    first_iter = false;
+                    prevOutput = RunAmplifiersWithInstructions(amplifiers,intcodeInstructions,prevOutput);
+                    intcodeInstructions = ampSetting.Select(_ => new List<int>()).ToList();
                 }
+
                 if (prevOutput > bestOutput)
                 {
                     bestOutput = prevOutput;
-                    bestSettings = ampSettings;
+                    bestSetting = ampSetting;
                 }
             }
             return bestOutput;
         }
 
-        public static List<List<T>> Permutations<T>(List<T> values)
+        public static int RunAmplifiersWithInstructions(List<IntCode> amplifiers, List<List<int>> instructions, int previousOutput)
         {
-            List<List<T>> result = values.Count == 0 ? new List<List<T>> {new List<T>()} : new List<List<T>>();
-            foreach (T val in values)
+            for (int i = 0; i < amplifiers.Count; i++)
             {
-                List<List<T>> without = Permutations(values.Where(x => !x.Equals(val)).ToList());
-                foreach(List<T> setWithout in without)
-                {
-                    setWithout.Add(val);
-                    result.Add(setWithout);
-                }
+                instructions[i].Add(previousOutput);
+                previousOutput = amplifiers[i].Run(instructions[i]).Last();
             }
-            return result;
+            return previousOutput;
         }
     }
 }
