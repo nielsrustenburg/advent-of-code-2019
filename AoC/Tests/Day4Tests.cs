@@ -10,7 +10,7 @@ namespace AoC.Tests
         {
             TestIncreasingDigits();
             TestMatchingDigits();
-            TestDoubleDigits();
+            TestContainsDigitPair();
             TestSolvePartOne();
             TestSolvePartTwo();
             Console.WriteLine("Day4Tests Completed!");
@@ -28,15 +28,18 @@ namespace AoC.Tests
         public static void TestMatchingDigits()
         {
             TestSuite.Test(true, 223450, Day4.MatchingDigits);
+            TestSuite.Test(true, 2344, Day4.MatchingDigits);
             TestSuite.Test(false, 123789, Day4.MatchingDigits);
+            TestSuite.Test(false, 12378, Day4.MatchingDigits);
         }
 
-        public static void TestDoubleDigits()
+        public static void TestContainsDigitPair()
         {
-            TestSuite.Test(true, 112233, Day4.DoubleDigits);
-            TestSuite.Test(false, 123444, Day4.DoubleDigits);
-            TestSuite.Test(true, 111122, Day4.DoubleDigits);
-            TestSuite.Test(true, 778888, Day4.DoubleDigits);
+            TestSuite.Test(true, 112233, Day4.ContainsDigitPair);
+            TestSuite.Test(true, 443544, Day4.ContainsDigitPair); //Fails on increasing digits but should hold here
+            TestSuite.Test(false, 123444, Day4.ContainsDigitPair);
+            TestSuite.Test(true, 111122, Day4.ContainsDigitPair);
+            TestSuite.Test(true, 778888, Day4.ContainsDigitPair);
         }
 
         static void TestSolvePartOne()

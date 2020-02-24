@@ -25,7 +25,7 @@ namespace AoC
             int pw_count = 0;
             for (int pw = 356261; pw < 846303; pw++)
             {
-                if (DoubleDigits(pw) && IncreasingDigits(pw))
+                if (ContainsDigitPair(pw) && IncreasingDigits(pw))
                 {
                     pw_count++;
                 }
@@ -52,38 +52,32 @@ namespace AoC
 
         public static bool MatchingDigits(int number)
         {
-            string stringed_num = number.ToString();
-            for(int i = 1; i < stringed_num.Length; i++)
+            string numString = number.ToString();
+            for(int i = 1; i < numString.Length; i++)
             {
-                if (stringed_num[i] == stringed_num[i - 1]) return true;
+                if (numString[i] == numString[i - 1]) return true;
             }
             return false;
         }
 
-        public static bool DoubleDigits(int number)
+        public static bool ContainsDigitPair(int number)
         {
-            List<string> doubles = new List<string>();
-            string stringed_num = number.ToString();
-            for (int i = 1; i < stringed_num.Length; i++)
+            string numString = number.ToString();
+            int nSameDigits = 1;
+
+            for(int i = 1; i < numString.Length; i++)
             {
-                if (stringed_num[i] == stringed_num[i - 1])
+                if (numString[i] == numString[i - 1])
                 {
-                    doubles.Add(stringed_num.Substring(i - 1, 2));
+                    nSameDigits++;
+                } else
+                {
+                    if (nSameDigits == 2) break;
+                    nSameDigits = 1;
                 }
             }
 
-            //This is probably not as efficient as possible
-            List<string> disqualified = new List<string>();
-            for(int i = 0; i < doubles.Count-1; i++)
-            {
-                for(int j = i+1; j < doubles.Count; j++)
-                {
-                    if (doubles[i] == doubles[j]) disqualified.Add(doubles[i]);
-                }
-            }
-
-            int n_true_doubles = doubles.Where(dbl => !disqualified.Contains(dbl)).Count();
-            return n_true_doubles > 0;
+            return nSameDigits == 2;
         }
     }
 }
