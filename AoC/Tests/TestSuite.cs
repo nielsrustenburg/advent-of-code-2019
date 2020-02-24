@@ -56,6 +56,13 @@ namespace AoC.Tests
             if (expected.ToString() != output) throw new Exception($"{function.Method.Name} failed: \n expected value: \n {expected.ToString()} \n received value \n {output}");
         }
 
+        public static void TestCount<V,G>(int expectedCount, V input, Func<V,IEnumerable<G>> function)
+        {
+            IEnumerable<G> output = function(input);
+            int outputCount = output.Count();
+            if (expectedCount != outputCount) throw new Exception($"{function.Method.Name} failed: \n expected element Count: \n {expectedCount} \n actual output Count: \n {outputCount}");
+        }
+
         public static void TestSequence<T,V>(IEnumerable<T> expected, V input, Func<V,IEnumerable<T>> function)
         {
             List<T> output = function(input).ToList();
