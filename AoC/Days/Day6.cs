@@ -7,187 +7,79 @@ namespace AoC
 {
     static class Day6
     {
+
         public static int SolvePartOne()
         {
             List<(string, string)> input = InputReader.ReadOrbitRelationsFromTxt("d6input.txt");
-            OrbitTree otree = new OrbitTree();
-            foreach((string parent, string child) in input)
+            OrbitTreeTwo otree = new OrbitTreeTwo();
+            foreach ((string parent, string child) in input)
             {
-                otree.AddOrbitRelation(parent, child);
+                otree.AddRelation(parent, child);
             }
-            otree.SetDistancesFromRoot();
-            return otree.GetDirectOrbits() + otree.GetIndirectOrbits();
+            return otree.CountAllOrbits();
         }
 
         public static int SolvePartTwo()
         {
             List<(string, string)> input = InputReader.ReadOrbitRelationsFromTxt("d6input.txt");
-            OrbitTree otree = new OrbitTree();
+            OrbitTreeTwo otree = new OrbitTreeTwo();
             foreach ((string parent, string child) in input)
             {
-                otree.AddOrbitRelation(parent, child);
+                otree.AddRelation(parent, child);
             }
-            otree.SetDistancesFromRoot();
-
-            return otree.DistanceBetweenNodes("YOU", "SAN") - 2;
+            return otree.DistanceBetweenNodes("YOU", "SAN") - 2; 
         }
     }
 
-    class OrbitTree
+    class OrbitTreeTwo : Treee<OrbitNodeTwo>
     {
-        Dictionary<string, OrbitNode> nodes;
-        OrbitNode root;
-
-        public OrbitTree()
+        public override OrbitNodeTwo CreateNode(string id)
         {
-            nodes = new Dictionary<string, OrbitNode>();
+            return new OrbitNodeTwo(id);
         }
 
-        public void FindAndSetRoot()
+        public int CountAllOrbits()
         {
-            OrbitNode current = nodes.Values.ToList().First();
-            while (current.HasParent())
+            int total = 0;
+            foreach(OrbitNodeTwo node in nodes.Values)
             {
-                current = current.GetParent();
-            }
-            root = current;
-        }
-
-        public int GetDirectOrbits()
-        {
-            return nodes.Count - 1;
-        }
-
-        public int GetIndirectOrbits()
-        {
-            int total = 0; 
-            foreach(OrbitNode node in nodes.Values)
-            {
-                total += node.IndirectOrbits();
+                total += node.Depth();
             }
             return total;
         }
 
         public int DistanceBetweenNodes(string nodeA, string nodeB)
-        {
+        {            
             //Find common parent, or the other node
-            List<OrbitNode> aAncestors = new List<OrbitNode> { nodes[nodeA] };
-            List<OrbitNode> bAncestors = new List<OrbitNode> { nodes[nodeB] };
+            List<OrbitNodeTwo> aAncestors = new List<OrbitNodeTwo> ();
+            List<OrbitNodeTwo> bAncestors = new List<OrbitNodeTwo> ();
+            OrbitNodeTwo currentA = nodes[nodeA];
+            OrbitNodeTwo currentB = nodes[nodeB];
             bool unfinished = true;
             while (unfinished)
             {
-                int adist = aAncestors.Last().GetRootDist();
-                int bdist = bAncestors.Last().GetRootDist();
-                if (adist > bdist)
+                if (currentA.Depth() > currentB.Depth())
                 {
-                    aAncestors.Add(aAncestors.Last().GetParent());
-                } else
+                    currentA = currentA.Parent();
+                    aAncestors.Add(currentA);
+                }
+                else
                 {
-                    bAncestors.Add(bAncestors.Last().GetParent());
+                    currentB = currentB.Parent();
+                    bAncestors.Add(currentB);
                 }
 
-                unfinished = aAncestors.Last() != bAncestors.Last();
+                unfinished = currentA != currentB;
             }
-
-            return aAncestors.Count + bAncestors.Count - 2;
+            return aAncestors.Count + bAncestors.Count;
         }
-
-        public void SetDistancesFromRoot()
-        {
-            FindAndSetRoot();
-            root.SetDistanceFromRoot(0);
-        }
-
-        public void AddOrbitRelation(string orbitee, string orbiter)
-        {
-            OrbitNode parent = TryCreateNode(orbitee);
-            OrbitNode child = TryCreateNode(orbiter);
-            parent.AddChild(child);
-            child.AddParent(parent);
-        }
-
-        public OrbitNode TryCreateNode(string name)
-        {
-            OrbitNode node;
-            if (!nodes.ContainsKey(name))
-            {
-                node = new OrbitNode(name);
-                nodes.Add(name, node);
-            } else
-            {
-                node = nodes[name];
-            }
-            return node;
-        }
-
-        public void AddNode(OrbitNode node)
-        {
-            nodes.Add(node.name, node);
-        }
-
     }
 
-    class OrbitNode
+    class OrbitNodeTwo : TreaNode<OrbitNodeTwo>
     {
-        public string name;
-        OrbitNode parent;
-        List<OrbitNode> children;
-        int distanceFromRoot;
-
-        public OrbitNode(string name)
+        public OrbitNodeTwo(string id) : base(id)
         {
-            this.name = name;
-            children = new List<OrbitNode>();
-        }
 
-        public void SetDistanceFromRoot(int distance)
-        {
-            distanceFromRoot = distance;
-            foreach(OrbitNode child in children)
-            {
-                child.SetDistanceFromRoot(distance + 1);
-            }
-        }
-
-        public int GetRootDist()
-        {
-            return distanceFromRoot;
-        }
-
-        public int IndirectOrbits()
-        {
-            //Indirect Orbits per node = distance from root - 1, except for rootnode
-            if (HasParent())
-            {
-                return distanceFromRoot - 1;
-            }
-            return 0;
-        }
-
-        public bool HasParent()
-        {
-            return parent != null;
-        }
-
-        public OrbitNode GetParent()
-        {
-            return parent;
-        }
-
-        public void AddParent(OrbitNode parent)
-        {
-            if (this.parent != null) throw new Exception($"OrbitNode {name} already has a parent node {this.parent}, can't add{parent}");
-            this.parent = parent;
-        }
-
-        public void AddChild(OrbitNode child)
-        {
-            children.Add(child);
-        }
-
-        public override string ToString()
-        {
-            return name;
         }
     }
 }
