@@ -11,37 +11,34 @@ namespace AoC
         public static int SolvePartOne()
         {
             List<(string, string)> input = InputReader.ReadOrbitRelationsFromTxt("d6input.txt");
-            OrbitTreeTwo otree = new OrbitTreeTwo();
-            foreach ((string parent, string child) in input)
-            {
-                otree.AddRelation(parent, child);
-            }
+            OrbitTree otree = new OrbitTree(input);
             return otree.CountAllOrbits();
         }
 
         public static int SolvePartTwo()
         {
             List<(string, string)> input = InputReader.ReadOrbitRelationsFromTxt("d6input.txt");
-            OrbitTreeTwo otree = new OrbitTreeTwo();
-            foreach ((string parent, string child) in input)
-            {
-                otree.AddRelation(parent, child);
-            }
+            OrbitTree otree = new OrbitTree(input);
             return otree.DistanceBetweenNodes("YOU", "SAN") - 2; 
         }
     }
 
-    class OrbitTreeTwo : Treee<OrbitNodeTwo>
+    class OrbitTree : Treee<OrbitNode>
     {
-        public override OrbitNodeTwo CreateNode(string id)
+        public OrbitTree(IEnumerable<(string,string)> relations) : base(relations)
         {
-            return new OrbitNodeTwo(id);
+
+        }
+
+        protected override OrbitNode CreateNode(string id)
+        {
+            return new OrbitNode(id);
         }
 
         public int CountAllOrbits()
         {
             int total = 0;
-            foreach(OrbitNodeTwo node in nodes.Values)
+            foreach(OrbitNode node in nodes.Values)
             {
                 total += node.Depth();
             }
@@ -51,10 +48,10 @@ namespace AoC
         public int DistanceBetweenNodes(string nodeA, string nodeB)
         {            
             //Find common parent, or the other node
-            List<OrbitNodeTwo> aAncestors = new List<OrbitNodeTwo> ();
-            List<OrbitNodeTwo> bAncestors = new List<OrbitNodeTwo> ();
-            OrbitNodeTwo currentA = nodes[nodeA];
-            OrbitNodeTwo currentB = nodes[nodeB];
+            List<OrbitNode> aAncestors = new List<OrbitNode> ();
+            List<OrbitNode> bAncestors = new List<OrbitNode> ();
+            OrbitNode currentA = nodes[nodeA];
+            OrbitNode currentB = nodes[nodeB];
             bool unfinished = true;
             while (unfinished)
             {
@@ -75,9 +72,9 @@ namespace AoC
         }
     }
 
-    class OrbitNodeTwo : TreaNode<OrbitNodeTwo>
+    class OrbitNode : TreaNode<OrbitNode>
     {
-        public OrbitNodeTwo(string id) : base(id)
+        public OrbitNode(string id) : base(id)
         {
 
         }
