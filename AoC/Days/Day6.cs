@@ -11,72 +11,74 @@ namespace AoC
         public static int SolvePartOne()
         {
             List<(string, string)> input = InputReader.ReadOrbitRelationsFromTxt("d6input.txt");
-            OrbitTree otree = new OrbitTree(input);
+            OrbitTreeBuilder otb = new OrbitTreeBuilder();
+            OrbitTree otree = otb.MakeTrees(input).First();
             return otree.CountAllOrbits();
         }
 
         public static int SolvePartTwo()
         {
             List<(string, string)> input = InputReader.ReadOrbitRelationsFromTxt("d6input.txt");
-            OrbitTree otree = new OrbitTree(input);
+            OrbitTreeBuilder otb = new OrbitTreeBuilder();
+            OrbitTree otree = otb.MakeTrees(input).First();
             return otree.DistanceBetweenNodes("YOU", "SAN") - 2; 
         }
     }
 
-    class OrbitTree : Treee<OrbitNode>
+    class OrbitTreeBuilder : AbstractTreeBuilder<OrbitTree,TreeNode>
     {
-        public OrbitTree(IEnumerable<(string,string)> relations) : base(relations)
+        protected override TreeNode CreateNode(string name)
         {
-
+            return new TreeNode(name);
         }
 
-        protected override OrbitNode CreateNode(string id)
+        protected override OrbitTree CreateTree(TreeNode root, Dictionary<string,TreeNode> nodes)
         {
-            return new OrbitNode(id);
+            return new OrbitTree(root, nodes);
+        }
+    }
+
+    class OrbitTree : Tree
+    {
+        public OrbitTree(TreeNode root, Dictionary<string,TreeNode> nodes) : base(root, nodes)
+        {
+
         }
 
         public int CountAllOrbits()
         {
             int total = 0;
-            foreach(OrbitNode node in nodes.Values)
+            foreach(TreeNode node in nodes.Values)
             {
-                total += node.Depth();
+                total += node.Depth;
             }
             return total;
         }
 
         public int DistanceBetweenNodes(string nodeA, string nodeB)
         {            
-            //Find common parent, or the other node
-            List<OrbitNode> aAncestors = new List<OrbitNode> ();
-            List<OrbitNode> bAncestors = new List<OrbitNode> ();
-            OrbitNode currentA = nodes[nodeA];
-            OrbitNode currentB = nodes[nodeB];
+            //Find common ancestor, or the other node
+            List<TreeNode> aAncestors = new List<TreeNode> ();
+            List<TreeNode> bAncestors = new List<TreeNode> ();
+            TreeNode currentA = nodes[nodeA];
+            TreeNode currentB = nodes[nodeB];
             bool unfinished = true;
             while (unfinished)
             {
-                if (currentA.Depth() > currentB.Depth())
+                if (currentA.Depth > currentB.Depth)
                 {
-                    currentA = currentA.Parent();
+                    currentA = nodes[currentA.Parent()];
                     aAncestors.Add(currentA);
                 }
                 else
                 {
-                    currentB = currentB.Parent();
+                    currentB = nodes[currentB.Parent()];
                     bAncestors.Add(currentB);
                 }
 
                 unfinished = currentA != currentB;
             }
             return aAncestors.Count + bAncestors.Count;
-        }
-    }
-
-    class OrbitNode : TreaNode<OrbitNode>
-    {
-        public OrbitNode(string id) : base(id)
-        {
-
         }
     }
 }
