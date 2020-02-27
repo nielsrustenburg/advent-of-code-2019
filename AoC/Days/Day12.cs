@@ -36,37 +36,41 @@ namespace AoC
                 new JupiterMoon(-17,1,10)
             };
 
-            BigInteger x = 0;
-            BigInteger y = 0;
-            BigInteger z = 0;
-            BigInteger c = 0;
-            while (x == 0 || y == 0 || z == 0)
+            //Find the cycle for X,Y,Z on velocity+position using the initial state as our start of the cycle
+
+            List<int> initialXpositions = jmoons.Select(j => j.X).ToList();
+            List<int> initialYpositions = jmoons.Select(j => j.Y).ToList();
+            List<int> initialZpositions = jmoons.Select(j => j.Z).ToList();
+            List<int> initialVelocities = new List<int> { 0, 0, 0, 0 }; //Same for each axis
+
+            BigInteger xCycle = 0;
+            BigInteger yCycle = 0;
+            BigInteger zCycle = 0;
+            BigInteger step = 0;
+            while (xCycle == 0 || yCycle == 0 || zCycle == 0)
             {
                 SimulateStep(jmoons);
-                c++;
-                int xVelsum = jmoons.Sum(m => Math.Abs(m.velocity.x));
-                int yVelsum = jmoons.Sum(m => Math.Abs(m.velocity.y));
-                int zVelsum = jmoons.Sum(m => Math.Abs(m.velocity.z));
-                x = CheckAndUpdate(xVelsum, x, c);
-                y = CheckAndUpdate(yVelsum, y, c);
-                z = CheckAndUpdate(zVelsum, z, c);
-            }
-            BigInteger CheckAndUpdate(int sum, BigInteger n, BigInteger count)
-            {
-                if (sum == 0)
+                step++;
+                if(xCycle == 0)
                 {
-                    if (n == 0)
-                    {
-                        return c;
-                    }
-                    else
-                    {
-                        if (c % n != 0) throw new Exception("Assumption is wrong!!!");
-                    }
+                    IEnumerable<int> xVels = jmoons.Select(j => j.velocity.x);
+                    IEnumerable<int> xPos = jmoons.Select(j => j.X);
+                    if (xVels.SequenceEqual(initialVelocities) && xPos.SequenceEqual(initialXpositions)) xCycle = step;
                 }
-                return n;
+                if (yCycle == 0)
+                {
+                    IEnumerable<int> yVels = jmoons.Select(j => j.velocity.y);
+                    IEnumerable<int> yPos = jmoons.Select(j => j.Y);
+                    if (yVels.SequenceEqual(initialVelocities) && yPos.SequenceEqual(initialYpositions)) yCycle = step;
+                }
+                if (zCycle == 0)
+                {
+                    IEnumerable<int> zVels = jmoons.Select(j => j.velocity.z);
+                    IEnumerable<int> zPos = jmoons.Select(j => j.Z);
+                    if (zVels.SequenceEqual(initialVelocities) && zPos.SequenceEqual(initialZpositions)) zCycle = step;
+                }
             }
-            return x * y * z;
+            return MathHelper.LCM(new List<BigInteger> { xCycle, yCycle, zCycle });
         }
 
         public static void SimulateStep(List<JupiterMoon> jmoons)
