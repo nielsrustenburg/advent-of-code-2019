@@ -45,6 +45,21 @@ namespace AoC
             return GCD(smaller, Mod(greater, smaller));
         }
 
+        public static BigInteger LCM(BigInteger a, BigInteger b)
+        {
+            return a * b / GCD(a, b);
+        }
+
+        public static BigInteger LCM(IList<BigInteger> nums)
+        {
+            BigInteger result = nums[0];
+            for(int i = 1; i < nums.Count; i++)
+            {
+                result = LCM(result, nums[i]);
+            }
+            return result;
+        }
+
         public static BigInteger ModInv(BigInteger a, BigInteger b)
         {
             (BigInteger aInv, BigInteger _) = ModInvHelper(a, b, (1, 0), (0, 1));
