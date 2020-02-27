@@ -27,6 +27,8 @@ namespace AoC
 
         public static BigInteger GCD(BigInteger a, BigInteger b)
         {
+            if (a < 0) return GCD(a *-1, b);
+            if (b < 0) return GCD(a, b * -1);
             if (a == 0) return b;
             if (b == 0) return a;
 
