@@ -11,261 +11,129 @@ namespace AoC
         public static int SolvePartOne()
         {
             string[] input = InputReader.StringsFromTxt("d14input.txt");
-
-            Dictionary<string, GraphNode> nodes = CreateNecessities(input);
-
-            List<GraphNode> unfinishedNodes = new List<GraphNode>(nodes.Values);
-            while (unfinishedNodes.Any())
-            {
-                unfinishedNodes.RemoveAll(x => x.Done);
-                foreach(GraphNode n in unfinishedNodes)
-                {
-                    n.TryUpdateChildReqs();
-                }
-            }
-
-            int result = (int) nodes["ORE"].Required;
-            return result;
-        }
-
-        public static Dictionary<string,GraphNode> CreateNecessities(string[] input)
-        {
-            Dictionary<string, TranslationRule> dict = new Dictionary<string, TranslationRule>();
-            Dictionary<string, GraphNode> nodes = new Dictionary<string, GraphNode>();
-            nodes.Add("ORE", new GraphNode("ORE"));
-            foreach (string line in input)
-            {
-                List<(int, string)> ruleLine = new List<(int, string)>();
-                string[] ruleSplit = line.Split("=> ");
-                ruleLine.Add(StringToAmountType(ruleSplit[1]));
-                string[] antecedent = ruleSplit[0].Split(", ");
-                ruleLine.AddRange(antecedent.Select(x => StringToAmountType(x)));
-                TranslationRule tr = new TranslationRule(ruleLine);
-                dict.Add(ruleLine[0].Item2, tr);
-                GraphNode newNode = new GraphNode(ruleLine[0].Item2);
-                nodes.Add(ruleLine[0].Item2, newNode);
-            }
-
-            foreach (var kvp in dict)
-            {
-                var children = kvp.Value.Input.Select(x => nodes[x.type]).ToList();
-                nodes[kvp.Key].AddChildren(children);
-                nodes[kvp.Key].AddRule(kvp.Value);
-                foreach (var child in children)
-                {
-                    child.AddParent(nodes[kvp.Key]);
-                }
-            }
-            return nodes;
+            ChemicalProductionGraph cpgraph = new ChemicalProductionGraph(input);
+            return (int)OreRequiredToProduceFuel(1, cpgraph);
         }
 
         public static int SolvePartTwo()
         {
             string[] input = InputReader.StringsFromTxt("d14input.txt");
-            Dictionary<string, GraphNode> nodes = CreateNecessities(input);
+            ChemicalProductionGraph cpgraph = new ChemicalProductionGraph(input);
 
             BigInteger oreLimit = BigInteger.Parse("1000000000000");
-            BigInteger oreRequired = 483766;
-            BigInteger atLeastFuel = 1;
-            BigInteger prevAtLF = 0;
+            BigInteger minimumAchievableProduction = 1;
+            BigInteger previousProduction = 0;
 
-            while (prevAtLF != atLeastFuel)
+            while (previousProduction != minimumAchievableProduction)
             {
-                prevAtLF = atLeastFuel;
-                atLeastFuel = atLeastFuel * oreLimit / oreRequired;
-                foreach (var node in nodes.Values)
-                {
-                    node.Reset(atLeastFuel);
-                }
-                List<GraphNode> unfinishedNodes = new List<GraphNode>(nodes.Values);
-                while (unfinishedNodes.Any())
-                {
-                    unfinishedNodes.RemoveAll(x => x.Done);
-                    foreach (GraphNode n in unfinishedNodes)
-                    {
-                        n.TryUpdateChildReqs();
-                    }
-                }
-                oreRequired = nodes["ORE"].Required;
+                BigInteger oreRequired = OreRequiredToProduceFuel(minimumAchievableProduction, cpgraph);
+                previousProduction = minimumAchievableProduction;
+                minimumAchievableProduction = minimumAchievableProduction * oreLimit / oreRequired;
             }
 
-            return (int) atLeastFuel;
+            return (int)minimumAchievableProduction;
         }
 
-        public static int SolvePartOneAttemptFail()
+        public static BigInteger OreRequiredToProduceFuel(BigInteger amount, ChemicalProductionGraph graph)
         {
-            string[] input = InputReader.StringsFromTxt("d14input.txt");
-            Dictionary<string, TranslationRule> dict = new Dictionary<string, TranslationRule>();
-            foreach (string line in input)
-            {
-                List<(int, string)> ruleLine = new List<(int, string)>();
-                string[] ruleSplit = line.Split("=> ");
-                ruleLine.Add(StringToAmountType(ruleSplit[1]));
-                string[] antecedent = ruleSplit[0].Split(", ");
-                ruleLine.AddRange(antecedent.Select(x => StringToAmountType(x)));
-                TranslationRule tr = new TranslationRule(ruleLine);
-                dict.Add(ruleLine[0].Item2, tr);
-            }
+            Dictionary<string, BigInteger> amountRequired = graph.Nodes().ToDictionary(x => x, x => x == "FUEL" ? amount : 0);
+            HashSet<string> unfinishedNodes = graph.Nodes().ToHashSet();
 
-            List<(int amount, string type)> requirements = new List<(int amount, string type)> { (1, "FUEL") };
-            Dictionary<string, int> leftovers = new Dictionary<string, int>();
-            bool done = false;
-            int oreNeeded = 0;
-            while (requirements.Count > 0)
+            while (unfinishedNodes.Any())
             {
-                var tr = dict[requirements[0].type];
-                List<(int, string)> newReqs = tr.Produce(requirements[0].amount, leftovers);
-                requirements.RemoveAt(0);
-
-                //Merge new requirements with existing
-                foreach ((int amount, string type) newreq in newReqs)
+                HashSet<string> nextUnfinishedNodes = new HashSet<string>(unfinishedNodes);
+                foreach (string node in unfinishedNodes)
                 {
-                    if (newreq.type != "ORE")
+                    var parents = graph.InNeighbours(node).Select(x => x.nb);
+                    if (!unfinishedNodes.Intersect(parents).Any())
                     {
-                        int match = requirements.FindIndex(x => x.type == newreq.type);
-                        if (match > -1)
+                        var children = graph.OutNeighbours(node);
+                        BigInteger batches = (amountRequired[node] - 1) / graph.BatchSize(node) + 1; //find smallest x s.t. x*batchsize > amountrequired
+                        foreach ((string child, int perbatch) in children)
                         {
-                            requirements[match] = (requirements[match].amount + newreq.amount, requirements[match].type);
+                            amountRequired[child] += perbatch * batches;
                         }
-                        else
-                        {
-                            requirements.Add(newreq);
-                        }
-                    }
-                    else
-                    {
-                        oreNeeded += newreq.amount;
+                        nextUnfinishedNodes.Remove(node);
                     }
                 }
+                unfinishedNodes = nextUnfinishedNodes;
             }
-            return oreNeeded;
+            return amountRequired["ORE"];
         }
 
-        public static (int, string) StringToAmountType(string input)
+    }
+
+    class ChemicalProductionGraph : AdjacencyDiGraph<ChemicalProductionNode>
+    {
+        public ChemicalProductionGraph() : base()
+        {
+
+        }
+
+        public ChemicalProductionGraph(IEnumerable<string> recipes) : this()
+        {
+            List<(List<(string, int)>, string, int)> interpretedRecipes = recipes.Select(x => InterpretRecipe(x)).ToList();
+
+            AddNode("ORE", 1);
+            foreach((List<(string, int)> _,string name, int batchSize) in interpretedRecipes)
+            {
+                AddNode(name, batchSize);
+            }
+
+            foreach ((List<(string, int)> ingredientList, string product, int _) in interpretedRecipes)
+            {
+                foreach((string ingredient, int amount) in ingredientList)
+                {
+                    AddEdge(product, ingredient, amount);
+                }
+            }
+        }
+
+        public void AddNode(string name, int batchsize)
+        {
+            nodes.Add(name, new ChemicalProductionNode(name, batchsize));
+        }
+
+        public void AddEdge(string product, string ingredient, int amount)
+        {
+            nodes[product].AddOutNeighbour(ingredient, amount);
+            nodes[ingredient].AddInNeighbour(product, amount);
+        }
+
+        public int BatchSize(string name)
+        {
+            return nodes[name].BatchSize;
+        }
+
+        public static (List<(string ingredient, int amount)> ingredients, string product, int batchSize) InterpretRecipe(string recipe)
+        {
+            string[] ingrProdSplit = recipe.Split("=> ");
+            (string product, int batchSize) = SplitNameAmount(ingrProdSplit[1]);
+
+            string[] antecedent = ingrProdSplit[0].Split(", ");
+            List<(string,int)> ingredients = antecedent.Select(ing => SplitNameAmount(ing)).ToList();
+
+            return (ingredients, product, batchSize);
+        }
+
+        private static (string, int) SplitNameAmount(string input)
         {
             string[] spl = input.Split(' ');
-            return (int.Parse(spl[0]), spl[1]);
+            return (spl[1], int.Parse(spl[0]));
         }
     }
 
-    class GraphNode
+    class ChemicalProductionNode : AdjacencyDiGraphNode
     {
-        public string Name { get; private set; }
-        public BigInteger Required { get; private set; }
-        public bool Done { get; private set; }
-        List<GraphNode> parents;
-        List<GraphNode> children;
-        TranslationRule rule;
+        public int BatchSize { get; }
 
-        public GraphNode(string name)
-        {
-            this.Name = name;
-            children = new List<GraphNode>();
-            parents = new List<GraphNode>();
-            Reset(1);
-        }
+        protected ChemicalProductionNode(string name) : base(name) { }
 
-        public void AddChildren(IEnumerable<GraphNode> children)
+        public ChemicalProductionNode(string name, int batchSize) : this(name)
         {
-            this.children.AddRange(children);
-        }
-
-        public void AddParent(GraphNode parent)
-        {
-            parents.Add(parent);
-        }
-
-        public void AddRule(TranslationRule tr)
-        {
-            rule = tr;
-        }
-
-        public void IncreaseRequired(BigInteger by)
-        {
-            Required += by;
-        }
-
-        public void Reset(BigInteger fuelReq)
-        {
-            Required = Name == "FUEL" ? fuelReq : 0;
-            Done = false;
-        }
-        
-
-        public bool TryUpdateChildReqs()
-        {
-            if (Done) throw new Exception("Should not call TryUpdateChildReqs on finished node");
-            if (parents.All(x => x.Done))
-            {
-                if (children.Any())
-                {
-                    BigInteger c = Required / rule.Output.amount;
-                    if (Required % rule.Output.amount != 0) c++;
-                    foreach (var child in children)
-                    {
-                        child.IncreaseRequired(rule.Input.Find(x => x.type == child.Name).amount * c);
-                    }
-                }
-                Done = true;
-            }
-            return Done;
+            BatchSize = batchSize;
         }
     }
 
-    class TranslationRule
-    {
-        public List<(int amount, string type)> Input { get; private set; }
-        public (int amount, string type) Output { get; private set; }
-
-        public TranslationRule(List<(int, string)> ruleLine)
-        {
-            Output = ruleLine[0];
-            Input = ruleLine.Skip(1).ToList();
-        }
-
-        internal List<(int, string)> Produce(int amount, Dictionary<string, int> extraReagents)
-        {
-            int c = 1;
-            while (c * Output.amount < amount)
-            {
-                c++;
-            }
-
-            List<(int, string)> newReqs = Input.Select(x => (x.amount * c, x.type)).ToList();
-
-            int lim = newReqs.Count;
-            for (int i = 0; i < lim; i++)
-            {
-                (int amount, string type) req = newReqs[i];
-                extraReagents.TryGetValue(req.type, out int exAmount);
-                if (exAmount > 0)
-                {
-                    if (req.amount > exAmount)
-                    {
-                        req.amount = req.amount - exAmount;
-                        extraReagents[req.type] = 0;
-                    }
-                    else
-                    {
-                        extraReagents[req.type] -= req.amount;
-                        lim--;
-                        newReqs.RemoveAt(i);
-                        i--; // WEEEE WOOO DANGER UGLY CODING ALERT
-                    }
-                }
-            }
-
-            if (c * Output.amount > amount)
-            {
-                if (!extraReagents.TryGetValue(Output.type, out int val))
-                {
-                    extraReagents.Add(Output.type, val);
-                }
-                extraReagents[Output.type] += c * Output.amount - amount;
-            }
-
-            return newReqs;
-        }
-    }
 }
 
