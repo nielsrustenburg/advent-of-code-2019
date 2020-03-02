@@ -10,28 +10,24 @@ namespace AoC
         public static int SolvePartOne()
         {
             Console.Clear();
-            string inputString = "59762770781817719190459920638916297932099919336473880209100837309955133944776196290131062991588533604012789279722697427213158651963842941000227675363260513283349562674004015593737518754413236241876959840076372395821627451178924619604778486903040621916904575053141824939525904676911285446889682089563075562644813747239285344522507666595561570229575009121663303510763018855038153974091471626380638098740818102085542924937522595303462725145620673366476987473519905565346502431123825798174326899538349747404781623195253709212209882530131864820645274994127388201990754296051264021264496618531890752446146462088574426473998601145665542134964041254919435635";
+            string inputString = InputReader.StringFromLine("d16input.txt");
             List<int> input = inputString.Select(x => (int)Char.GetNumericValue(x)).ToList();
             List<int> signal = input;
             List<int> pattern = new List<int>{ 0, 1, 0, -1 };
             for(int i = 0; i < 100; i++)
             {
                 signal = FlawedFrequencyTransmission(signal,pattern);
-                if(i % 10 == 0)
-                {
-                    Console.WriteLine(signal.Aggregate("", (a, b) => a + b.ToString()).Substring(0,20));
-                }
             }
+            //Turn digitsequence into int
             int output = signal.Take(8).Select((x, i) => (int) Math.Pow(10,(7-i)) * x).Aggregate(0, (a, b) => a + b);
             return output;
         }
 
         public static int SolvePartTwo()
         {
-            string inputString = "59762770781817719190459920638916297932099919336473880209100837309955133944776196290131062991588533604012789279722697427213158651963842941000227675363260513283349562674004015593737518754413236241876959840076372395821627451178924619604778486903040621916904575053141824939525904676911285446889682089563075562644813747239285344522507666595561570229575009121663303510763018855038153974091471626380638098740818102085542924937522595303462725145620673366476987473519905565346502431123825798174326899538349747404781623195253709212209882530131864820645274994127388201990754296051264021264496618531890752446146462088574426473998601145665542134964041254919435635";
+            string inputString = InputReader.StringFromLine("d16input.txt");
             List<int> input = inputString.Select(x => (int)Char.GetNumericValue(x)).ToList();
             List<int> signal = input;
-            //List<int> signal = new List<int> { 1, 2, 3, 4};
             int messageOffset = int.Parse(inputString.Substring(0,7));
             signal = CheatMode(signal, 10000, messageOffset);
             int output = signal.Take(8).Select((x, i) => (int)Math.Pow(10, (7 - i)) * x).Aggregate(0, (a, b) => a + b);
@@ -57,9 +53,16 @@ namespace AoC
 
         public static List<int> CheatMode(List<int> ogSig, int reps, int messageOffset)
         {
+            //My solution works under the assumption that our message offset is past the halfway point of the signal digits
+            //This makes our sum easy to compute (everything before becomes 0, everything after becomes 1)
+            //If this was not the case we'd have to deal with the second half of the pattern (0, -1)'s 
+            //Or even with repetitions of the pattern for messageOffsets very early in the signal
+            //Because this last part seems like a hassle, and I assume everyone has a messageOffset past the halfway point 
+            //I will leave my limited solution as is
             if (ogSig.Count * reps > 2 * messageOffset) throw new Exception("cheatmode is not fit for this messageOffset, requires offset to be at least half the inputsize");
             List<int> signal = ogSig.Skip(messageOffset % ogSig.Count).ToList();
             int remainingReps = reps - (messageOffset / ogSig.Count + 1);
+
             for(int i = 0; i < remainingReps; i++)
             {
                 signal.AddRange(ogSig);
@@ -76,10 +79,8 @@ namespace AoC
                 }
                 signal = newSignal;
             }
-            Console.WriteLine();
             return signal;
         }
-
 
         public static int MultiplyByPattern(int num, int j, int i, List<int> pattern)
         {
