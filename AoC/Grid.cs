@@ -5,15 +5,15 @@ using System.Linq;
 
 namespace AoC
 {
-    class Grid<T>
+    public class Grid<T> : IGrid<T>
     {
         public T DefaultTile { get; private set; }
         int xMin, xMax, yMin, yMax;
         HashSet<T> allTileTypes;
         Dictionary<T, int> tileCount;
         Dictionary<int, Dictionary<int, T>> content;
-        public int Width { get { return xMax - xMin + 1; } private set {; } }
-        public int Height { get { return yMax - yMin + 1; } private set {; } }
+        public int Width { get { return xMax - xMin + 1; } }
+        public int Height { get { return yMax - yMin + 1; } }
 
         public Grid(T defaultTile)
         {
@@ -53,7 +53,7 @@ namespace AoC
 
         public void SetTile(int x, int y, T tileType)
         {
-            EnsureBordersInclude(x, y);
+            EnsureBordersContain(x, y);
             bool addingDefault = tileType.Equals(DefaultTile);
 
             if (!addingDefault)
@@ -102,7 +102,7 @@ namespace AoC
             }
         }
 
-        private void EnsureBordersInclude(int x, int y)
+        private void EnsureBordersContain(int x, int y)
         {
             if (x < xMin) xMin = x;
             if (x > xMax) xMax = x;
@@ -110,10 +110,11 @@ namespace AoC
             if (y > yMax) yMax = y;
         }
 
-        public int Count()
+        public int CountNonDefault()
         {
             return tileCount.Values.Sum();
         }
+
         public int Count(T tile)
         {
             return tileCount.ContainsKey(tile) ? tileCount[tile] : 0;

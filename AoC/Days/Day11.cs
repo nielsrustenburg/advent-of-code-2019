@@ -11,37 +11,29 @@ namespace AoC
         public static int SolvePartOne()
         {
             List<BigInteger> program = ReadInput();
-            ColorGrid cgrid = new ColorGrid(".");
+            Grid<char> cgrid = new Grid<char>(' '); //Using different defaultTile so we can count all tiles that have been changed
             EmergencyHullPaintingRobot bot = new EmergencyHullPaintingRobot(program, cgrid);
 
             while (bot.PerformStep())
             {
 
             }
-            List<string> image = cgrid.GetImageStrings(true);
-            foreach (string s in image)
-            {
-                Console.WriteLine(s);
-            }
-            return cgrid.PanelsPainted();
+
+            return cgrid.CountNonDefault();
         }
 
-        public static int SolvePartTwo()
+        public static List<string> SolvePartTwo()
         {
             List<BigInteger> program = ReadInput();
-            ColorGrid cgrid = new ColorGrid(".");
-            cgrid.SetColorAt(0, 0, "#");
+            Grid<char> cgrid = new Grid<char>('.');
+            cgrid.SetTile(0, 0, '#');
             EmergencyHullPaintingRobot bot = new EmergencyHullPaintingRobot(program, cgrid);
             while (bot.PerformStep())
             {
 
             }
-            List<string> image = cgrid.GetImageStrings(true);
-            foreach (string s in image)
-            {
-                Console.WriteLine(s);
-            }
-            return 0;
+            List<string> image = cgrid.RowsAsStrings();
+            return image;
         }
 
         public static List<BigInteger> ReadInput(string fileName = "d11input.txt")
@@ -59,9 +51,9 @@ namespace AoC
         int yPos;
         string direction;
         BigIntCode brain;
-        public ColorGrid ColorGrid { get; private set; }
+        public Grid<char> ColorGrid { get; private set; }
 
-        public EmergencyHullPaintingRobot(List<BigInteger> programming, ColorGrid cgrid, int xPos = 0, int yPos = 0)
+        public EmergencyHullPaintingRobot(List<BigInteger> programming, Grid<char> cgrid, int xPos = 0, int yPos = 0)
         {
             this.xPos = xPos;
             this.yPos = yPos;
@@ -76,7 +68,7 @@ namespace AoC
             List<BigInteger> orders = brain.Run(input);
             if (!brain.Halted)
             {
-                ChangePaint(orders[0] == 1 ? "#" : ".");
+                ChangePaint(orders[0] == 1 ? '#' : '.');
                 TurnAndMove(orders[1] == 1);
                 return true;
             }
@@ -85,12 +77,12 @@ namespace AoC
 
         private int InspectPanel()
         {
-            return ColorGrid.GetColorAt(xPos, yPos) == "#" ? 1 : 0;
+            return ColorGrid.GetTile(xPos, yPos) == '#' ? 1 : 0;
         }
 
-        private void ChangePaint(string color)
+        private void ChangePaint(char color)
         {
-            ColorGrid.SetColorAt(xPos, yPos, color);
+            ColorGrid.SetTile(xPos, yPos, color);
         }
 
         private void TurnAndMove(bool turnRight)
