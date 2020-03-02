@@ -31,20 +31,21 @@ namespace AoC
         {
             string line = InputReader.StringFromLine("d13input.txt");
             List<BigInteger> program = line.Split(',').Select(x => BigInteger.Parse(x)).ToList();
-            program[0] = 2; //Free mode
+            program[0] = 2; //Activate free play mode
             BigIntCode bic = new BigIntCode(program);
             List<string> tiles = new List<string> { " ", "\u2588", "#", "=", "o" };
-            ColorGrid game = new ColorGrid(" ");
+            Grid<string> game = new Grid<string>(" ");
             int score = 0;
             int padx = 0;
             int ballx = 0;
             bool stopNext = false;
             List<BigInteger> output = bic.Run();
+            if (draw) Console.Clear();
             while (!stopNext)
             {
-                Console.SetCursorPosition(0, 0);
+                if(draw) Console.SetCursorPosition(0, 0);
                 stopNext = bic.Halted;
-                //Draw current state
+                //Draw current state to grid
                 for (int i = 0; i < output.Count - 2; i += 3)
                 {
                     int x = (int)output[i];
@@ -52,8 +53,8 @@ namespace AoC
                     if (!(x == -1 && y == 0))
                     {
                         int val = (int)output[i + 2];
-                        game.GetColorAt(x, y);
-                        game.SetColorAt(x, y, tiles[val]);
+                        game.GetTile(x, y);
+                        game.SetTile(x, y, tiles[val]);
                         if(val == 4) ballx = x;
                         if(val == 3) padx = x;
                     }
@@ -64,16 +65,14 @@ namespace AoC
                 }
                 if (draw)
                 {
-                    List<string> gameState = game.GetImageStrings();
+                    IEnumerable<string> gameState = game.RowsAsStrings();
                     Console.WriteLine($"Score: {score}");
-                    foreach (string row in gameState)
+                    foreach (string row in gameState.Reverse())
                     {
                         Console.WriteLine(row);
                     }
                     System.Threading.Thread.Sleep(50);
                 }
-                //string input = Console.ReadLine();
-                //BigInteger command = BigInteger.Parse(input);
                 BigInteger command = 0;
                 if (padx > ballx) command = -1;
                 if (padx < ballx) command = 1;
