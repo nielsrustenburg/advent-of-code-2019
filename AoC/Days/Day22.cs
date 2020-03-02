@@ -8,7 +8,6 @@ namespace AoC
 {
     static class Day22
     {
-
         public static int SolvePartOne()
         {
             string[] input = InputReader.StringsFromTxt("d22input.txt");
@@ -42,43 +41,11 @@ namespace AoC
                     }
                 }
             }
-            //List<int> deck = Enumerable.Range(0, 10).ToList();
-
-            //deck = DealWithIncrement(deck, 7);
-            //deck = DealWithIncrement(deck, 9);
-            //deck = Cut(deck, -2);
             return (int)trackMe;
-        }
-
-
-        public static void PlayGround()
-        {
-            Deck deck1 = new Deck(10);
-            Deck deck2 = new Deck(10);
-            Console.WriteLine("Playtime is over kids");
-        }
-
-
-        public static void TryCombinations()
-        {
-            int deckSize = 10;
-            List<BigInteger> cards1 = Enumerable.Range(0, deckSize).Select(x => (BigInteger)x).ToList();
-            List<BigInteger> cards2 = Enumerable.Range(0, deckSize).Select(x => (BigInteger)x).ToList();
-            cards1 = cards1.Select(x => Card.WithIncrement(x, deckSize, 3)).ToList();
-            cards2 = cards2.Select(x => Card.IntoNewStack(x, deckSize)).ToList();
-            cards1 = cards1.Select(x => Card.IntoNewStack(x, deckSize)).ToList();
-            cards2 = cards2.Select(x => Card.WithIncrement(x, deckSize, 3)).ToList();
-
-            for (int i = 0; i < deckSize; i++)
-            {
-                if (cards1[i] != cards2[i]) throw new Exception("JAMMER DAN");
-            }
         }
 
         public static BigInteger SolvePartTwo()
         {
-            //TRIED 119180975053729 TOO HIGH
-            //      116892700208419 TOO HIGH
             string[] input = InputReader.StringsFromTxt("d22input.txt");
             BigInteger deckSize = BigInteger.Parse("119315717514047");
             BigInteger shuffleNtimes = BigInteger.Parse("101741582076661");
@@ -149,11 +116,6 @@ namespace AoC
 
         public static BigInteger ReverseWithIncrement(BigInteger cardId, BigInteger deckSize, BigInteger increment)
         {
-            //while (MathHelper.Mod(cardId,increment) != 0)
-            //{
-            //    cardId += deckSize;
-            //}
-            //return cardId / increment;
             return MathHelper.Mod(cardId * MathHelper.ModInv(increment, deckSize), deckSize);
         }
     }
@@ -257,11 +219,12 @@ namespace AoC
 
         private void InitializeInstructionCounts()
         {
-            instCounts = new Dictionary<string, int>();
-
-            instCounts.Add("newstack", Instructions.Where(x => x.technique == "newstack").Count());
-            instCounts.Add("increment", Instructions.Where(x => x.technique == "increment").Count());
-            instCounts.Add("cut", Instructions.Where(x => x.technique == "cut").Count());
+            instCounts = new Dictionary<string, int>
+            {
+                { "newstack", Instructions.Where(x => x.technique == "newstack").Count() },
+                { "increment", Instructions.Where(x => x.technique == "increment").Count() },
+                { "cut", Instructions.Where(x => x.technique == "cut").Count() }
+            };
         }
 
         public void AddInstructions(IEnumerable<string> instructions)
@@ -285,17 +248,17 @@ namespace AoC
 
         public BigInteger TrackCard(BigInteger cardId)
         {
-            foreach (var inst in Instructions)
+            foreach (var (technique, by) in Instructions)
             {
-                if (inst.technique == "increment")
+                if (technique == "increment")
                 {
-                    cardId = Card.WithIncrement(cardId, DeckCount, inst.by);
+                    cardId = Card.WithIncrement(cardId, DeckCount, by);
                 }
-                if (inst.technique == "cut")
+                if (technique == "cut")
                 {
-                    cardId = Card.Cut(cardId, DeckCount, inst.by);
+                    cardId = Card.Cut(cardId, DeckCount, by);
                 }
-                if (inst.technique == "newstack")
+                if (technique == "newstack")
                 {
                     cardId = Card.IntoNewStack(cardId, DeckCount);
                 }
@@ -306,17 +269,17 @@ namespace AoC
         public BigInteger TrackCardBackwards(BigInteger cardId)
         {
             var reversed = Instructions.Reverse<(string technique, BigInteger by)>();
-            foreach (var inst in reversed)
+            foreach (var (technique, by) in reversed)
             {
-                if (inst.technique == "increment")
+                if (technique == "increment")
                 {
-                    cardId = Card.ReverseWithIncrement(cardId, DeckCount, inst.by);
+                    cardId = Card.ReverseWithIncrement(cardId, DeckCount, by);
                 }
-                if (inst.technique == "cut")
+                if (technique == "cut")
                 {
-                    cardId = Card.ReverseCut(cardId, DeckCount, inst.by);
+                    cardId = Card.ReverseCut(cardId, DeckCount, by);
                 }
-                if (inst.technique == "newstack")
+                if (technique == "newstack")
                 {
                     cardId = Card.ReverseIntoNewStack(cardId, DeckCount);
                 }
@@ -461,16 +424,16 @@ namespace AoC
 
         private void ReplaceInstruction(int index, (string technique, BigInteger by) newInstruction)
         {
-            var removedInst = Instructions[index];
-            instCounts[removedInst.technique]--;
+            var (technique, _) = Instructions[index];
+            instCounts[technique]--;
             Instructions[index] = newInstruction;
             instCounts[newInstruction.technique]++;
         }
 
         private void RemoveInstruction(int index)
         {
-            var removedInst = Instructions[index];
-            instCounts[removedInst.technique]--;
+            var (technique, _) = Instructions[index];
+            instCounts[technique]--;
             Instructions.RemoveAt(index);
         }
 
