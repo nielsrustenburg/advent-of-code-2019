@@ -46,39 +46,20 @@ namespace AoC
         {
             string strInput = InputReader.StringFromLine("d19input.txt");
             List<BigInteger> program = strInput.Split(',').Select(a => BigInteger.Parse(a)).ToList();
-            int xAns = 0, yAns = 0;
             int targetWidth = 100;
 
-            int[] lefts = new int[100], rights = new int[100];
+            int[] lefts = new int[targetWidth], rights = new int[targetWidth];
             int pointer = 0;
-
-            int c = 0;
 
             int xLeft = 0, xRight = 0, y = 50;
             while (true)
             {
-                BigIntCode leftBot = new BigIntCode(program);
-                BigInteger leftSide = leftBot.Run(new List<BigInteger> { xLeft, y }).First();
-                while (leftSide == 0)
-                {
-                    xLeft++;
-                    leftBot = new BigIntCode(program);
-                    leftSide = leftBot.Run(new List<BigInteger> { xLeft, y }).First();
-                }
+                xLeft = FindTractorBeamEdge(program, xLeft, y, 0); 
 
-                if (xRight < xLeft) xRight = xLeft;
-                BigIntCode rightBot = new BigIntCode(program);
-                BigInteger rightSide = rightBot.Run(new List<BigInteger> { xRight, y }).First();
-                while (rightSide == 1)
-                {
-                    xRight++;
-                    rightBot = new BigIntCode(program);
-                    rightSide = rightBot.Run(new List<BigInteger> { xRight, y }).First();
-                }
-                xRight--;
+                if (xRight < xLeft) xRight = xLeft; //make sure we start inside the tractorbeam (should only be necessary for first iteration)
+                xRight = FindTractorBeamEdge(program, xRight, y, 1) - 1; //-1 because we want the last x where the tractor was turned on
 
-                if (y == 1087) System.Diagnostics.Debugger.Break();
-                int topPointer = (pointer + 1) % 100;
+                int topPointer = (pointer + 1) % targetWidth;
                 if (xLeft + targetWidth - 1 <= rights[topPointer])
                 {
                     return 10000 * xLeft + (y-targetWidth + 1);
@@ -86,11 +67,23 @@ namespace AoC
 
                 lefts[pointer] = xLeft;
                 rights[pointer] = xRight;
-                //Console.WriteLine($"{c}: Left:{xLeft} Right:{xRight}");
                 pointer = (pointer + 1) % targetWidth;
                 y++;
-                c = (c + 1) % 100;
             }
+        }
+
+        public static int FindTractorBeamEdge(IEnumerable<BigInteger> program, int initialXval, int y, BigInteger whileStatus)
+        {
+            //Finds the x at which the tractorstatus does not match whileStatus
+            int x = initialXval;
+            BigInteger tractorStatus;
+            do
+            {
+                BigIntCode EdgeFinder = new BigIntCode(program);
+                tractorStatus = EdgeFinder.Run(new List<BigInteger> { x, y }).First();
+                x++;
+            } while (tractorStatus == whileStatus);
+            return x-1;
         }
     }
 }
