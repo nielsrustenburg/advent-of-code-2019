@@ -24,7 +24,7 @@ namespace AoC.Tests
             Day12Tests.RunAll();
             Day13Tests.RunAll();
             Day14Tests.RunAll();
-            //Day15Tests.RunAll();
+            Day15Tests.RunAll();
             Day16Tests.RunAll();
             Day17Tests.RunAll();
             //Day18Tests.RunAll();
