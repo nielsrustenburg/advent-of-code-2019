@@ -30,7 +30,7 @@ namespace AoC.Tests
                 if (representation[i] != example[i]) throw new Exception($"Unmatching grid representation: line{i} \n expected: \n line{example[i]} \n got \n {representation[i]}");
             }
 
-            var hashtag = charGrid.FindLocationOf('#');
+            var hashtag = charGrid.FindFirstMatchingTile('#');
             if (hashtag.x != 1 || hashtag.y != -3) throw new Exception($"Hashtag not in expected location");
         }
     }

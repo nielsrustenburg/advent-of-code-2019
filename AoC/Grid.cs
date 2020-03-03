@@ -39,6 +39,17 @@ namespace AoC
             }
         }
 
+        public Grid(Grid<T> copyMe) : this(copyMe.DefaultTile)
+        {
+            foreach (var kvp in copyMe.content)
+            {
+                foreach (var kvp2 in kvp.Value)
+                {
+                    SetTile(kvp.Key, kvp2.Key, kvp2.Value);
+                }
+            }
+        }
+
         public T GetTile(int x, int y)
         {
             if (content.ContainsKey(y))
@@ -139,7 +150,7 @@ namespace AoC
             return nb;
         }
 
-        public (bool found, int x, int y) FindLocationOf(T findMe)
+        public (bool found, int x, int y) FindFirstMatchingTile(T findMe)
         {
             if (findMe.Equals(DefaultTile)) throw new ArgumentException("Trying to find the DefaultTile, which is every unfilled Tile");
             foreach (var row in content)
@@ -155,9 +166,14 @@ namespace AoC
             return (false, 0, 0);
         }
 
-        public List<(int x, int y)> FindAllLocationsOff(List<T> findUs)
+        public List<(int x, int y)> FindAllMatchingTiles(T tile)
         {
-            if (findUs.Contains(DefaultTile)) throw new ArgumentException("Trying to find the DefaultTile, which is every unfilled Tile");
+            return FindAllMatchingTiles(new List<T> { tile });
+        }
+
+        public List<(int x, int y)> FindAllMatchingTiles(List<T> findUs)
+        {
+            if (findUs.Contains(DefaultTile)) throw new ArgumentException("Trying to find the DefaultTile, which is every unfilled Tile not this methods intended purpose");
             List<(int, int)> results = new List<(int, int)>();
             foreach (var row in content)
             {
@@ -172,7 +188,7 @@ namespace AoC
             return results;
         }
 
-        public List<string> RowsAsStrings()
+        public List<string> RowsAsStrings(bool invert = false)
         {
             List<string> rows = new List<string>();
             List<int> xCoords = Enumerable.Range(xMin, Width).ToList();
@@ -180,6 +196,10 @@ namespace AoC
             {
                 string row = string.Concat(xCoords.Select(x => GetTile(x, y).ToString()));
                 rows.Add(row);
+            }
+            if (invert)
+            {
+                rows.Reverse();
             }
             return rows;
         }

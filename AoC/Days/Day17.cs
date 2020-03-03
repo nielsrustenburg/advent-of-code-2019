@@ -13,21 +13,21 @@ namespace AoC
             string input = InputReader.StringFromLine("d17input.txt");
             List<BigInteger> program = input.Split(',').Select(a => BigInteger.Parse(a)).ToList();
             BigIntCode bic = new BigIntCode(program);
-            ColorGrid map = new ColorGrid(" ");
+            Grid<string> map = new Grid<string>(" ");
             List<BigInteger> output = bic.Run();
             DrawMap(output, map);
 
-            List<(int x, int y)> scaffolds = map.FindAll("#");
-            List<(int x, int y)> insect = new List<(int x, int y)>();
+            List<(int x, int y)> scaffolds = map.FindAllMatchingTiles("#");
+            List<(int x, int y)> intersections = new List<(int x, int y)>();
             foreach (var scaf in scaffolds)
             {
-                if (map.HasNeighbour4(scaf.x, scaf.y, "#", 4)) insect.Add(scaf);
+                if (map.GetNeighbours(scaf.x, scaf.y).Values.Count(s => s == "#") == 4) intersections.Add(scaf);
             }
 
-            return insect.Sum(inx => inx.x * inx.y);
+            return intersections.Sum(inx => inx.x * inx.y);
         }
 
-        public static void DrawMap(List<BigInteger> output, ColorGrid map)
+        public static void DrawMap(List<BigInteger> output, Grid<string> map)
         {
             int x = 0;
             int y = 0;
@@ -36,7 +36,7 @@ namespace AoC
             {
                 if (output[id] != 10)
                 {
-                    map.GetColorAt(x, y);
+                    map.GetTile(x, y);
                     string icon;
                     if (output[id] > 300)
                     {
@@ -45,7 +45,7 @@ namespace AoC
                     {
                         icon = ((char)output[id]).ToString();
                     }
-                    map.SetColorAt(x,y,icon);
+                    map.SetTile(x,y,icon);
                     x++;
                 }
                 else
@@ -53,12 +53,12 @@ namespace AoC
                     x = 0;
                     y++;
                     if (x == -1 || y == -1) System.Diagnostics.Debugger.Break();
-                    map.GetColorAt(x, y);
+                    map.GetTile(x, y);
                 }
                 id++;
             }
             Console.SetCursorPosition(0, 0);
-            var lines = map.GetImageStrings();
+            var lines = map.RowsAsStrings();
             foreach (string line in lines)
             {
                 Console.WriteLine(line);
@@ -80,12 +80,12 @@ namespace AoC
             if (program[0] != 1) throw new Exception();
             program[0] = 2;
             BigIntCode bic = new BigIntCode(program);
-            ColorGrid map = new ColorGrid(" ");
+            Grid<string> map = new Grid<string>(" ");
             List<BigInteger> output = bic.Run();
 
             DrawMap(output, map);
 
-            var botspot = map.Find("^");
+            var botspot = map.FindFirstMatchingTile("^");
             DirectionRobot dbot = new DirectionRobot(x:botspot.x, y:botspot.y, map: map, yflip: true);
             dbot.AddWalkableTiles(new List<string> { "#" });
             List<string> botPath = new List<string>();
@@ -141,7 +141,7 @@ namespace AoC
             output = bic.Run(instructions);
             DrawMap(output, map);
 
-            return 0;
+            return (int) output.Last();
         }
     }
 
@@ -150,11 +150,11 @@ namespace AoC
         public int X { get; private set; }
         public int Y { get; private set; }
         public (bool onX, bool posi) Facing { get; private set; }
-        public ColorGrid Map { get; private set; }
+        public Grid<string> Map { get; private set; }
         public bool FlippedYAxis { get; private set; }
         public List<string> WalkableTiles { get; private set; }
 
-        public DirectionRobot(int x = 0, int y = 0, string facing = "north", ColorGrid map = null, bool yflip = false)
+        public DirectionRobot(int x = 0, int y = 0, string facing = "north", Grid<string> map = null, bool yflip = false)
         {
             X = x;
             Y = y;
@@ -199,7 +199,7 @@ namespace AoC
                 toY = (Facing.posi && !FlippedYAxis) || (!Facing.posi && FlippedYAxis)  ? Y + 1 : Y - 1;
             }
             //If legal move
-            if (WalkableTiles.Contains(Map.GetColorAt(toX, toY)))
+            if (WalkableTiles.Contains(Map.GetTile(toX, toY)))
             {
                 X = toX;
                 Y = toY;

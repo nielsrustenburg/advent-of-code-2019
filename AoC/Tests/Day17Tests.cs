@@ -14,26 +14,6 @@ namespace AoC.Tests
             Console.WriteLine("Day17Tests Completed!");
         }
 
-        //public static void TestSolvePartOne()
-        //{
-        //    void Test(int expectedOutput)
-        //    {
-        //        int output = Day17.SolvePartOne();
-        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-        //    }
-        //    Test(13580);
-        //}
-
-        //public static void TestSolvePartTwo()
-        //{
-        //    void Test(int expectedOutput)
-        //    {
-        //        int output = Day17.SolvePartTwo();
-        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-        //    }
-        //    Test(0);
-        //}
-
         static void TestSolvePartOne()
         {
             TestSuite.Test(13580, Day17.SolvePartOne);
@@ -41,7 +21,7 @@ namespace AoC.Tests
 
         static void TestSolvePartTwo()
         {
-            TestSuite.Test(0, Day17.SolvePartTwo);
+            TestSuite.Test(1063081, Day17.SolvePartTwo);
         }
     }
 }

@@ -24,7 +24,7 @@ namespace AoC
                 if (dirkey == 'd') rb.Move("east");
 
                 Console.SetCursorPosition(0, 0);
-                var lines = rb.mentalMap.GetImageStrings(true);
+                var lines = rb.mentalMap.RowsAsStrings(true);
                 foreach (string line in lines)
                 {
                     Console.WriteLine(line);
@@ -76,7 +76,7 @@ namespace AoC
                     oxyY = rb.Y;
                 }
                 Console.SetCursorPosition(0, 0);
-                var lines = rb.mentalMap.GetImageStrings(true);
+                var lines = rb.mentalMap.RowsAsStrings(true);
                 foreach (string line in lines)
                 {
                     Console.WriteLine(line);
@@ -84,19 +84,19 @@ namespace AoC
             } while (path.Any());
 
             //Gas the grid!
-            ColorGrid maze = rb.mentalMap;
+            Grid<string> maze = rb.mentalMap;
 
-            maze.SetColorAt(oxyX, oxyY, "O");
-            maze.SetColorAt(rb.X, rb.Y, "#");
+            maze.SetTile(oxyX, oxyY, "O");
+            maze.SetTile(rb.X, rb.Y, "#");
             //Find all unoxygen'd tiles
-            List<(int x,int y)> vacuum = maze.FindAll("#");
+            List<(int x,int y)> vacuum = maze.FindAllMatchingTiles("#");
             int minutes = 0;
             while (vacuum.Any())
             {
                 List<(int x, int y)> oxygenize = new List<(int x, int y)>();
                 foreach(var point in vacuum)
                 {
-                    if (maze.HasNeighbour4(point.x, point.y, "O"))
+                    if (maze.GetNeighbours(point.x, point.y).Values.Contains("O"))
                     {
                         oxygenize.Add(point);
                     }
@@ -104,12 +104,12 @@ namespace AoC
 
                 foreach(var point in oxygenize)
                 {
-                    maze.SetColorAt(point.x, point.y, "O");
+                    maze.SetTile(point.x, point.y, "O");
                     vacuum.RemoveAt(vacuum.FindIndex(p => p.x == point.x && p.y == point.y));
                 }
                 minutes++;
                 Console.SetCursorPosition(0, 0);
-                var lines = maze.GetImageStrings(true);
+                var lines = maze.RowsAsStrings(true);
                 foreach (string line in lines)
                 {
                     Console.WriteLine(line);
@@ -139,14 +139,14 @@ namespace AoC
         public int X { get; private set; }
         public int Y { get; private set; }
         public bool Finished { get; private set; }
-        public ColorGrid mentalMap;
+        public Grid<string> mentalMap;
 
         public RepairBot(List<BigInteger> programming)
         {
             brain = new BigIntCode(programming);
             X = 0;
             Y = 0;
-            mentalMap = new ColorGrid(" ");
+            mentalMap = new Grid<string>(" ");
             Finished = false;
         }
 
@@ -160,16 +160,16 @@ namespace AoC
             int response = (int)brain.Run(new List<BigInteger> { dircode })[0];
             if (response > 0)
             {
-                mentalMap.GetColorAt(X, Y);
-                mentalMap.SetColorAt(X, Y, closePrev ? "#" : " ");
+                mentalMap.GetTile(X, Y);
+                mentalMap.SetTile(X, Y, closePrev ? "#" : " ");
                 if (direction == "north") Y++;
                 if (direction == "south") Y--;
                 if (direction == "west") X--;
                 if (direction == "east") X++;
 
                 Finished = response == 2;
-                mentalMap.GetColorAt(X, Y);
-                mentalMap.SetColorAt(X, Y, Finished ? "X" : "D");
+                mentalMap.GetTile(X, Y);
+                mentalMap.SetTile(X, Y, Finished ? "X" : "D");
                 return true;
             }
             else
@@ -180,8 +180,8 @@ namespace AoC
                 if (direction == "south") mentaly--;
                 if (direction == "west") mentalx--;
                 if (direction == "east") mentalx++;
-                mentalMap.GetColorAt(mentalx, mentaly);
-                mentalMap.SetColorAt(mentalx, mentaly, "\u2588");
+                mentalMap.GetTile(mentalx, mentaly);
+                mentalMap.SetTile(mentalx, mentaly, "\u2588");
                 return false;
             }
         }
@@ -208,10 +208,10 @@ namespace AoC
 
         public List<bool> LookAround()
         {
-            string north = mentalMap.GetColorAt(X, Y + 1);
-            string south = mentalMap.GetColorAt(X, Y - 1);
-            string west = mentalMap.GetColorAt(X - 1, Y);
-            string east = mentalMap.GetColorAt(X + 1, Y);
+            string north = mentalMap.GetTile(X, Y + 1);
+            string south = mentalMap.GetTile(X, Y - 1);
+            string west = mentalMap.GetTile(X - 1, Y);
+            string east = mentalMap.GetTile(X + 1, Y);
             List<string> walls = new List<string> { "\u2588", "#"};
             return new List<bool> { walls.Contains(north),
                                     walls.Contains(south),
