@@ -34,7 +34,7 @@ namespace AoC.Tests
             Day22Tests.RunAll();
             Day23Tests.RunAll();
             Day24Tests.RunAll();
-            //Day25Tests.RunAll();
+            Day25Tests.RunAll();
 
             GridTests.TestGrid();
         }
