@@ -52,19 +52,19 @@ namespace AoC
         {
             outputToConsole = toConsole;
             brain = new ASCIIComputer(programming);
-            string prompt = brain.Run();
+            string prompt = brain.RunString();
             if (outputToConsole) Console.Write(prompt);
         }
 
         public void AddInstruction(string instruction)
         {
-            string output = brain.Run(instruction);
+            string output = brain.RunString(instruction);
             if (outputToConsole) Console.Write(output);
         }
 
         public BigInteger Walk()
         {
-            List<BigInteger> output = brain.RunNumeric("WALK");
+            List<BigInteger> output = brain.Run("WALK");
             int takeN = output.Count;
             if (output.Last() > 255)
             {
@@ -76,7 +76,7 @@ namespace AoC
 
         public BigInteger Run()
         {
-            List<BigInteger> output = brain.RunNumeric("RUN");
+            List<BigInteger> output = brain.Run("RUN");
             int takeN = output.Count;
             if (output.Last() > 255)
             {

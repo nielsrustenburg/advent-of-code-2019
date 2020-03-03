@@ -21,9 +21,9 @@ namespace AoC
             //Remaining items are the items which are not essential & not useless, try combinations of these
             //If your search-space is still quite big I recommend some A-Priori-like algorithm to eliminate combinations of items
             return 34095120;
-            Console.Clear();
-            ManualASCIIComputer rd22 = new ManualASCIIComputer(program);
-            rd22.RunManual();
+            //Console.Clear();
+            //ManualASCIIComputer rd22 = new ManualASCIIComputer(program);
+            //rd22.RunManual();
         }
 
         public static void SolvePartTwo()
@@ -32,50 +32,25 @@ namespace AoC
         }
     }
 
-    class ASCIIComputer
+    class ASCIIComputer : BigIntCode
     {
-        BigIntCode bic;
-
-        public ASCIIComputer(IEnumerable<BigInteger> input)
+        public ASCIIComputer(IEnumerable<BigInteger> vals) : base(vals)
         {
-            List<BigInteger> program = new List<BigInteger>(input);
-            bic = new BigIntCode(program);
         }
 
-        public string Run()
+        public List<BigInteger> Run(string input, bool newLineAtEnd = true)
         {
-            return Run(new List<BigInteger>());
+            return Run(ASCIIHelper.StringToASCIIBI(input, newLineAtEnd));
         }
 
-        public List<BigInteger> RunNumeric()
+        public string RunString()
         {
-            return RunNumeric(new List<BigInteger>());
+            return ASCIIHelper.ASCIIToString(Run());
         }
 
-        public string Run(string command)
+        public string RunString(string input)
         {
-            return Run(ASCIIHelper.StringToASCIIBI(command, true));
-        }
-
-        public List<BigInteger> RunNumeric(string command)
-        {
-            return RunNumeric(ASCIIHelper.StringToASCIIBI(command, true));
-        }
-
-        protected string Run(IEnumerable<BigInteger> input)
-        {
-            return Run(new List<BigInteger>(input));
-        }
-
-        protected string Run(List<BigInteger> input)
-        {
-            List<BigInteger> output = bic.Run(input);
-            return string.Concat(output.Select(x => (char)x));
-        }
-
-        protected List<BigInteger> RunNumeric(List<BigInteger> input)
-        {
-            return bic.Run(input);
+            return ASCIIHelper.ASCIIToString(Run(input));
         }
     }
 
@@ -85,11 +60,11 @@ namespace AoC
 
         public void RunManual()
         {
-            Console.WriteLine(Run());
+            Console.WriteLine(RunString());
             while (true)
             {
                 string nextCommand = Console.ReadLine();
-                Console.WriteLine(Run(nextCommand));
+                Console.WriteLine(RunString(nextCommand));
             }
         }
     }
@@ -111,7 +86,7 @@ namespace AoC
         public ScoutDroid(IEnumerable<BigInteger> programming) : base(programming)
         {
             knownRooms = new FloorPlan();
-            string output = Run();
+            string output = RunString();
             knownRooms.Update(AnalyzeSurroundings(output));
         }
 
