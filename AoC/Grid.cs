@@ -150,6 +150,19 @@ namespace AoC
             return nb;
         }
 
+        protected (int x, int y) ModifyCoordinates(int x, int y, string direction)
+        {
+            if (direction == "N") return (x, y + 1);
+            if (direction == "NE") return (x + 1, y + 1);
+            if (direction == "E") return (x + 1, y);
+            if (direction == "SE") return (x + 1, y - 1);
+            if (direction == "S") return (x, y - 1);
+            if (direction == "SW") return (x - 1, y - 1);
+            if (direction == "W") return (x - 1, y);
+            if (direction == "NW") return (x - 1, y + 1);
+            throw new Exception("direction not recognized, use N,E,S,W,NE,NW,SE,SW");
+        }
+
         public (bool found, int x, int y) FindFirstMatchingTile(T findMe)
         {
             if (findMe.Equals(DefaultTile)) throw new ArgumentException("Trying to find the DefaultTile, which is every unfilled Tile");
