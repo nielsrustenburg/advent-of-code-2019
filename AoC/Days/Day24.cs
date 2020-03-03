@@ -41,12 +41,6 @@ namespace AoC
         {
             while (true)
             {
-                Console.SetCursorPosition(0, 0);
-                List<string> bob = grid.RowsAsStrings();
-                foreach (var b in bob)
-                {
-                    Console.WriteLine(b);
-                }
                 bool done = UpdatePrevStates();
                 if (done)
                 {
@@ -74,19 +68,10 @@ namespace AoC
 
         private void UpdateTile(int x, int y, ErisGrid newGrid)
         {
-            newGrid.GetTile(x, y); //might be unnecessary but recall my Grid implementation being sucky and needing this
             bool bug = grid.GetTile(x, y) == "#";
-            List<string> nb = grid.Neighbours(x, y);
-            int neighbouringBugs = nb.Where(t => t == "#").Count();
-            string tile;
-            if (bug)
-            {
-                tile = neighbouringBugs == 1 ? "#" : ".";
-            }
-            else
-            {
-                tile = neighbouringBugs == 1 || neighbouringBugs == 2 ? "#" : ".";
-            }
+            int amountOfNeighbourBugs = grid.GetNeighbours(x,y).Values.Count(t => t == "#");
+            string tile = amountOfNeighbourBugs == 1 ||
+                          (amountOfNeighbourBugs == 2 && !bug) ? "#" : ".";
             newGrid.SetTile(x, y, tile);
         }
 
@@ -111,7 +96,6 @@ namespace AoC
 
     class RecursiveGameOfEris
     {
-        //DONT FORGET TO MAKE THE CENTER A ?????
         List<ErisGrid> grids;
         public int Width { get; private set; }
         public int Height { get; private set; }
@@ -145,7 +129,7 @@ namespace AoC
 
         public void GoNextState()
         {
-            //Larger first, smaller last
+            //Add the outer layer first, inner layer last (d == -1 / d == grids.Count)
             List<ErisGrid> newGrids = new List<ErisGrid>();
             for (int d = -1; d <= grids.Count; d++)
             {
@@ -154,7 +138,7 @@ namespace AoC
                 {
                     for (int y = 0; y < Height; y++)
                     {
-                        if (x != 2 || y != 2)//Never change the center
+                        if (x != 2 || y != 2)//Never change the center tile
                         {
                             ng.GetTile(x, y);
                             ng.SetTile(x, y, GetUpdatedTileStatus(x, y, d));
@@ -168,17 +152,16 @@ namespace AoC
 
         private string GetUpdatedTileStatus(int x, int y, int depth)
         {
-            bool prevBug = depth != -1 && depth != grids.Count && grids[depth].GetTile(x, y) == "#";
-            List<string> nbours = GetNeighbours(x, y, depth);
-            int neighbugs = nbours.Where(nb => nb == "#").Count();
             //If in a new grid OR previously not a bug: 1-2 neighbours --> bug
+            bool prevBug = depth != -1 && depth != grids.Count && grids[depth].GetTile(x, y) == "#";
+            int amountOfNeighbourBugs = GetNeighbours(x, y, depth).Count(nb => nb == "#");
             if (prevBug)
             {
-                return neighbugs == 1 ? "#" : ".";
+                return amountOfNeighbourBugs == 1 ? "#" : ".";
             }
             else
             {
-                return neighbugs == 1 || neighbugs == 2 ? "#" : ".";
+                return amountOfNeighbourBugs == 1 || amountOfNeighbourBugs == 2 ? "#" : ".";
             }
         }
 
