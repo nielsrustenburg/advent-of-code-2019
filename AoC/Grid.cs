@@ -187,10 +187,10 @@ namespace AoC
 
         public List<(int x, int y)> FindAllMatchingTiles(T tile)
         {
-            return FindAllMatchingTiles(new List<T> { tile });
+            return FindAllMatchingTiles(new HashSet<T> { tile });
         }
 
-        public List<(int x, int y)> FindAllMatchingTiles(List<T> findUs)
+        public List<(int x, int y)> FindAllMatchingTiles(HashSet<T> findUs)
         {
             if (findUs.Contains(DefaultTile)) throw new ArgumentException("Trying to find the DefaultTile, which is every unfilled Tile not this methods intended purpose");
             List<(int, int)> results = new List<(int, int)>();
