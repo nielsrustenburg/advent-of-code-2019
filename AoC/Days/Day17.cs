@@ -12,19 +12,16 @@ namespace AoC
         {
             string input = InputReader.StringFromLine("d17input.txt");
             List<BigInteger> program = input.Split(',').Select(a => BigInteger.Parse(a)).ToList();
-            BigIntCode bic = new BigIntCode(program);
-            Grid<string> map = new Grid<string>(" ");
-            List<BigInteger> output = bic.Run();
-            DrawMap(output, map);
+            ASCIIComputer cameras = new ASCIIComputer(program);
+            string imageString = cameras.RunString();
+            List<string> image = imageString.Split("\n").ToList();
+            Grid<char> map = new Grid<char>(image, '.', false);
 
-            List<(int x, int y)> scaffolds = map.FindAllMatchingTiles("#");
-            List<(int x, int y)> intersections = new List<(int x, int y)>();
-            foreach (var scaf in scaffolds)
-            {
-                if (map.GetNeighbours(scaf.x, scaf.y).Values.Count(s => s == "#") == 4) intersections.Add(scaf);
-            }
+            List<(int x, int y)> scaffolds = map.FindAllMatchingTiles('#');
+            List<(int x, int y)> intersections = scaffolds.Where(s => map.GetNeighbours(s.x, s.y).Values.Count(n => n == '#') == 4).ToList();
+            List<int> alignmentParameters = intersections.Select(i => i.x * i.y).ToList(); 
 
-            return intersections.Sum(inx => inx.x * inx.y);
+            return alignmentParameters.Sum();
         }
 
         public static void DrawMap(List<BigInteger> output, Grid<string> map)
@@ -149,7 +146,7 @@ namespace AoC
     {
         public int X { get; private set; }
         public int Y { get; private set; }
-        public (bool onX, bool posi) Facing { get; private set; }
+        public (bool onXaxis, bool increasing) Facing { get; private set; }
         public Grid<string> Map { get; private set; }
         public bool FlippedYAxis { get; private set; }
         public List<string> WalkableTiles { get; private set; }
@@ -170,7 +167,7 @@ namespace AoC
             //South = False False   --> True False      West
             //West =  True False    --> False True      North
             //East =  True True     --> False False     South
-            Facing = (!Facing.onX, (!Facing.onX && Facing.posi || Facing.onX && !Facing.posi));  
+            Facing = (!Facing.onXaxis, (!Facing.onXaxis && Facing.increasing || Facing.onXaxis && !Facing.increasing));  
         }
 
         public void TurnLeft()
@@ -179,7 +176,7 @@ namespace AoC
             //South = False False   --> True True       East
             //West =  True False    --> False False     South
             //East =  True True     --> False True      North
-            Facing = (!Facing.onX, (Facing.onX && Facing.posi || !Facing.onX && !Facing.posi));
+            Facing = (!Facing.onXaxis, (Facing.onXaxis && Facing.increasing || !Facing.onXaxis && !Facing.increasing));
         }
 
         public void AddWalkableTiles(IEnumerable<string> tiles)
@@ -191,12 +188,12 @@ namespace AoC
         {
             int toX = X;
             int toY = Y;
-            if (Facing.onX)
+            if (Facing.onXaxis)
             {
-                toX = Facing.posi ? X + 1 : X - 1;
+                toX = Facing.increasing ? X + 1 : X - 1;
             } else
             {
-                toY = (Facing.posi && !FlippedYAxis) || (!Facing.posi && FlippedYAxis)  ? Y + 1 : Y - 1;
+                toY = (Facing.increasing && !FlippedYAxis) || (!Facing.increasing && FlippedYAxis)  ? Y + 1 : Y - 1;
             }
             //If legal move
             if (WalkableTiles.Contains(Map.GetTile(toX, toY)))

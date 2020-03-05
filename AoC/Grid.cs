@@ -24,7 +24,7 @@ namespace AoC
             tileCount = new Dictionary<T, int>();
         }
 
-        public Grid(IEnumerable<IEnumerable<T>> filledGrid, T defaultTile) : this(defaultTile)
+        public Grid(IEnumerable<IEnumerable<T>> filledGrid, T defaultTile, bool yDecreasing = true) : this(defaultTile)
         {
             int y = 0;
             foreach (IEnumerable<T> row in filledGrid)
@@ -35,7 +35,13 @@ namespace AoC
                     SetTile(x, y, tile);
                     x++;
                 }
-                y--;
+                if (yDecreasing)
+                {
+                    y--;
+                } else
+                {
+                    y++;
+                } 
             }
         }
 
