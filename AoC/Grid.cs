@@ -96,6 +96,11 @@ namespace AoC
             content[y][x] = tileType;
         }
 
+        public HashSet<T> GetAllTileTypes()
+        {
+            return new HashSet<T>(allTileTypes);
+        }
+
         private void UpdateTileCount(T tileType, int incBy)
         {
             if (!tileType.Equals(DefaultTile))
@@ -156,7 +161,7 @@ namespace AoC
             return nb;
         }
 
-        protected (int x, int y) ModifyCoordinates(int x, int y, string direction)
+        public (int x, int y) ModifyCoordinates(int x, int y, string direction)
         {
             if (direction == "N") return (x, y + 1);
             if (direction == "NE") return (x + 1, y + 1);
