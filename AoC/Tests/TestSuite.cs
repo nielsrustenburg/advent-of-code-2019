@@ -24,17 +24,17 @@ namespace AoC.Tests
             Day12Tests.RunAll();
             Day13Tests.RunAll();
             Day14Tests.RunAll();
-            //Day15Tests.RunAll();
+            Day15Tests.RunAll();
             Day16Tests.RunAll();
-            //Day17Tests.RunAll();
-            //Day18Tests.RunAll();
+            Day17Tests.RunAll();
+            Day18Tests.RunAll();
             Day19Tests.RunAll();
             Day20Tests.RunAll();
             Day21Tests.RunAll();
             Day22Tests.RunAll();
             Day23Tests.RunAll();
             Day24Tests.RunAll();
-            //Day25Tests.RunAll();
+            Day25Tests.RunAll();
 
             GridTests.TestGrid();
         }

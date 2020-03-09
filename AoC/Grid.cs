@@ -5,15 +5,15 @@ using System.Linq;
 
 namespace AoC
 {
-    class Grid<T>
+    public class Grid<T> : IGrid<T>
     {
         public T DefaultTile { get; private set; }
         int xMin, xMax, yMin, yMax;
         HashSet<T> allTileTypes;
         Dictionary<T, int> tileCount;
         Dictionary<int, Dictionary<int, T>> content;
-        public int Width { get { return xMax - xMin + 1; } private set {; } }
-        public int Height { get { return yMax - yMin + 1; } private set {; } }
+        public int Width { get { return xMax - xMin + 1; } }
+        public int Height { get { return yMax - yMin + 1; } }
 
         public Grid(T defaultTile)
         {
@@ -24,7 +24,7 @@ namespace AoC
             tileCount = new Dictionary<T, int>();
         }
 
-        public Grid(IEnumerable<IEnumerable<T>> filledGrid, T defaultTile) : this(defaultTile)
+        public Grid(IEnumerable<IEnumerable<T>> filledGrid, T defaultTile, bool yDecreasing = true) : this(defaultTile)
         {
             int y = 0;
             foreach (IEnumerable<T> row in filledGrid)
@@ -35,7 +35,24 @@ namespace AoC
                     SetTile(x, y, tile);
                     x++;
                 }
-                y--;
+                if (yDecreasing)
+                {
+                    y--;
+                } else
+                {
+                    y++;
+                } 
+            }
+        }
+
+        public Grid(Grid<T> copyMe) : this(copyMe.DefaultTile)
+        {
+            foreach (var kvp in copyMe.content)
+            {
+                foreach (var kvp2 in kvp.Value)
+                {
+                    SetTile(kvp.Key, kvp2.Key, kvp2.Value);
+                }
             }
         }
 
@@ -53,7 +70,7 @@ namespace AoC
 
         public void SetTile(int x, int y, T tileType)
         {
-            EnsureBordersInclude(x, y);
+            EnsureBordersContain(x, y);
             bool addingDefault = tileType.Equals(DefaultTile);
 
             if (!addingDefault)
@@ -79,6 +96,11 @@ namespace AoC
             content[y][x] = tileType;
         }
 
+        public HashSet<T> GetAllTileTypes()
+        {
+            return new HashSet<T>(allTileTypes);
+        }
+
         private void UpdateTileCount(T tileType, int incBy)
         {
             if (!tileType.Equals(DefaultTile))
@@ -102,7 +124,7 @@ namespace AoC
             }
         }
 
-        private void EnsureBordersInclude(int x, int y)
+        private void EnsureBordersContain(int x, int y)
         {
             if (x < xMin) xMin = x;
             if (x > xMax) xMax = x;
@@ -110,10 +132,11 @@ namespace AoC
             if (y > yMax) yMax = y;
         }
 
-        public int Count()
+        public int CountNonDefault()
         {
             return tileCount.Values.Sum();
         }
+
         public int Count(T tile)
         {
             return tileCount.ContainsKey(tile) ? tileCount[tile] : 0;
@@ -138,7 +161,20 @@ namespace AoC
             return nb;
         }
 
-        public (bool found, int x, int y) FindLocationOf(T findMe)
+        public (int x, int y) ModifyCoordinates(int x, int y, string direction)
+        {
+            if (direction == "N") return (x, y + 1);
+            if (direction == "NE") return (x + 1, y + 1);
+            if (direction == "E") return (x + 1, y);
+            if (direction == "SE") return (x + 1, y - 1);
+            if (direction == "S") return (x, y - 1);
+            if (direction == "SW") return (x - 1, y - 1);
+            if (direction == "W") return (x - 1, y);
+            if (direction == "NW") return (x - 1, y + 1);
+            throw new Exception("direction not recognized, use N,E,S,W,NE,NW,SE,SW");
+        }
+
+        public (bool found, int x, int y) FindFirstMatchingTile(T findMe)
         {
             if (findMe.Equals(DefaultTile)) throw new ArgumentException("Trying to find the DefaultTile, which is every unfilled Tile");
             foreach (var row in content)
@@ -154,9 +190,14 @@ namespace AoC
             return (false, 0, 0);
         }
 
-        public List<(int x, int y)> FindAllLocationsOff(List<T> findUs)
+        public List<(int x, int y)> FindAllMatchingTiles(T tile)
         {
-            if (findUs.Contains(DefaultTile)) throw new ArgumentException("Trying to find the DefaultTile, which is every unfilled Tile");
+            return FindAllMatchingTiles(new HashSet<T> { tile });
+        }
+
+        public List<(int x, int y)> FindAllMatchingTiles(HashSet<T> findUs)
+        {
+            if (findUs.Contains(DefaultTile)) throw new ArgumentException("Trying to find the DefaultTile, which is every unfilled Tile not this methods intended purpose");
             List<(int, int)> results = new List<(int, int)>();
             foreach (var row in content)
             {
@@ -171,7 +212,7 @@ namespace AoC
             return results;
         }
 
-        public List<string> RowsAsStrings()
+        public List<string> RowsAsStrings(bool invert = false)
         {
             List<string> rows = new List<string>();
             List<int> xCoords = Enumerable.Range(xMin, Width).ToList();
@@ -179,6 +220,10 @@ namespace AoC
             {
                 string row = string.Concat(xCoords.Select(x => GetTile(x, y).ToString()));
                 rows.Add(row);
+            }
+            if (invert)
+            {
+                rows.Reverse();
             }
             return rows;
         }

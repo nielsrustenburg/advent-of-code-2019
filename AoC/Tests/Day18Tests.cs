@@ -9,39 +9,47 @@ namespace AoC.Tests
     {
         public static void RunAll()
         {
+            TestEliminateDeadEnds();
             TestSolvePartOne();
             TestSolvePartTwo();
             Console.WriteLine("Day18Tests Completed!");
         }
 
-        //public static void TestSolvePartOne()
-        //{
-        //    void Test(int expectedOutput)
-        //    {
-        //        int output = Day18.SolvePartOne();
-        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-        //    }
-        //    Test(0);
-        //}
-
-        //public static void TestSolvePartTwo()
-        //{
-        //    void Test(int expectedOutput)
-        //    {
-        //        int output = Day18.SolvePartTwo();
-        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-        //    }
-        //    Test(0);
-        //}
-
         static void TestSolvePartOne()
         {
-            TestSuite.Test(0, Day18.SolvePartOne);
+            TestSuite.Test(3146, Day18.SolvePartOne);
         }
 
         static void TestSolvePartTwo()
         {
-            TestSuite.Test(0, Day18.SolvePartTwo);
+            TestSuite.Test(2194, Day18.SolvePartTwo);
+        }
+
+        static void TestEliminateDeadEnds()
+        {
+            List<string> mazeIn = new List<string> {"########",
+                                                    "###.####",
+                                                    "###.####",
+                                                    "###.####",
+                                                    "#......#",
+                                                    "#.####.#",
+                                                    "#......#",
+                                                    "########"};
+
+            Doolhof<char> maze = new Doolhof<char>(mazeIn, '#', new List<char> { '.' });
+            maze.EliminateDeadEnds(new HashSet<char> { '.' }, '#', new HashSet<char> { '#' });
+
+            List<string> mazeOut = maze.RowsAsStrings();
+            List<string> expectedMazeOut = new List<string> {"########",
+                                                             "########",
+                                                             "########",
+                                                             "########",
+                                                             "#......#",
+                                                             "#.####.#",
+                                                             "#......#",
+                                                             "########"};
+
+            TestSuite.TestSequence(expectedMazeOut, 0, (int _) => mazeOut);
         }
     }
 }

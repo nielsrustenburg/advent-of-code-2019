@@ -27,6 +27,16 @@ namespace AoC
             ln.Add(10);
             return ln;
         }
+
+        public static string ASCIIToString(IEnumerable<int> ascii)
+        {
+            return string.Concat(ascii.Select(x => (char)x));
+        }
+
+        public static string ASCIIToString(IEnumerable<BigInteger> ascii)
+        {
+            return string.Concat(ascii.Select(x => (char)x));
+        }
     }
 }
 

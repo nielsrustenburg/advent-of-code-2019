@@ -32,8 +32,8 @@ namespace AoC
         public GameOfEris(IEnumerable<string> input)
         {
             grid = new ErisGrid(input);
-            Width = grid.Width();
-            Height = grid.Height();
+            Width = grid.Width;
+            Height = grid.Height;
             prevStates = new HashSet<string>();
         }
 
@@ -41,12 +41,6 @@ namespace AoC
         {
             while (true)
             {
-                Console.SetCursorPosition(0, 0);
-                List<string> bob = grid.GetImageStrings();
-                foreach (var b in bob)
-                {
-                    Console.WriteLine(b);
-                }
                 bool done = UpdatePrevStates();
                 if (done)
                 {
@@ -74,20 +68,11 @@ namespace AoC
 
         private void UpdateTile(int x, int y, ErisGrid newGrid)
         {
-            newGrid.GetColorAt(x, y); //might be unnecessary but recall my Grid implementation being sucky and needing this
-            bool bug = grid.GetColorAt(x, y) == "#";
-            List<string> nb = grid.Neighbours(x, y);
-            int neighbouringBugs = nb.Where(t => t == "#").Count();
-            string tile;
-            if (bug)
-            {
-                tile = neighbouringBugs == 1 ? "#" : ".";
-            }
-            else
-            {
-                tile = neighbouringBugs == 1 || neighbouringBugs == 2 ? "#" : ".";
-            }
-            newGrid.SetColorAt(x, y, tile);
+            bool bug = grid.GetTile(x, y) == "#";
+            int amountOfNeighbourBugs = grid.GetNeighbours(x,y).Values.Count(t => t == "#");
+            string tile = amountOfNeighbourBugs == 1 ||
+                          (amountOfNeighbourBugs == 2 && !bug) ? "#" : ".";
+            newGrid.SetTile(x, y, tile);
         }
 
         private bool UpdatePrevStates()
@@ -100,18 +85,17 @@ namespace AoC
 
         private BigInteger BioDiversityScore()
         {
-            return (BigInteger)Enumerable.Range(0, Width * Height).Where(i => grid.GetColorAt(i % 5, i / 5) == "#").Select(t => Math.Pow(2, t)).Aggregate((double)0, (a, b) => a + b);
+            return (BigInteger)Enumerable.Range(0, Width * Height).Where(i => grid.GetTile(i % 5, i / 5) == "#").Select(t => Math.Pow(2, t)).Aggregate((double)0, (a, b) => a + b);
         }
 
         public override string ToString()
         {
-            return string.Join("", Enumerable.Range(0, Width * Height).Select(i => grid.GetColorAt(i % 5, i / 5)));
+            return string.Join("", Enumerable.Range(0, Width * Height).Select(i => grid.GetTile(i % 5, i / 5)));
         }
     }
 
     class RecursiveGameOfEris
     {
-        //DONT FORGET TO MAKE THE CENTER A ?????
         List<ErisGrid> grids;
         public int Width { get; private set; }
         public int Height { get; private set; }
@@ -119,8 +103,8 @@ namespace AoC
         public RecursiveGameOfEris(IEnumerable<string> input)
         {
             ErisGrid middleGrid = new ErisGrid(input);
-            Width = middleGrid.Width();
-            Height = middleGrid.Height();
+            Width = middleGrid.Width;
+            Height = middleGrid.Height;
             grids = new List<ErisGrid> { middleGrid };
         }
 
@@ -138,14 +122,14 @@ namespace AoC
             int count = 0;
             foreach (ErisGrid g in grids)
             {
-                count += g.FindAll("#").Count;
+                count += g.Count("#");
             }
             return count;
         }
 
         public void GoNextState()
         {
-            //Larger first, smaller last
+            //Add the outer layer first, inner layer last (d == -1 / d == grids.Count)
             List<ErisGrid> newGrids = new List<ErisGrid>();
             for (int d = -1; d <= grids.Count; d++)
             {
@@ -154,10 +138,10 @@ namespace AoC
                 {
                     for (int y = 0; y < Height; y++)
                     {
-                        if (x != 2 || y != 2)//Never change the center
+                        if (x != 2 || y != 2)//Never change the center tile
                         {
-                            ng.GetColorAt(x, y);
-                            ng.SetColorAt(x, y, GetUpdatedTileStatus(x, y, d));
+                            ng.GetTile(x, y);
+                            ng.SetTile(x, y, GetUpdatedTileStatus(x, y, d));
                         }
                     }
                 }
@@ -168,17 +152,16 @@ namespace AoC
 
         private string GetUpdatedTileStatus(int x, int y, int depth)
         {
-            bool prevBug = depth != -1 && depth != grids.Count && grids[depth].GetColorAt(x, y) == "#";
-            List<string> nbours = GetNeighbours(x, y, depth);
-            int neighbugs = nbours.Where(nb => nb == "#").Count();
             //If in a new grid OR previously not a bug: 1-2 neighbours --> bug
+            bool prevBug = depth != -1 && depth != grids.Count && grids[depth].GetTile(x, y) == "#";
+            int amountOfNeighbourBugs = GetNeighbours(x, y, depth).Count(nb => nb == "#");
             if (prevBug)
             {
-                return neighbugs == 1 ? "#" : ".";
+                return amountOfNeighbourBugs == 1 ? "#" : ".";
             }
             else
             {
-                return neighbugs == 1 || neighbugs == 2 ? "#" : ".";
+                return amountOfNeighbourBugs == 1 || amountOfNeighbourBugs == 2 ? "#" : ".";
             }
         }
 
@@ -199,7 +182,7 @@ namespace AoC
             {
                 if (depth > 0)
                 {
-                    return new List<string> { grids[depth - 1].GetColorAt(2, 1) };
+                    return new List<string> { grids[depth - 1].GetTile(2, 1) };
                 }
                 else
                 {
@@ -212,7 +195,7 @@ namespace AoC
             {
                 if (depth < grids.Count - 1)
                 {
-                    return Enumerable.Range(0, Width).Select(xcor => grids[depth + 1].GetColorAt(xcor, Height - 1)).ToList();
+                    return Enumerable.Range(0, Width).Select(xcor => grids[depth + 1].GetTile(xcor, Height - 1)).ToList();
                 }
                 else
                 {
@@ -222,7 +205,7 @@ namespace AoC
 
             if (depth == -1 || depth == grids.Count) return new List<string>();
             //Return the one directly north of here
-            return new List<string> { grids[depth].GetColorAt(x, y - 1) };
+            return new List<string> { grids[depth].GetTile(x, y - 1) };
         }
 
         public List<string> GetSouthNeighbours(int x, int y, int depth)
@@ -232,7 +215,7 @@ namespace AoC
             {
                 if (depth > 0)
                 {
-                    return new List<string> { grids[depth - 1].GetColorAt(2, 3) };
+                    return new List<string> { grids[depth - 1].GetTile(2, 3) };
                 }
                 else
                 {
@@ -245,7 +228,7 @@ namespace AoC
             {
                 if (depth < grids.Count - 1)
                 {
-                    return Enumerable.Range(0, Width).Select(xcor => grids[depth + 1].GetColorAt(xcor, 0)).ToList();
+                    return Enumerable.Range(0, Width).Select(xcor => grids[depth + 1].GetTile(xcor, 0)).ToList();
                 }
                 else
                 {
@@ -255,7 +238,7 @@ namespace AoC
 
             if (depth == -1 || depth == grids.Count) return new List<string>();
             //Return the one directly south of here
-            return new List<string> { grids[depth].GetColorAt(x, y + 1) };
+            return new List<string> { grids[depth].GetTile(x, y + 1) };
         }
 
         public List<string> GetWestNeighbours(int x, int y, int depth)
@@ -265,7 +248,7 @@ namespace AoC
             {
                 if (depth > 0)
                 {
-                    return new List<string> { grids[depth - 1].GetColorAt(1, 2) };
+                    return new List<string> { grids[depth - 1].GetTile(1, 2) };
                 }
                 else
                 {
@@ -278,7 +261,7 @@ namespace AoC
             {
                 if (depth < grids.Count - 1)
                 {
-                    return Enumerable.Range(0, Width).Select(ycor => grids[depth + 1].GetColorAt(Width - 1, ycor)).ToList();
+                    return Enumerable.Range(0, Width).Select(ycor => grids[depth + 1].GetTile(Width - 1, ycor)).ToList();
                 }
                 else
                 {
@@ -288,7 +271,7 @@ namespace AoC
 
             if (depth == -1 || depth == grids.Count) return new List<string>();
             //Return the one directly west of here
-            return new List<string> { grids[depth].GetColorAt(x - 1, y) };
+            return new List<string> { grids[depth].GetTile(x - 1, y) };
         }
 
         public List<string> GetEastNeighbours(int x, int y, int depth)
@@ -298,7 +281,7 @@ namespace AoC
             {
                 if (depth > 0)
                 {
-                    return new List<string> { grids[depth - 1].GetColorAt(3, 2) };
+                    return new List<string> { grids[depth - 1].GetTile(3, 2) };
                 }
                 else
                 {
@@ -311,7 +294,7 @@ namespace AoC
             {
                 if (depth < grids.Count - 1)
                 {
-                    return Enumerable.Range(0, Width).Select(ycor => grids[depth + 1].GetColorAt(0, ycor)).ToList();
+                    return Enumerable.Range(0, Width).Select(ycor => grids[depth + 1].GetTile(0, ycor)).ToList();
                 }
                 else
                 {
@@ -321,14 +304,12 @@ namespace AoC
 
             if (depth == -1 || depth == grids.Count) return new List<string>();
             //Return the one directly east of here
-            return new List<string> { grids[depth].GetColorAt(x + 1, y) };
+            return new List<string> { grids[depth].GetTile(x + 1, y) };
         }
     }
 
-    class ErisGrid : ColorGrid
+    class ErisGrid : Grid<string>
     {
-        public int Width { get; private set; }
-        public int Height { get; private set; }
 
         public ErisGrid() : base(".")
         {
@@ -343,14 +324,12 @@ namespace AoC
                 int ncol = 0;
                 foreach (char tile in row)
                 {
-                    GetColorAt(ncol, nrow);
-                    SetColorAt(ncol, nrow, tile.ToString());
+                    GetTile(ncol, nrow);
+                    SetTile(ncol, nrow, tile.ToString());
                     ncol++;
                 }
                 nrow++;
             }
-            Width = Width();
-            Height = Height();
         }
 
         public virtual List<string> Neighbours(int id)
@@ -362,7 +341,7 @@ namespace AoC
 
         public virtual List<string> Neighbours(int x, int y)
         {
-            return base.Neighbours(x, y).Values.ToList();
+            return GetNeighbours(x, y).Values.ToList();
         }
     }
 }

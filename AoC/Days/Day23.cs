@@ -29,7 +29,7 @@ namespace AoC
     {
         NetworkInterfaceController[] nics;
         List<BigInteger>[] queues;
-        public (BigInteger x, BigInteger y) twoFiftyFive;
+        public (BigInteger x, BigInteger y) address255;
         public int idleCount;
         public bool finished;
 
@@ -52,7 +52,7 @@ namespace AoC
             {
                 DoIteration();
             }
-            return twoFiftyFive;
+            return address255;
         }
 
         public void DoIteration()
@@ -114,7 +114,7 @@ namespace AoC
             if (!finished)
             {
                 finished = true;
-                twoFiftyFive = (x, y);
+                address255 = (x, y);
             }
         }
 
@@ -150,20 +150,20 @@ namespace AoC
 
         public override void HandleTwoFiftyFive(BigInteger x, BigInteger y)
         {
-            twoFiftyFive = (x, y);
+            address255 = (x, y);
         }
 
         public override void HandleIdleSystem(List<BigInteger> newPackages)
         {
             newPackages.Add(0);
-            newPackages.Add(twoFiftyFive.x);
-            newPackages.Add(twoFiftyFive.y);
-            if(!firstReset && lastReset.y == twoFiftyFive.y)
+            newPackages.Add(address255.x);
+            newPackages.Add(address255.y);
+            if(!firstReset && lastReset.y == address255.y)
             {
                 finished = true;
             }
             if (firstReset) firstReset = false;
-            lastReset = twoFiftyFive;
+            lastReset = address255;
             idleCount = 0;
         }
     }

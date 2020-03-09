@@ -8,128 +8,32 @@ namespace AoC
 {
     static class Day15
     {
-        public static int WalkPartOne()
-        {
-            Console.Clear();
-            string input = InputReader.StringFromLine("d15input.txt");
-            List<BigInteger> program = input.Split(',').Select(x => BigInteger.Parse(x)).ToList();
-            RepairBot rb = new RepairBot(program);
-
-            while (!rb.Finished)
-            {
-                char dirkey = Console.ReadKey().KeyChar;
-                if (dirkey == 'w') rb.Move("north");
-                if (dirkey == 'a') rb.Move("west");
-                if (dirkey == 's') rb.Move("south");
-                if (dirkey == 'd') rb.Move("east");
-
-                Console.SetCursorPosition(0, 0);
-                var lines = rb.mentalMap.GetImageStrings(true);
-                foreach (string line in lines)
-                {
-                    Console.WriteLine(line);
-                }
-            }
-            return 0;
-        }
-
         public static int SolvePartOne()
         {
-            Console.Clear();
             string input = InputReader.StringFromLine("d15input.txt");
             List<BigInteger> program = input.Split(',').Select(x => BigInteger.Parse(x)).ToList();
             RepairBot rb = new RepairBot(program);
 
-            List<string> dirs = new List<string> { "north", "south", "west", "east" };
-            int steps = 0;
-            List<string> path = new List<string>();
-            int oxyX = 0;
-            int oxyY = 0;
-            do//!rb.Finished
-            {
-                var wallknowledge = rb.LookAround();
-                for (int i = 0; i < wallknowledge.Count; i++)
-                {
-                    if (!wallknowledge[i])
-                    {
-                        rb.Explore(dirs[i]);
-                    }
-                }
-                wallknowledge = rb.LookAround();
-                if (wallknowledge.Where(x => !x).Any())
-                {
-                    string movedir = dirs[wallknowledge.FindIndex(x => !x)];
-                    rb.Move(movedir, true);
-                    path.Add(movedir);
-                    steps++;
-                }
-                else
-                {
-                    rb.Move(OppositeDir(path.Last()), true);
-                    path.RemoveAt(path.Count - 1);
-                    steps--;
-                }
+            rb.ExploreMaze();
 
-                if(oxyX == 0 && oxyY == 0 && rb.Finished)
-                {
-                    oxyX = rb.X;
-                    oxyY = rb.Y;
-                }
-                Console.SetCursorPosition(0, 0);
-                var lines = rb.mentalMap.GetImageStrings(true);
-                foreach (string line in lines)
-                {
-                    Console.WriteLine(line);
-                }
-            } while (path.Any());
-
-            //Gas the grid!
-            ColorGrid maze = rb.mentalMap;
-
-            maze.SetColorAt(oxyX, oxyY, "O");
-            maze.SetColorAt(rb.X, rb.Y, "#");
-            //Find all unoxygen'd tiles
-            List<(int x,int y)> vacuum = maze.FindAll("#");
-            int minutes = 0;
-            while (vacuum.Any())
-            {
-                List<(int x, int y)> oxygenize = new List<(int x, int y)>();
-                foreach(var point in vacuum)
-                {
-                    if (maze.HasNeighbour4(point.x, point.y, "O"))
-                    {
-                        oxygenize.Add(point);
-                    }
-                }
-
-                foreach(var point in oxygenize)
-                {
-                    maze.SetColorAt(point.x, point.y, "O");
-                    vacuum.RemoveAt(vacuum.FindIndex(p => p.x == point.x && p.y == point.y));
-                }
-                minutes++;
-                Console.SetCursorPosition(0, 0);
-                var lines = maze.GetImageStrings(true);
-                foreach (string line in lines)
-                {
-                    Console.WriteLine(line);
-                }
-            }
-
-            return steps;
+            var oxygenSearch = rb.mazeMap.FloodFillDistanceFinder(0, 0, new List<string> { "O" });
+            var stepsToOxygen = oxygenSearch.poi.Where(x => x.tile == "O").First().distance;
+            
+            return stepsToOxygen;
         }
 
         public static int SolvePartTwo()
         {
-            return 0;
-        }
+            string input = InputReader.StringFromLine("d15input.txt");
+            List<BigInteger> program = input.Split(',').Select(x => BigInteger.Parse(x)).ToList();
+            RepairBot rb = new RepairBot(program);
 
-        public static string OppositeDir(string dir)
-        {
-            if (dir == "north") return "south";
-            if (dir == "south") return "north";
-            if (dir == "west") return "east";
-            return "west";
+            rb.ExploreMaze();
+
+            var oxy = rb.mazeMap.FindFirstMatchingTile("O");
+            var oxygenFlooding = rb.mazeMap.FloodFillDistanceFinder(oxy.x, oxy.y, new List<string>());
+
+            return oxygenFlooding.totalSteps;
         }
     }
 
@@ -139,15 +43,61 @@ namespace AoC
         public int X { get; private set; }
         public int Y { get; private set; }
         public bool Finished { get; private set; }
-        public ColorGrid mentalMap;
+        public Grid<string> mentalMap;
+        public Doolhof<string> mazeMap;
 
         public RepairBot(List<BigInteger> programming)
         {
             brain = new BigIntCode(programming);
             X = 0;
             Y = 0;
-            mentalMap = new ColorGrid(" ");
+            mentalMap = new Grid<string>(" ");
+            mazeMap = new Doolhof<string>("\u2588", new List<string> { "#", "O", "D" });
             Finished = false;
+        }
+
+        public void ExploreMaze(bool draw = false)
+        {
+            List<string> dirs = new List<string> { "north", "south", "west", "east" };
+            List<string> path = new List<string>();
+            if(draw) Console.Clear();
+            do
+            {
+                //Explore all unknown surrounding tiles
+                var tileKnowledge = LookAround();
+                for (int i = 0; i < tileKnowledge.Count; i++)
+                {
+                    if (!tileKnowledge[i])
+                    {
+                        ExploreNeighbours(dirs[i]);
+                    }
+                }
+                //Pick the first unexplored non-wall neighbour if any exist and continue exploring
+                //If none exist backtrack your path until one does exist or until we are back at our starting location in which case we are done
+                tileKnowledge = LookAround();
+                if (tileKnowledge.Where(x => !x).Any())
+                {
+                    string movedir = dirs[tileKnowledge.FindIndex(x => !x)];
+                    Move(movedir, true);
+                    path.Add(movedir);
+                }
+                else
+                {
+                    Move(OppositeDir(path.Last()), true);
+                    path.RemoveAt(path.Count - 1);
+                }
+
+                if (draw)
+                {
+                    Console.SetCursorPosition(0, 0);
+                    var lines = mentalMap.RowsAsStrings(true);
+                    foreach (string line in lines)
+                    {
+                        Console.WriteLine(line);
+                    }
+                }
+
+            } while (path.Any());
         }
 
         public bool Move(string direction, bool closePrev = false)
@@ -160,16 +110,17 @@ namespace AoC
             int response = (int)brain.Run(new List<BigInteger> { dircode })[0];
             if (response > 0)
             {
-                mentalMap.GetColorAt(X, Y);
-                mentalMap.SetColorAt(X, Y, closePrev ? "#" : " ");
+                if (mentalMap.GetTile(X, Y) == "D")
+                {
+                    SetMapTiles(X, Y, closePrev ? "#" : " ");
+                }
                 if (direction == "north") Y++;
                 if (direction == "south") Y--;
                 if (direction == "west") X--;
                 if (direction == "east") X++;
 
                 Finished = response == 2;
-                mentalMap.GetColorAt(X, Y);
-                mentalMap.SetColorAt(X, Y, Finished ? "X" : "D");
+                SetMapTiles(X, Y, Finished ? "O" : "D");
                 return true;
             }
             else
@@ -180,13 +131,18 @@ namespace AoC
                 if (direction == "south") mentaly--;
                 if (direction == "west") mentalx--;
                 if (direction == "east") mentalx++;
-                mentalMap.GetColorAt(mentalx, mentaly);
-                mentalMap.SetColorAt(mentalx, mentaly, "\u2588");
+                SetMapTiles(mentalx, mentaly, "\u2588");
                 return false;
             }
         }
 
-        public void Explore(string direction)
+        public void SetMapTiles(int x, int y, string tile)
+        {
+            mentalMap.SetTile(x, y, tile);
+            mazeMap.SetTile(x, y, tile);
+        }
+
+        public void ExploreNeighbours(string direction)
         {
             if (direction == "north")
             {
@@ -208,15 +164,23 @@ namespace AoC
 
         public List<bool> LookAround()
         {
-            string north = mentalMap.GetColorAt(X, Y + 1);
-            string south = mentalMap.GetColorAt(X, Y - 1);
-            string west = mentalMap.GetColorAt(X - 1, Y);
-            string east = mentalMap.GetColorAt(X + 1, Y);
-            List<string> walls = new List<string> { "\u2588", "#"};
-            return new List<bool> { walls.Contains(north),
-                                    walls.Contains(south),
-                                    walls.Contains(west),
-                                    walls.Contains(east) };
+            string north = mentalMap.GetTile(X, Y + 1);
+            string south = mentalMap.GetTile(X, Y - 1);
+            string west = mentalMap.GetTile(X - 1, Y);
+            string east = mentalMap.GetTile(X + 1, Y);
+            List<string> knownTiles = new List<string> { "\u2588", "#", "O" };
+            return new List<bool> { knownTiles.Contains(north),
+                                    knownTiles.Contains(south),
+                                    knownTiles.Contains(west),
+                                    knownTiles.Contains(east) };
+        }
+
+        public static string OppositeDir(string dir)
+        {
+            if (dir == "north") return "south";
+            if (dir == "south") return "north";
+            if (dir == "west") return "east";
+            return "west";
         }
     }
 }

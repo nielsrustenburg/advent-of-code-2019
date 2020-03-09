@@ -19,6 +19,12 @@ namespace AoC
             return nodes.ContainsKey(name);
         }
 
+        public void AddEdge(string from, string to, int dist)
+        {
+            nodes[from].AddOutNeighbour(to, dist);
+            nodes[to].AddInNeighbour(from, dist);
+        }
+
         public bool ContainsEdge(string from, string to)
         {
             return nodes[from].HasOutNeighbour(to);

@@ -12,54 +12,45 @@ namespace AoC
         {
             string input = InputReader.StringFromLine("d25input.txt");
             List<BigInteger> program = input.Split(',').Select(x => BigInteger.Parse(x)).ToList();
-            Console.Clear();
-            //ScoutDroid r2d2 = new ScoutDroid(program);
-            ManualASCIIComputer rd22 = new ManualASCIIComputer(program);
-            //Did this manually
-            //Strategy find all items that are safe to pick up
-            //Bring all items to the checkpoint
-            //Try each individual item to single out items which are too heavy to be in a good solution
+
+            //Did this exercise manually
+            //Strategy is to find all items that are safe to pick up (some end your game, or put your IntCode computer in an endless loop)
+            //Bring all safe items to the checkpoint
+            //Try each individual item to single out items which are too heavy to be part of a good solution
             //Put all remaining items together, remove individual items to find which items are essential to a solution (too light when removed)
-            //Do an Apriori like algorithm on the remaining items
-            rd22.RunManual();
-            return 0;
+            //Remaining items are the items which are not essential & not useless, try combinations of these
+            //If your search-space is still quite big I recommend some A-Priori-like algorithm to eliminate combinations of items
+            return 34095120;
+            //Console.Clear();
+            //ManualASCIIComputer rd22 = new ManualASCIIComputer(program);
+            //rd22.RunManual();
         }
 
-        public static int SolvePartTwo()
+        public static void SolvePartTwo()
         {
-            return 0;
+            Console.WriteLine("WOOPIE! WE ARE DONE, THERE IS NO EXERCISE 25-2");
         }
     }
 
-    class ASCIIComputer
+    class ASCIIComputer : BigIntCode
     {
-        BigIntCode bic;
-
-        public ASCIIComputer(IEnumerable<BigInteger> input)
+        public ASCIIComputer(IEnumerable<BigInteger> vals) : base(vals)
         {
-            List<BigInteger> program = new List<BigInteger>(input);
-            bic = new BigIntCode(program);
         }
 
-        public string Run()
+        public List<BigInteger> Run(string input, bool newLineAtEnd = true)
         {
-            return Run(new List<BigInteger>());
+            return Run(ASCIIHelper.StringToASCIIBI(input, newLineAtEnd));
         }
 
-        public string Run(string command)
+        public string RunString()
         {
-            return Run(ASCIIHelper.StringToASCIIBI(command, true));
+            return ASCIIHelper.ASCIIToString(Run());
         }
 
-        public string Run(IEnumerable<BigInteger> input)
+        public string RunString(string input)
         {
-            return Run(new List<BigInteger>(input));
-        }
-
-        public string Run(List<BigInteger> input)
-        {
-            List<BigInteger> output = bic.Run(input);
-            return string.Concat(output.Select(x => (char)x));
+            return ASCIIHelper.ASCIIToString(Run(input));
         }
     }
 
@@ -69,14 +60,17 @@ namespace AoC
 
         public void RunManual()
         {
-            Console.WriteLine(Run());
+            Console.WriteLine(RunString());
             while (true)
             {
                 string nextCommand = Console.ReadLine();
-                Console.WriteLine(Run(nextCommand));
+                Console.WriteLine(RunString(nextCommand));
             }
         }
     }
+
+    //Had the idea to do an automated solution for this exercise but didn't finish it
+    //Leaving this just in case I feel like continuing
 
     class DroidSquad
     {
@@ -92,7 +86,7 @@ namespace AoC
         public ScoutDroid(IEnumerable<BigInteger> programming) : base(programming)
         {
             knownRooms = new FloorPlan();
-            string output = Run();
+            string output = RunString();
             knownRooms.Update(AnalyzeSurroundings(output));
         }
 

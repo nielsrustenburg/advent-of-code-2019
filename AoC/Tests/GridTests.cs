@@ -22,7 +22,7 @@ namespace AoC.Tests
             if (charGrid.Height != expectedHeight) throw new Exception($"Expected height of: {expectedHeight}, found: {charGrid.Height}");
 
             int expectedNonDefault = example.Aggregate(0, (a, b) => a + b.Where(x => x != defaultChar).Count());
-            if (charGrid.Count() != expectedNonDefault) throw new Exception($"Expected: {expectedNonDefault} occurrences of non '{defaultChar}', found:{charGrid.Count()}");
+            if (charGrid.CountNonDefault() != expectedNonDefault) throw new Exception($"Expected: {expectedNonDefault} occurrences of non '{defaultChar}', found:{charGrid.CountNonDefault()}");
 
             List<string> representation = charGrid.RowsAsStrings();
             for(int i =0; i < example.Count; i++)
@@ -30,7 +30,7 @@ namespace AoC.Tests
                 if (representation[i] != example[i]) throw new Exception($"Unmatching grid representation: line{i} \n expected: \n line{example[i]} \n got \n {representation[i]}");
             }
 
-            var hashtag = charGrid.FindLocationOf('#');
+            var hashtag = charGrid.FindFirstMatchingTile('#');
             if (hashtag.x != 1 || hashtag.y != -3) throw new Exception($"Hashtag not in expected location");
         }
     }

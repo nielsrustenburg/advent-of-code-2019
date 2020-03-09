@@ -9,30 +9,20 @@ namespace AoC.Tests
     {
         public static void RunAll()
         {
-            //TestSolvePartOne();
+            TestFindDonutThickness();
+            TestSolvePartOne();
             TestSolvePartTwo();
             Console.WriteLine("Day20Tests Completed!");
         }
 
-        //public static void TestSolvePartOne()
-        //{
-        //    void Test(int expectedOutput)
-        //    {
-        //        int output = Day20.SolvePartOne();
-        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-        //    }
-        //    Test(668);
-        //}
+        static void TestFindDonutThickness()
+        {
+            string[] bbdonut = InputReader.StringsFromTxt("babydonut.txt");
+            TestSuite.Test(4, bbdonut, Day20.FindDonutThickness);
 
-        //public static void TestSolvePartTwo()
-        //{
-        //    void Test(int expectedOutput)
-        //    {
-        //        int output = Day20.SolvePartTwo();
-        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-        //    }
-        //    Test(7778);
-        //}
+            string[] donut20 = InputReader.StringsFromTxt("d20input.txt");
+            TestSuite.Test(34, donut20, Day20.FindDonutThickness);
+        }
 
         static void TestSolvePartOne()
         {
