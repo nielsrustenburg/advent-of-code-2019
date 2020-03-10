@@ -49,16 +49,16 @@ namespace AoC
     {
         int xPos;
         int yPos;
-        string direction;
+        Direction dir;
         BigIntCode brain;
-        public Grid<char> ColorGrid { get; private set; }
+        public Grid<char> PaintGrid { get; private set; }
 
         public EmergencyHullPaintingRobot(List<BigInteger> programming, Grid<char> cgrid, int xPos = 0, int yPos = 0)
         {
             this.xPos = xPos;
             this.yPos = yPos;
-            direction = "north";
-            ColorGrid = cgrid;
+            dir = Direction.North;
+            PaintGrid = cgrid;
             brain = new BigIntCode(programming);
         }
 
@@ -77,12 +77,12 @@ namespace AoC
 
         private int InspectPanel()
         {
-            return ColorGrid.GetTile(xPos, yPos) == '#' ? 1 : 0;
+            return PaintGrid.GetTile(xPos, yPos) == '#' ? 1 : 0;
         }
 
         private void ChangePaint(char color)
         {
-            ColorGrid.SetTile(xPos, yPos, color);
+            PaintGrid.SetTile(xPos, yPos, color);
         }
 
         private void TurnAndMove(bool turnRight)
@@ -93,63 +93,17 @@ namespace AoC
 
         private void TurnRight()
         {
-            if (direction == "north")
-            {
-                direction = "east";
-                return;
-            }
-            if (direction == "east")
-            {
-                direction = "south";
-                return;
-            }
-            if (direction == "south")
-            {
-                direction = "west";
-                return;
-            }
-            direction = "north";
+            dir = dir.ClockWiseByQuarter();
         }
 
         private void TurnLeft()
         {
-            if (direction == "south")
-            {
-                direction = "east";
-                return;
-            }
-            if (direction == "east")
-            {
-                direction = "north";
-                return;
-            }
-            if (direction == "north")
-            {
-                direction = "west";
-                return;
-            }
-            direction = "south";
+            dir = dir.CounterClockWiseByQuarter();
         }
 
         private void MoveForward()
         {
-            if (direction == "south")
-            {
-                yPos--;
-                return;
-            }
-            if (direction == "east")
-            {
-                xPos++;
-                return;
-            }
-
-            if (direction == "north")
-            {
-                yPos++;
-                return;
-            }
-            xPos--;
+            (xPos, yPos) = DirectionHelper.NeighbourInDirection(dir,xPos, yPos);
         }
 
     }
