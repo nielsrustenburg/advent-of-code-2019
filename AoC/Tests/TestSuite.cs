@@ -10,6 +10,9 @@ namespace AoC.Tests
     {
         public static void RunTests()
         {
+            DirectionTests.RunAll();
+            GridTests.TestGrid();
+
             Day1Tests.RunAll();
             Day2Tests.RunAll();
             Day3Tests.RunAll();
@@ -35,8 +38,6 @@ namespace AoC.Tests
             Day23Tests.RunAll();
             Day24Tests.RunAll();
             Day25Tests.RunAll();
-
-            GridTests.TestGrid();
         }
 
         public static void Test<T,V>(T expected, V received, string testName)
