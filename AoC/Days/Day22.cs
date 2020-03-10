@@ -11,37 +11,8 @@ namespace AoC
         public static int SolvePartOne()
         {
             string[] input = InputReader.StringsFromTxt("d22input.txt");
-            List<string[]> split = input.Select(i => i.Split(' ')).ToList();
-
-            BigInteger deckSize = 10007;
-            BigInteger trackMe = 2019;
-
-            foreach (string[] move in split)
-            {
-                if (move[0] == "cut")
-                {
-                    trackMe = Card.Cut(trackMe, deckSize, int.Parse(move[1]));
-                }
-                else
-                {
-                    if (move[2] == "increment")
-                    {
-                        trackMe = Card.WithIncrement(trackMe, deckSize, int.Parse(move[3]));
-                    }
-                    else
-                    {
-                        if (move[2] == "new")
-                        {
-                            trackMe = Card.IntoNewStack(trackMe, deckSize);
-                        }
-                        else
-                        {
-                            throw new Exception("Meep moop shouldn't be here");
-                        }
-                    }
-                }
-            }
-            return (int)trackMe;
+            ShuffleSequence shufSeq = new ShuffleSequence(input, 10007);
+            return (int)shufSeq.CardPositionAfterShuffle(2019);
         }
 
         public static BigInteger SolvePartTwo()
@@ -50,482 +21,310 @@ namespace AoC
             BigInteger deckSize = BigInteger.Parse("119315717514047");
             BigInteger shuffleNtimes = BigInteger.Parse("101741582076661");
             BigInteger findCard = 2020;
-            ShuffleInstructions si = new ShuffleInstructions(input, deckSize);
-            si.Compress();
 
-            List<ShuffleInstructions> shufflesPerBit = new List<ShuffleInstructions> { si };
+            ShuffleSequence shufSeq = new ShuffleSequence(input, deckSize);
+            shufSeq.CompressSequence();
+
+            ShuffleSequence repeatedShuffles = SequenceAfterNRepetitions(shufSeq, shuffleNtimes);
+
+            return repeatedShuffles.CardPositionBeforeShuffle(findCard);
+        }
+
+        public static ShuffleSequence SequenceAfterNRepetitions(ShuffleSequence shufSeq, BigInteger reps)
+        {
+            List<ShuffleSequence> shufflesPerBit = new List<ShuffleSequence> { new ShuffleSequence(shufSeq) };
             int bitsNeeded = 0;
-            BigInteger bValue = 1;
-            BigInteger bValueNext = 2;
-            while (bValueNext < shuffleNtimes)
-            {
-                ShuffleInstructions next = new ShuffleInstructions(shufflesPerBit[bitsNeeded]);
-                next.AddInstructions(shufflesPerBit[bitsNeeded]);//Apply previous set of instructions twice
-                next.Compress(); //Keep it small
-                shufflesPerBit.Add(next);
+            BigInteger previousBitValue = 1;
+            BigInteger bitValue = 2;
 
-                bValue = bValueNext;
-                bValueNext = bValue * 2;
+            //Create shufflesequences for each bit value up to and including the largest bit value smaller than "reps"
+            while (bitValue < reps)
+            {
+                ShuffleSequence next = new ShuffleSequence(shufflesPerBit[bitsNeeded]);
+                next.AddToSequence(next);
+                next.CompressSequence();
+                shufflesPerBit.Add(next);
+                previousBitValue = bitValue;
+                bitValue = previousBitValue * 2;
                 bitsNeeded++;
             }
-            ShuffleInstructions finalInstructions = new ShuffleInstructions(shufflesPerBit.Last());
-            BigInteger remaining = shuffleNtimes - bValue;
-            bValue = bValue / 2;
 
-            //Apply Instruction-sets for all bits necessary to describe shuffleNtimes
-            for (int i = shufflesPerBit.Count - 2; i >= 0; i--)
+            //Combine shufflesequences for each activated bit in the bit-representation of "reps"
+            ShuffleSequence repeatedShuffleSequence = new ShuffleSequence(shufSeq.DeckSize);
+            BigInteger remaining = reps;
+
+            for (int i = shufflesPerBit.Count - 1; i >= 0; i--)
             {
-                if (bValue <= remaining)
+                if (previousBitValue <= remaining)
                 {
-                    finalInstructions.AddInstructions(shufflesPerBit[i]);
-                    finalInstructions.Compress();
-                    remaining = remaining - bValue;
+                    repeatedShuffleSequence.AddToSequence(shufflesPerBit[i]);
+                    repeatedShuffleSequence.CompressSequence();
+                    remaining = remaining - previousBitValue;
                 }
-                bValue = bValue / 2;
+                previousBitValue = previousBitValue / 2;
             }
-            return finalInstructions.TrackCardBackwards(findCard);
+
+            return repeatedShuffleSequence;
         }
     }
 
-    static class Card
+    class ShuffleSequence
     {
-        public static BigInteger Cut(BigInteger cardId, BigInteger deckSize, BigInteger cut)
+        List<IShuffleAction> shuffleActions;
+        public BigInteger DeckSize { get; set; }
+
+        public ShuffleSequence(BigInteger deckSize)
         {
-            return MathHelper.Mod(cardId - cut, deckSize);
+            this.DeckSize = deckSize;
+            shuffleActions = new List<IShuffleAction>();
         }
 
-        public static BigInteger IntoNewStack(BigInteger cardId, BigInteger deckSize)
+        public ShuffleSequence(IEnumerable<string> instructions, BigInteger deckSize) : this(deckSize)
         {
-            return deckSize - cardId - 1;
+            shuffleActions.AddRange(ShuffleActionStore.CreateShuffleActions(instructions));
         }
 
-        public static BigInteger WithIncrement(BigInteger cardId, BigInteger deckSize, BigInteger increment)
+        public ShuffleSequence(ShuffleSequence copyMe) : this(copyMe.DeckSize)
         {
-            return MathHelper.Mod(cardId * increment, deckSize);
+            foreach (IShuffleAction action in copyMe.shuffleActions)
+            {
+                shuffleActions.Add(action.Copy());
+            }
         }
 
-        public static BigInteger ReverseCut(BigInteger cardId, BigInteger deckSize, BigInteger cut)
+        public BigInteger CardPositionAfterShuffle(BigInteger currentPos)
         {
-            return (cardId + (deckSize + cut)) % deckSize;
+            foreach (IShuffleAction action in shuffleActions)
+            {
+                currentPos = action.NextCardPosition(currentPos, DeckSize);
+            }
+            return currentPos;
         }
 
-        public static BigInteger ReverseIntoNewStack(BigInteger cardId, BigInteger deckSize)
+        public BigInteger CardPositionBeforeShuffle(BigInteger currentPos)
         {
-            return IntoNewStack(cardId, deckSize);
+            IEnumerable<IShuffleAction> sa = shuffleActions as IEnumerable<IShuffleAction>;
+            foreach (IShuffleAction action in sa.Reverse())
+            {
+                currentPos = action.PreviousCardPosition(currentPos, DeckSize);
+            }
+            return currentPos;
         }
 
-        public static BigInteger ReverseWithIncrement(BigInteger cardId, BigInteger deckSize, BigInteger increment)
+        public void AddToSequence(ShuffleSequence other)
         {
-            return MathHelper.Mod(cardId * MathHelper.ModInv(increment, deckSize), deckSize);
+            List<IShuffleAction> newActions = new List<IShuffleAction>();
+            foreach (IShuffleAction action in other.shuffleActions)
+            {
+                newActions.Add(action.Copy());
+            }
+            shuffleActions.AddRange(newActions);
         }
+
+        public void CompressSequence()
+        {
+            CompressIncrementInstructions();
+            CompressCutInstructions();
+        }
+
+        private void CompressIncrementInstructions()
+        {
+            int bottomIncrementInstruction = shuffleActions.FindLastIndex(a => a is DealWithIncrement);
+            while (bottomIncrementInstruction > 0)
+            {
+                bottomIncrementInstruction = MergeOrMoveUpIncrementInstruction(bottomIncrementInstruction);
+            }
+        }
+
+        private int MergeOrMoveUpIncrementInstruction(int bottomIncrementInstruction)
+        {
+            IEnumerable<IShuffleAction> newActions = shuffleActions[bottomIncrementInstruction - 1].MergeWithBelow(shuffleActions[bottomIncrementInstruction], DeckSize);
+            shuffleActions.RemoveRange(bottomIncrementInstruction - 1, 2);
+            int newIndex = bottomIncrementInstruction - 2;
+            foreach (IShuffleAction newAction in newActions)
+            {
+                newIndex++;
+                shuffleActions.Insert(newIndex, newAction);
+            }
+            return shuffleActions.FindLastIndex(newIndex, a => a is DealWithIncrement);
+        }
+
+        private void CompressCutInstructions()
+        {
+            int topCutInstruction = shuffleActions.FindIndex(a => a is Cut);
+            while (topCutInstruction > -1 && topCutInstruction < shuffleActions.Count - 1)
+            {
+                topCutInstruction = MergeOrMoveDownCutInstruction(topCutInstruction);
+            }
+        }
+
+        private int MergeOrMoveDownCutInstruction(int topCutInstruction)
+        {
+            IEnumerable<IShuffleAction> newActions = shuffleActions[topCutInstruction].MergeWithBelow(shuffleActions[topCutInstruction + 1], DeckSize);
+            shuffleActions.RemoveRange(topCutInstruction, 2);
+            int newIndex = topCutInstruction - 1;
+            foreach (IShuffleAction newAction in newActions)
+            {
+                newIndex++;
+                shuffleActions.Insert(newIndex, newAction);
+            }
+            return shuffleActions.FindIndex(topCutInstruction, a => a is Cut);
+        }
+
     }
 
-    class Deck
+    static class ShuffleActionStore
     {
-        List<BigInteger> cards;
-        public int Count { get; private set; }
-
-        public Deck(int size)
-        {
-            Count = size;
-            cards = Enumerable.Range(0, Count).Select(x => (BigInteger)x).ToList();
-        }
-
-        public Deck(List<BigInteger> cards)
-        {
-            this.cards = cards;
-            Count = cards.Count;
-        }
-
-        public void DealIntoNewStack()
-        {
-            BigInteger[] newCards = new BigInteger[Count];
-            for (int id = 0; id < Count; id++)
-            {
-                int newId = (int)Card.IntoNewStack(id, Count);
-                newCards[newId] = cards[id];
-            }
-            cards = newCards.ToList();
-        }
-
-        public void Cut(int cut)
-        {
-            BigInteger[] newCards = new BigInteger[Count];
-            for (int id = 0; id < Count; id++)
-            {
-                int newId = (int)Card.Cut(id, Count, cut);
-                newCards[newId] = cards[id];
-            }
-            cards = newCards.ToList();
-        }
-
-        public void DealWithIncrement(int increment)
-        {
-            BigInteger[] newCards = new BigInteger[Count];
-            for (int id = 0; id < Count; id++)
-            {
-                int newId = (int)Card.WithIncrement(id, Count, increment);
-                newCards[newId] = cards[id];
-            }
-            cards = newCards.ToList();
-        }
-
-        public void PerformShuffle(string technique, int by)
-        {
-            if (technique == "cut") Cut(by);
-            if (technique == "increment") DealWithIncrement(by);
-            if (technique == "newstack") DealIntoNewStack();
-        }
-
-        public void PerformShuffle(string instruction)
-        {
-            (string technique, int by) = ShuffleHelper.PrepareInstructions(instruction);
-            PerformShuffle(technique, by);
-        }
-
-        public void PerformShuffle(IEnumerable<string> instructions)
-        {
-            foreach (string instruction in instructions)
-            {
-                PerformShuffle(instruction);
-            }
-        }
-
-        public override string ToString()
-        {
-            return string.Join(',', cards);
-        }
-    }
-
-    class ShuffleInstructions
-    {
-        public List<(string technique, BigInteger by)> Instructions { get; private set; }
-        public BigInteger DeckCount { get; set; }
-        public Dictionary<string, int> instCounts;
-
-        public ShuffleInstructions(IEnumerable<string> instructions, BigInteger deckCount)
-        {
-            Instructions = instructions.Select(x => ShuffleHelper.PrepareInstructions(x)).Select(x => (x.technique, (BigInteger)x.by)).ToList();
-            DeckCount = deckCount;
-            InitializeInstructionCounts();
-        }
-
-        public ShuffleInstructions(ShuffleInstructions toBeCopied)
-        {
-            DeckCount = toBeCopied.DeckCount;
-            Instructions = toBeCopied.Instructions.Select(ins => (ins.technique, ins.by)).ToList();
-            InitializeInstructionCounts();
-        }
-
-        private void InitializeInstructionCounts()
-        {
-            instCounts = new Dictionary<string, int>
-            {
-                { "newstack", Instructions.Where(x => x.technique == "newstack").Count() },
-                { "increment", Instructions.Where(x => x.technique == "increment").Count() },
-                { "cut", Instructions.Where(x => x.technique == "cut").Count() }
-            };
-        }
-
-        public void AddInstructions(IEnumerable<string> instructions)
-        {
-            var newInstructions = instructions.Select(x => ShuffleHelper.PrepareInstructions(x)).Select(x => (x.technique, (BigInteger)x.by));
-            AddInstructions(newInstructions);
-        }
-
-        public void AddInstructions(IEnumerable<(string technique, BigInteger by)> instructions)
-        {
-            foreach (var inst in instructions)
-            {
-                AddInstruction(inst);
-            }
-        }
-
-        public void AddInstructions(ShuffleInstructions otherInstructions)
-        {
-            AddInstructions(otherInstructions.Instructions.Select(x => (x.technique, x.by)));
-        }
-
-        public BigInteger TrackCard(BigInteger cardId)
-        {
-            foreach (var (technique, by) in Instructions)
-            {
-                if (technique == "increment")
-                {
-                    cardId = Card.WithIncrement(cardId, DeckCount, by);
-                }
-                if (technique == "cut")
-                {
-                    cardId = Card.Cut(cardId, DeckCount, by);
-                }
-                if (technique == "newstack")
-                {
-                    cardId = Card.IntoNewStack(cardId, DeckCount);
-                }
-            }
-            return cardId;
-        }
-
-        public BigInteger TrackCardBackwards(BigInteger cardId)
-        {
-            var reversed = Instructions.Reverse<(string technique, BigInteger by)>();
-            foreach (var (technique, by) in reversed)
-            {
-                if (technique == "increment")
-                {
-                    cardId = Card.ReverseWithIncrement(cardId, DeckCount, by);
-                }
-                if (technique == "cut")
-                {
-                    cardId = Card.ReverseCut(cardId, DeckCount, by);
-                }
-                if (technique == "newstack")
-                {
-                    cardId = Card.ReverseIntoNewStack(cardId, DeckCount);
-                }
-            }
-            return cardId;
-        }
-
-        public void Compress()
-        {
-            //EliminateNewStackInstructions();
-            CompressIncrements();
-            CompressCuts();
-        }
-
-        public void CompressCuts()
-        {
-            int topCut = 0;
-            while (instCounts["cut"] > 1)
-            {
-                topCut = MoveDownOrMergeTopCut(topCut);
-            }
-        }
-
-        int MoveDownOrMergeTopCut(int topCut)
-        {
-            topCut = Instructions.FindIndex(topCut, x => x.technique == "cut");
-            if (topCut == Instructions.Count) return topCut; //CompressCuts might end up in an endless loop if I messed up here, returning topCut would fix that but hide the problem
-            var rewritten = ShuffleHelper.Rewrite(Instructions[topCut], Instructions[topCut + 1], DeckCount);
-            ReplaceInstruction(topCut, rewritten[0]);
-            if (rewritten.Count == 2)
-            {
-                ReplaceInstruction(topCut + 1, rewritten[1]);
-            }
-            else
-            {
-                if (rewritten.Count == 0) throw new Exception("HUHHH shouldn't happen");
-                RemoveInstruction(topCut + 1);
-            }
-            return topCut; //Could update the topCut here before returning, would be slightly more efficient, 
-                           //but requires the assumption that all rules have a Cut as the last result
-                           //However we can guarantee that no Cut appeared above our topCut so this suffices for me
-        }
-
-        public void CompressIncrements()
-        {
-            int bottomInc = Instructions.Count - 1;
-            while (instCounts["increment"] > 1 || instCounts["increment"] == 1 && Instructions[0].technique != "increment")
-            {//Second half of the guard is to make it so this action also removes all NewStack Instructions
-                bottomInc = MoveUpOrMergeBottomIncrement(bottomInc);
-            }
-        }
-
-        private int MoveUpOrMergeBottomIncrement(int bottomInc)
-        {
-            bottomInc = Instructions.FindLastIndex(bottomInc, x => x.technique == "increment"); //StartIndex of FindLastIndex is the highest index (but first it visits)
-            if (bottomInc == 0) return bottomInc;
-            var rewritten = ShuffleHelper.Rewrite(Instructions[bottomInc - 1], Instructions[bottomInc], DeckCount);
-            ReplaceInstruction(bottomInc - 1, rewritten[0]);
-            if (rewritten.Count == 2)
-            {
-                ReplaceInstruction(bottomInc, rewritten[1]);
-            }
-            else
-            {
-                if (rewritten.Count == 0) throw new Exception("HUHHH shouldn't happen");
-                RemoveInstruction(bottomInc);
-            }
-            return bottomInc; //Could update the topCut here before returning, would be slightly more efficient, 
-                              //but requires the assumption that all rules have a Cut as the last result
-                              //However we can guarantee that no Cut appeared above our topCut so this suffices for me
-        }
-
-        private void EliminateNewStackInstructions()
-        {
-            //If there are 2+ newstack instructions, 1+ and 1+ increment instructions we can eliminate some instructions
-            while (instCounts["newstack"] > 1 || (instCounts["newstack"] > 0 && instCounts["increment"] > 0))
-            {
-                EliminateTopNewStack();
-            }
-        }
-
-        private void EliminateTopNewStack()
-        {
-            int nsIndex = Instructions.FindIndex(x => x.technique == "newstack");
-            //Look on either side for a Increment or NewStack Instruction
-            (bool down, int steps) = FindNearest(nsIndex, new List<string> { "increment", "newstack" });
-            while (steps > 0)
-            {
-                int top, bottom;
-                if (down)
-                {
-                    top = nsIndex;
-                    bottom = nsIndex + 1;
-                }
-                else
-                {
-                    top = nsIndex - 1;
-                    bottom = nsIndex;
-                }
-                var rewritten = ShuffleHelper.Rewrite(Instructions[top], Instructions[bottom], DeckCount);
-                if (rewritten.Count == 2)
-                {
-                    ReplaceInstruction(top, rewritten[0]);
-                    ReplaceInstruction(bottom, rewritten[1]);
-                }
-                else
-                {
-                    if (rewritten.Count == 0)
-                    {
-                        //This should only happen for newstack newstack
-                        RemoveInstruction(bottom);
-                        RemoveInstruction(top);
-                    }
-                    else
-                    {
-                        throw new Exception("Excuse me what are you doing here???");
-                    }
-                }
-                steps--;
-                nsIndex = down ? nsIndex + 1 : nsIndex - 1;
-            }
-        }
-
-        public (bool downwards, int steps) FindNearest(int startIndex, List<string> searchFor)
-        {
-            int steps = 1;
-            while (startIndex + steps < Instructions.Count || startIndex - steps >= 0)
-            {
-                if (startIndex + steps < Instructions.Count)
-                {
-                    if (searchFor.Contains(Instructions[startIndex + steps].technique)) return (true, steps);
-                }
-
-                if (startIndex - steps >= 0)
-                {
-                    if (searchFor.Contains(Instructions[startIndex - steps].technique)) return (false, steps);
-                }
-                steps++;
-            }
-            throw new Exception("Trying to find something that doesn't exist");
-        }
-
-        private void ReplaceInstruction(int index, (string technique, BigInteger by) newInstruction)
-        {
-            var (technique, _) = Instructions[index];
-            instCounts[technique]--;
-            Instructions[index] = newInstruction;
-            instCounts[newInstruction.technique]++;
-        }
-
-        private void RemoveInstruction(int index)
-        {
-            var (technique, _) = Instructions[index];
-            instCounts[technique]--;
-            Instructions.RemoveAt(index);
-        }
-
-        private void AddInstruction((string technique, BigInteger by) instruction)
-        {
-            Instructions.Add(instruction);
-            instCounts[instruction.technique]++;
-        }
-    }
-
-    static class ShuffleHelper
-    {
-        public static (string technique, int by) PrepareInstructions(string instruction)
+        public static IShuffleAction CreateShuffleAction(string instruction)
         {
             string[] split = instruction.Split(' ');
             if (split[0] == "cut")
             {
-                return ("cut", int.Parse(split[1]));
+                return new Cut(BigInteger.Parse(split[1]));
+            }
+            else if (split[2] == "increment")
+            {
+                return new DealWithIncrement(BigInteger.Parse(split[3]));
+            }
+            else if (split[2] == "new")
+            {
+                return new DealIntoNewStack();
             }
             else
             {
-                if (split[2] == "increment")
-                {
-                    return ("increment", int.Parse(split[3]));
-                }
-                else
-                {
-                    if (split[2] == "new")
-                    {
-                        return ("newstack", -1);
-                    }
-                    else
-
-                    {
-                        throw new Exception("Meep moop shouldn't be here");
-                    }
-                }
+                throw new Exception("Meep moop shouldn't be here");
             }
         }
 
-        public static List<(string type, BigInteger by)> Rewrite((string type, BigInteger by) top, (string type, BigInteger by) bottom, BigInteger deckCount)
+        public static IEnumerable<IShuffleAction> CreateShuffleActions(IEnumerable<string> instructions)
         {
-            if (top.type == bottom.type)
+            foreach(string instruction in instructions)
             {
-                if (top.type == "cut")
-                {
-                    return new List<(string type, BigInteger by)> { (top.type, MathHelper.Mod(top.by + bottom.by, deckCount)) };
-                }
-                if (top.type == "increment")
-                {
-                    return new List<(string type, BigInteger by)> { (top.type, MathHelper.Mod(top.by * bottom.by, deckCount)) };
-                }
-                if (top.type == "newstack")
-                {
-                    return new List<(string type, BigInteger by)>();
-                }
+                yield return CreateShuffleAction(instruction);
             }
+        }
+    }
 
-            if (top.type == "cut")
-            {
-                if (bottom.type == "newstack")
-                {
-                    return new List<(string type, BigInteger by)> { bottom, (top.type, MathHelper.Mod(-top.by, deckCount)) };
-                }
-                if (bottom.type == "increment")
-                {
-                    return new List<(string type, BigInteger by)> { bottom, (top.type, MathHelper.Mod(bottom.by * top.by, deckCount)) };
-                }
-            }
+    interface IShuffleAction
+    {
+        BigInteger NextCardPosition(BigInteger currentPos, BigInteger deckSize);
 
-            if (top.type == "newstack")
-            {
-                if (bottom.type == "cut")
-                {
-                    return new List<(string type, BigInteger by)> { (bottom.type, MathHelper.Mod(-bottom.by, deckCount)), top };
-                }
-                if (bottom.type == "increment")
-                {
-                    return new List<(string type, BigInteger by)> { (bottom.type, MathHelper.Mod(-bottom.by, deckCount)), ("cut", bottom.by) };
-                }
-            }
+        BigInteger PreviousCardPosition(BigInteger currentPos, BigInteger deckSize);
 
-            if (top.type == "increment")
-            {
-                if (bottom.type == "newstack")
-                {
-                    return new List<(string type, BigInteger by)> { (top.type, MathHelper.Mod(-top.by, deckCount)), ("cut", 1) };
-                }
-                //Not implementing it for Cut as second argument, as that one is mathematically problematic
-            }
+        IEnumerable<IShuffleAction> MergeWithBelow(IShuffleAction other, BigInteger deckSize);
 
-            throw new Exception($"Rewrite rule not implemented for: \n ({top.type},{top.by}) \n ({bottom.type},{bottom.by})");
+        IShuffleAction Copy();
+    }
+
+    class DealWithIncrement : IShuffleAction
+    {
+        public BigInteger Increment { get; }
+
+        public DealWithIncrement(BigInteger increment)
+        {
+            this.Increment = increment;
+        }
+
+        public IEnumerable<IShuffleAction> MergeWithBelow(IShuffleAction below, BigInteger deckSize)
+        {
+            if (below is DealIntoNewStack) return new List<IShuffleAction> { new DealWithIncrement(MathHelper.Mod(-Increment, deckSize)), new Cut(1) };
+            if (below is DealWithIncrement dwi) return new List<IShuffleAction> { new DealWithIncrement(MathHelper.Mod(Increment * dwi.Increment, deckSize)) };
+            if (below is Cut cut) throw new NotImplementedException("not implemented for Cut below, shouldn't be necessary though");
+            throw new NotImplementedException();
+        }
+
+        public BigInteger NextCardPosition(BigInteger currentPos, BigInteger deckSize)
+        {
+            return MathHelper.Mod(currentPos * Increment, deckSize);
+        }
+
+        public BigInteger PreviousCardPosition(BigInteger currentPos, BigInteger deckSize)
+        {
+            return MathHelper.Mod(currentPos * MathHelper.ModInv(Increment, deckSize), deckSize);
+        }
+
+        public IShuffleAction Copy()
+        {
+            return new DealWithIncrement(Increment);
+        }
+
+        public override string ToString()
+        {
+            return $"Deal with increment: {Increment}";
+        }
+    }
+
+    class Cut : IShuffleAction
+    {
+        public BigInteger CutFrom { get; }
+
+        public Cut(BigInteger cutFrom)
+        {
+            this.CutFrom = cutFrom;
+        }
+
+        public IEnumerable<IShuffleAction> MergeWithBelow(IShuffleAction below, BigInteger deckSize)
+        {
+            if (below is DealIntoNewStack) return new List<IShuffleAction> { below.Copy(), new Cut(MathHelper.Mod(-CutFrom, deckSize)) };
+            if (below is Cut cut) return new List<IShuffleAction> { new Cut(MathHelper.Mod(CutFrom + cut.CutFrom, deckSize)) };
+            if (below is DealWithIncrement dwi) return new List<IShuffleAction> { below.Copy(), new Cut(MathHelper.Mod(dwi.Increment * CutFrom, deckSize)) };
+            throw new NotImplementedException();
+        }
+
+        public BigInteger NextCardPosition(BigInteger currentPos, BigInteger deckSize)
+        {
+            return MathHelper.Mod(currentPos - CutFrom, deckSize);
+        }
+
+        public BigInteger PreviousCardPosition(BigInteger currentPos, BigInteger deckSize)
+        {
+            //return (currentPos + (deckSize + cutFrom)) % deckSize;
+            return MathHelper.Mod(currentPos + CutFrom, deckSize);
+        }
+
+        public IShuffleAction Copy()
+        {
+            return new Cut(CutFrom);
+        }
+
+        public override string ToString()
+        {
+            return $"Cut: {CutFrom}";
+        }
+    }
+
+    class DealIntoNewStack : IShuffleAction
+    {
+        public DealIntoNewStack()
+        {
+        }
+
+        public IEnumerable<IShuffleAction> MergeWithBelow(IShuffleAction below, BigInteger deckSize)
+        {
+            if (below is DealIntoNewStack) return new List<IShuffleAction>();
+            if (below is Cut cut) return new List<IShuffleAction> { new Cut(MathHelper.Mod(-cut.CutFrom, deckSize)), this.Copy() };
+            if (below is DealWithIncrement dwi) return new List<IShuffleAction> { new DealWithIncrement(MathHelper.Mod(-dwi.Increment, deckSize)), new Cut(dwi.Increment) };
+            throw new NotImplementedException();
+        }
+
+        public BigInteger NextCardPosition(BigInteger currentPos, BigInteger deckSize)
+        {
+            return deckSize - currentPos - 1;
+        }
+
+        public BigInteger PreviousCardPosition(BigInteger currentPos, BigInteger deckSize)
+        {
+            return NextCardPosition(currentPos, deckSize);
+        }
+
+        public IShuffleAction Copy()
+        {
+            return new DealIntoNewStack();
+        }
+
+        public override string ToString()
+        {
+            return "Deal into new stack";
         }
     }
 }
