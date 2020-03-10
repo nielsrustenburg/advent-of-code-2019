@@ -78,7 +78,6 @@ namespace AoC
                 if (idleCount > 0)
                 {
                     HandleIdleSystem(newPackages);
-                    Console.WriteLine($"system idle{idleCount}");
                 }
                 idleCount++;
             }
