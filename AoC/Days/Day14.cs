@@ -94,12 +94,6 @@ namespace AoC
             nodes.Add(name, new ChemicalProductionNode(name, batchsize));
         }
 
-        public void AddEdge(string product, string ingredient, int amount)
-        {
-            nodes[product].AddOutNeighbour(ingredient, amount);
-            nodes[ingredient].AddInNeighbour(product, amount);
-        }
-
         public int BatchSize(string name)
         {
             return nodes[name].BatchSize;
