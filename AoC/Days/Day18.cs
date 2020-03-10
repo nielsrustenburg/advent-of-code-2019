@@ -18,7 +18,7 @@ namespace AoC
 
             //Set new List<string> { '.' } as passable floors for graphs with less edges
             //Use floors instead if you want to know what is actually reachable from each position
-            Doolhof<string> maze = new Doolhof<string>(mazeInput.Select(r => r.ToCharArray().Select(c => c.ToString())), "#", new List<string> { "." });
+            Maze<string> maze = new Maze<string>(mazeInput.Select(r => r.ToCharArray().Select(c => c.ToString())), "#", new List<string> { "." });
 
             //Use for visual clarity
             maze.EliminateDeadEnds(doors.Union(floors).ToHashSet(), "#", walls);
@@ -64,9 +64,9 @@ namespace AoC
 
             //Set new List<string> { '.' } as passable floors for graphs with less edges
             //Use floors instead if you want to know what is actually reachable from each position
-            Doolhof<string> graphMaze = new Doolhof<string>(mazeInput.Select(r => r.ToCharArray().Select(c => c.ToString())), "#", new List<string> { "." });
+            Maze<string> graphMaze = new Maze<string>(mazeInput.Select(r => r.ToCharArray().Select(c => c.ToString())), "#", new List<string> { "." });
 
-            Doolhof<string> analysisMaze = new Doolhof<string>(mazeInput.Select(r => r.ToCharArray().Select(c => c.ToString())), "#", floors.Union(doors).Union(keys));
+            Maze<string> analysisMaze = new Maze<string>(mazeInput.Select(r => r.ToCharArray().Select(c => c.ToString())), "#", floors.Union(doors).Union(keys));
 
             Dictionary<string, List<string>> keysPerSubgraph = new Dictionary<string, List<string>>();
             foreach(string start in new List<string> { "1", "2", "3", "4" })
@@ -120,7 +120,7 @@ namespace AoC
 
     class TritonGraph : AdjacencyGraph<TritonNode>
     {
-        public TritonGraph(Doolhof<string> maze, HashSet<string> keys, HashSet<string> doors, HashSet<string> otherPoIs)
+        public TritonGraph(Maze<string> maze, HashSet<string> keys, HashSet<string> doors, HashSet<string> otherPoIs)
         {
             foreach (string key in keys)
             {

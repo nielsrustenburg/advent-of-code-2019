@@ -36,7 +36,7 @@ namespace AoC.Tests
                                                     "#......#",
                                                     "########"};
 
-            Doolhof<char> maze = new Doolhof<char>(mazeIn, '#', new List<char> { '.' });
+            Maze<char> maze = new Maze<char>(mazeIn, '#', new List<char> { '.' });
             maze.EliminateDeadEnds(new HashSet<char> { '.' }, '#', new HashSet<char> { '#' });
 
             List<string> mazeOut = maze.RowsAsStrings();

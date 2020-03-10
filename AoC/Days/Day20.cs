@@ -10,7 +10,7 @@ namespace AoC
         public static int SolvePartOne()
         {
             string[] input = InputReader.StringsFromTxt("d20input.txt");
-            (Doolhof<string> dmaze, DonutGraph dgraph) = BuildDonutMaze(input);
+            (Maze<string> dmaze, DonutGraph dgraph) = BuildDonutMaze(input);
 
             return dgraph.BestFirstPath("AA:OUT", "ZZ:IN");
         }
@@ -18,17 +18,17 @@ namespace AoC
         public static int SolvePartTwo()
         {
             string[] input = InputReader.StringsFromTxt("d20input.txt");
-            (Doolhof<string> dmaze, DonutGraph dgraph) = BuildDonutMaze(input);
+            (Maze<string> dmaze, DonutGraph dgraph) = BuildDonutMaze(input);
 
             return dgraph.BestFirstPath("AA:OUT", "ZZ:IN", true);
         }
 
-        private static (Doolhof<string>, DonutGraph) BuildDonutMaze(string[] input)
+        private static (Maze<string>, DonutGraph) BuildDonutMaze(string[] input)
         {
 
             IEnumerable<IEnumerable<string>> mazeInput = input.Reverse().Select(s => s.Select(c => c.ToString()));
 
-            Doolhof<string> maze = new Doolhof<string>(mazeInput, " ", new List<string> { "." }, false);
+            Maze<string> maze = new Maze<string>(mazeInput, " ", new List<string> { "." }, false);
 
             //Set up some properties of the maze
             int thickness = FindDonutThickness(input);
@@ -143,7 +143,7 @@ namespace AoC
 
     class DonutGraph : AdjacencyDiGraph<DonutGraphNode>
     {
-        int donutThickness; //useful for A* heuristic
+        readonly int donutThickness; //useful for A* heuristic
 
         public void AddNode(string name)
         {

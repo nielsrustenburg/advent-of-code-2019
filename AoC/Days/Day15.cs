@@ -44,7 +44,7 @@ namespace AoC
         public int Y { get; private set; }
         public bool Finished { get; private set; }
         public Grid<string> mentalMap;
-        public Doolhof<string> mazeMap;
+        public Maze<string> mazeMap;
 
         public RepairBot(List<BigInteger> programming)
         {
@@ -52,7 +52,7 @@ namespace AoC
             X = 0;
             Y = 0;
             mentalMap = new Grid<string>(" ");
-            mazeMap = new Doolhof<string>("\u2588", new List<string> { "#", "O", "D" });
+            mazeMap = new Maze<string>("\u2588", new List<string> { "#", "O", "D" });
             Finished = false;
         }
 
