@@ -9,7 +9,6 @@ namespace AoC
     {
         public static int SolvePartOne()
         {
-            Console.Clear();
             string inputString = InputReader.StringFromLine("d16input.txt");
             List<int> input = inputString.Select(x => (int)Char.GetNumericValue(x)).ToList();
             List<int> signal = input;
