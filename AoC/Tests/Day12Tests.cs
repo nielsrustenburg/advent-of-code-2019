@@ -16,26 +16,6 @@ namespace AoC.Tests
             Console.WriteLine("Day12Tests Completed!");
         }
 
-        //public static void TestSolvePartOne()
-        //{
-        //    void Test(int expectedOutput)
-        //    {
-        //        int output = Day12.SolvePartOne();
-        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-        //    }
-        //    Test(10635);
-        //}
-
-        //public static void TestSolvePartTwo()
-        //{
-        //    void Test(BigInteger expectedOutput)
-        //    {
-        //        BigInteger output = Day12.SolvePartTwo();
-        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-        //    }
-        //    Test(BigInteger.Parse("583523031727256"));
-        //}
-
         public static void TestSimulateStep()
         {
             List<JupiterMoon> jmoons = new List<JupiterMoon>

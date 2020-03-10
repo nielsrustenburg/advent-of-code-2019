@@ -19,26 +19,6 @@ namespace AoC.Tests
             Console.WriteLine("Day9Tests Completed!");
         }
 
-        //public static void TestSolvePartOne()
-        //{
-        //    void Test(BigInteger expectedOutput)
-        //    {
-        //        BigInteger output = Day9.SolvePartOne();
-        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-        //    }
-        //    Test(2453265701);
-        //}
-
-        //public static void TestSolvePartTwo()
-        //{
-        //    void Test(BigInteger expectedOutput)
-        //    {
-        //        BigInteger output = Day9.SolvePartTwo();
-        //        if (output != expectedOutput) throw new Exception($"{TestSuite.GetCurrentMethod()}(): {output}, expected {expectedOutput}");
-        //    }
-        //    Test(80805);
-        //}
-
         public static void TestQuine()
         {
             List<int> program = new List<int> { 109, 1, 204, -1, 1001, 100, 1, 100, 1008, 100, 16, 101, 1006, 101, 0, 99 };
