@@ -11,74 +11,129 @@ namespace AoC
         public static int SolvePartOne()
         {
             List<(string, string)> input = InputReader.ReadOrbitRelationsFromTxt("d6input.txt");
-            OrbitTreeBuilder otb = new OrbitTreeBuilder();
-            OrbitTree otree = otb.MakeTrees(input).First();
+            OrbitTree otree = OrbitTreeBuilder.MakeTrees(input).First();
             return otree.CountAllOrbits();
         }
 
         public static int SolvePartTwo()
         {
             List<(string, string)> input = InputReader.ReadOrbitRelationsFromTxt("d6input.txt");
-            OrbitTreeBuilder otb = new OrbitTreeBuilder();
-            OrbitTree otree = otb.MakeTrees(input).First();
-            return otree.DistanceBetweenNodes("YOU", "SAN") - 2; 
+            OrbitTree otree = OrbitTreeBuilder.MakeTrees(input).First();
+            return otree.DistanceBetweenNodes("YOU", "SAN") - 2;
         }
     }
 
-    class OrbitTreeBuilder : AbstractTreeBuilder<OrbitTree,TreeNode>
+    class OrbitTree : Tree<OrbitNode>
     {
-        protected override TreeNode CreateNode(string name)
+        public OrbitTree(string rootName) : base()
         {
-            return new TreeNode(name);
+            OrbitNode myRoot = new OrbitNode(rootName);
+            nodes.Add(rootName, myRoot);
+            root = rootName;
+            leaves.Add(rootName);
         }
 
-        protected override OrbitTree CreateTree(TreeNode root, Dictionary<string,TreeNode> nodes)
+        protected override OrbitNode CopyNode(OrbitNode copyMe)
         {
-            return new OrbitTree(root, nodes);
+            return new OrbitNode(copyMe);
         }
-    }
 
-    class OrbitTree : Tree
-    {
-        public OrbitTree(TreeNode root, Dictionary<string,TreeNode> nodes) : base(root, nodes)
+        public void AddNode(string parent, string child)
         {
-
+            OrbitNode newChild = new OrbitNode(child);
+            nodes.Add(child, newChild);
+            AddChild(parent, child);
+            leaves.Add(child);
+            leaves.Remove(parent);
         }
 
         public int CountAllOrbits()
         {
             int total = 0;
-            foreach(TreeNode node in nodes.Values)
+            foreach (int depth in Depths().Values)
             {
-                total += node.Depth;
+                total += depth;
             }
             return total;
         }
 
         public int DistanceBetweenNodes(string nodeA, string nodeB)
-        {            
+        {
             //Find common ancestor, or the other node
-            List<TreeNode> aAncestors = new List<TreeNode> ();
-            List<TreeNode> bAncestors = new List<TreeNode> ();
-            TreeNode currentA = nodes[nodeA];
-            TreeNode currentB = nodes[nodeB];
-            bool unfinished = true;
-            while (unfinished)
+            List<string> pathToRootA = PathToRoot(nodeA);
+            List<string> pathToRootB = PathToRoot(nodeB);
+
+            int shortestPathCount = pathToRootA.Count < pathToRootB.Count ? pathToRootA.Count : pathToRootB.Count;
+            int distance = -1;
+
+            for(int commonAncestors = 0; commonAncestors < shortestPathCount; commonAncestors++)
             {
-                if (currentA.Depth > currentB.Depth)
+                if (pathToRootA[commonAncestors] != pathToRootB[commonAncestors])
                 {
-                    currentA = nodes[currentA.Parent()];
-                    aAncestors.Add(currentA);
+                    distance = pathToRootA.Count + pathToRootB.Count - (2 * (commonAncestors));
+                    break;
+                }
+            }
+            return distance;
+        }
+    }
+
+    class OrbitNode : TreeNode
+    {
+        public OrbitNode(string name) : base(name)
+        {
+
+        }
+
+        public OrbitNode(OrbitNode copyMe) : base(copyMe)
+        {
+
+        }
+    }
+
+    static class OrbitTreeBuilder
+    {
+        public static List<OrbitTree> MakeTrees(IEnumerable<(string, string)> pcRelations)
+        {
+            List<(string, string)> relationsToAdd = pcRelations.ToList();
+            Dictionary<string, OrbitTree> trees = new Dictionary<string, OrbitTree>();
+
+            Dictionary<string, string> nodesToRoots = new Dictionary<string, string>();
+
+            //Combine trees whenever we've encountered the parent or child before
+            foreach ((string parent, string child) in relationsToAdd)
+            {
+                OrbitTree tree;
+                if (nodesToRoots.ContainsKey(parent))
+                {
+                    string parentRoot = parent;
+                    do
+                    {
+                        parentRoot = nodesToRoots[parentRoot];
+                    } while (!trees.ContainsKey(parentRoot) && parentRoot != parent);
+                    tree = trees[parentRoot];
+                } else
+                {
+                    tree = new OrbitTree(parent);
+                    trees.Add(parent, tree);
+                    nodesToRoots.Add(parent, parent);
+                }
+
+                if (trees.ContainsKey(child))
+                {
+                    OrbitTree childTree = trees[child];
+                    string childRoot = childTree.Root();
+                    tree.AddTreeAsChild(parent, childTree);
+                    nodesToRoots[childRoot] = nodesToRoots[parent];
+                    trees.Remove(childRoot);
                 }
                 else
                 {
-                    currentB = nodes[currentB.Parent()];
-                    bAncestors.Add(currentB);
+                    tree.AddNode(parent, child);
+                    nodesToRoots.Add(child, nodesToRoots[parent]);
                 }
-
-                unfinished = currentA != currentB;
             }
-            return aAncestors.Count + bAncestors.Count;
+            return trees.Values.ToList();
         }
     }
 }

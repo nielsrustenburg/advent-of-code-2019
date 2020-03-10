@@ -5,158 +5,163 @@ using System.Linq;
 
 namespace AoC
 {
-    class Tree
+    abstract class Tree<T> : IInspectableTree where T : TreeNode
     {
-        protected TreeNode root;
-        protected Dictionary<string, TreeNode> nodes;
+        protected Dictionary<string, T> nodes;
+        protected string root;
         protected HashSet<string> leaves;
 
-        public Tree(TreeNode root, Dictionary<string,TreeNode> allNodes)
+        protected Tree()
         {
-            this.root = root;
-            nodes = new Dictionary<string, TreeNode>();
+            nodes = new Dictionary<string, T>();
             leaves = new HashSet<string>();
-
-            IQueue<TreeNode> queue = new NaiveQueue<TreeNode>();
-            queue.Enqueue(root);
-
-            while (queue.Any())
-            {
-                TreeNode currentNode = queue.Dequeue();
-                nodes.Add(currentNode.Name, currentNode);
-
-                List<string> children = currentNode.Children();
-                if (children.Any())
-                {
-                    foreach (string child in children)
-                    {
-                        queue.Enqueue(allNodes[child]);
-                    }
-                }
-                else
-                {
-                    leaves.Add(currentNode.Name);
-                }
-            }
         }
 
-        public void AddChild(string parent, TreeNode child)
+        public string Parent(string child)
         {
-            nodes.Add(child.Name, child);
+            return nodes[child].Parent();
+        }
 
-            if (leaves.Contains(parent))
-            {
-                leaves.Remove(parent);
-                leaves.Add(child.Name);
-            }
+        public IEnumerable<string> Children(string parent)
+        {
+            return nodes[parent].Children();
+        }
 
+        public bool ContainsNode(string name)
+        {
+            return nodes.ContainsKey(name);
+        }
+
+        protected void AddChild(string parent, string child)
+        {
             nodes[parent].AddChild(child);
+            nodes[child].SetParent(parent);
         }
 
-        public void UpdateRoot(TreeNode newRoot)
+        public void AddTreeAsChild(string parent, Tree<T> otherTree)
         {
-            nodes.Add(newRoot.Name, newRoot);
-            newRoot.AddChild(root);
-            root = newRoot;
+            foreach(var kvp in otherTree.nodes)
+            {
+                nodes.Add(kvp.Key, CopyNode(kvp.Value));
+            }
+            AddChild(parent, otherTree.root);
+            leaves.Remove(parent);
+            leaves.UnionWith(otherTree.leaves);
+        }
+
+        public Dictionary<string, int> Depths()
+        {
+            int d = 0;
+            Dictionary<string, int> depthDict = new Dictionary<string, int>();
+            List<string> currentLayer = new List<string> { root };
+            while (currentLayer.Any())
+            {
+                List<string> nextLayer = new List<string>();
+                foreach (string node in currentLayer)
+                {
+                    depthDict.Add(node, d);
+                    nextLayer.AddRange(Children(node));
+                }
+                d++;
+                currentLayer = nextLayer;
+            }
+            return depthDict;
+        }
+
+        public List<string> PathToRoot(string from)
+        {
+            if (from == root) return new List<string> { root };
+
+            List<string> parentsPath = PathToRoot(Parent(from));
+            parentsPath.Add(from);
+            return parentsPath;
+        }
+
+        protected abstract T CopyNode(T copyMe);
+
+        public IEnumerable<string> Leaves()
+        {
+            return leaves.AsEnumerable();
+        }
+
+        public string Root()
+        {
+            return root;
         }
     }
 
-    class TreeNode : INode
+    interface IInspectableTree
     {
-        public string Name { get; private set; }
-        protected TreeNode parent;
-        protected Dictionary<string, TreeNode> children;
-        public int Depth { get; private set; }
+        bool ContainsNode(string name);
 
-        public TreeNode(string name)
+        string Root();
+
+        IEnumerable<string> Leaves();
+
+        string Parent(string child);
+
+        IEnumerable<string> Children(string parent);
+    }
+
+    interface ITreeNode : INode
+    {
+        string Parent();
+
+        IEnumerable<string> Children();
+
+        void AddChild(string child);
+
+        bool IsLeaf();
+
+        bool IsRoot();
+    }
+
+    abstract class TreeNode : ITreeNode
+    {
+        public string Name { get; }
+        protected string parent;
+        protected HashSet<string> children;
+
+        protected TreeNode(string name)
         {
             Name = name;
-            Depth = 0;
-            children = new Dictionary<string, TreeNode>();
+            children = new HashSet<string>();
         }
 
-        public void AddChild(TreeNode child)
+        protected TreeNode(TreeNode copyMe) : this(copyMe.Name)
         {
-            if (children.ContainsKey(child.Name)) throw new Exception($"{Name} already contains a child with name: {child.Name}");
-
-            children.Add(child.Name, child);
-            child.SetParent(this);
-            child.UpdateDepth(Depth + 1);
+            parent = copyMe.parent;
+            children.UnionWith(copyMe.children);
         }
 
-        private void SetParent(TreeNode newParent)
+        public IEnumerable<string> Children()
         {
-            parent = newParent;
+            return children.AsEnumerable();
         }
 
-        public void UpdateParent(TreeNode newParent, bool allowReplacement = false)
+        public bool IsLeaf()
         {
-            if (!allowReplacement && parent != null) throw new Exception("Trying to update parent of a treenode which already has a parent without permission");
-
-            newParent.AddChild(this);
+            return !children.Any();
         }
 
-        private void UpdateDepth(int newDepth)
+        public bool IsRoot()
         {
-            Depth = newDepth;
-            foreach (TreeNode child in children.Values)
-            {
-                child.UpdateDepth(Depth + 1);
-            }
+            return parent == null;
         }
 
         public string Parent()
         {
-            return parent.Name;
+            return parent;
         }
 
-        public List<string> Children()
+        public void AddChild(string child)
         {
-            return children.Keys.ToList();
+            children.Add(child);
         }
-    }
 
-    abstract class AbstractTreeBuilder<T,N> where T : Tree
-                                            where N : TreeNode
-    {
-        public List<T> MakeTrees(IEnumerable<(string,string)> pcRelations)
+        public void SetParent(string parent)
         {
-            List<(string, string)> relationsToAdd = pcRelations.ToList();
-            Dictionary<string, N> nodes = new Dictionary<string, N>();
-
-            foreach ((string parent, string child) in relationsToAdd)
-            {
-                if (!nodes.TryGetValue(parent, out N pNode))
-                {
-                    pNode = CreateNode(parent);
-                    nodes[parent] = pNode;
-                }
-
-                if (!nodes.TryGetValue(child, out N cNode))
-                {
-                    cNode = CreateNode(child);
-                    nodes[child] = cNode;
-                }
-            }
-
-            HashSet<string> roots = new HashSet<string>();
-            HashSet<string> nodesWithRelations = new HashSet<string>();
-
-            foreach ((string parent, string child) in relationsToAdd)
-            {
-                if (roots.Contains(child)) roots.Remove(child);
-                if (!nodesWithRelations.Contains(parent)) roots.Add(parent);
-
-                nodes[parent].AddChild(nodes[child]);
-                nodesWithRelations.Add(child);
-                nodesWithRelations.Add(parent);
-            }
-
-            return roots.Select(r => CreateTree(nodes[r], nodes)).ToList();
+            this.parent = parent;
         }
-
-        abstract protected N CreateNode(string name);
-
-        abstract protected T CreateTree(N root, Dictionary<string,N> nodes);
     }
 }
