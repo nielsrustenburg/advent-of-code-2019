@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace AoC
 {
-    public class Grid<T> : IGrid<T>
+    public class Grid<T>
     {
         public T DefaultTile { get; private set; }
         int xMin, xMax, yMin, yMax;
