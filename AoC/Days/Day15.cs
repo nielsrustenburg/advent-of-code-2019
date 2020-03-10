@@ -58,8 +58,9 @@ namespace AoC
 
         public void ExploreMaze(bool draw = false)
         {
-            List<string> dirs = new List<string> { "north", "south", "west", "east" };
-            List<string> path = new List<string>();
+            List<Direction> validDirections = new List<Direction> { Direction.North, Direction.South, Direction.West, Direction.East };
+            List<Direction> pathTaken = new List<Direction>();
+
             if(draw) Console.Clear();
             do
             {
@@ -69,7 +70,7 @@ namespace AoC
                 {
                     if (!tileKnowledge[i])
                     {
-                        ExploreNeighbours(dirs[i]);
+                        ExploreNeighbours(validDirections[i]);
                     }
                 }
                 //Pick the first unexplored non-wall neighbour if any exist and continue exploring
@@ -77,14 +78,14 @@ namespace AoC
                 tileKnowledge = LookAround();
                 if (tileKnowledge.Where(x => !x).Any())
                 {
-                    string movedir = dirs[tileKnowledge.FindIndex(x => !x)];
-                    Move(movedir, true);
-                    path.Add(movedir);
+                    Direction moveDirection = validDirections[tileKnowledge.FindIndex(x => !x)];
+                    Move(moveDirection, true);
+                    pathTaken.Add(moveDirection);
                 }
                 else
                 {
-                    Move(OppositeDir(path.Last()), true);
-                    path.RemoveAt(path.Count - 1);
+                    Move(pathTaken.Last().Opposite(), true);
+                    pathTaken.RemoveAt(pathTaken.Count - 1);
                 }
 
                 if (draw)
@@ -97,27 +98,25 @@ namespace AoC
                     }
                 }
 
-            } while (path.Any());
+            } while (pathTaken.Any());
         }
 
-        public bool Move(string direction, bool closePrev = false)
+        public bool Move(Direction direction, bool closePrev = false)
         {
-            int dircode = 1;
-            if (direction == "south") dircode = 2;
-            if (direction == "west") dircode = 3;
-            if (direction == "east") dircode = 4;
+            //Sadly AoC uses different int values than I do
+            int dirCode = 4;
+            if (direction == Direction.North) dirCode = 1;
+            if (direction == Direction.South) dirCode = 2;
+            if (direction == Direction.West) dirCode = 3;
 
-            int response = (int)brain.Run(new List<BigInteger> { dircode })[0];
+            int response = (int)brain.Run(new List<BigInteger> { dirCode })[0];
             if (response > 0)
             {
                 if (mentalMap.GetTile(X, Y) == "D")
                 {
                     SetMapTiles(X, Y, closePrev ? "#" : " ");
                 }
-                if (direction == "north") Y++;
-                if (direction == "south") Y--;
-                if (direction == "west") X--;
-                if (direction == "east") X++;
+                (X, Y) = DirectionHelper.NeighbourInDirection(direction, X, Y);
 
                 Finished = response == 2;
                 SetMapTiles(X, Y, Finished ? "O" : "D");
@@ -125,13 +124,8 @@ namespace AoC
             }
             else
             {
-                int mentalx = X;
-                int mentaly = Y;
-                if (direction == "north") mentaly++;
-                if (direction == "south") mentaly--;
-                if (direction == "west") mentalx--;
-                if (direction == "east") mentalx++;
-                SetMapTiles(mentalx, mentaly, "\u2588");
+                (int mentalX, int mentalY) = DirectionHelper.NeighbourInDirection(direction, X, Y);
+                SetMapTiles(mentalX, mentalY, "\u2588");
                 return false;
             }
         }
@@ -142,24 +136,9 @@ namespace AoC
             mazeMap.SetTile(x, y, tile);
         }
 
-        public void ExploreNeighbours(string direction)
+        public void ExploreNeighbours(Direction dir)
         {
-            if (direction == "north")
-            {
-                if (Move("north")) Move("south");
-            }
-            if (direction == "south")
-            {
-                if (Move("south")) Move("north");
-            }
-            if (direction == "west")
-            {
-                if (Move("west")) Move("east");
-            }
-            if (direction == "east")
-            {
-                if (Move("east")) Move("west");
-            }
+            if (Move(dir)) Move(dir.Opposite());
         }
 
         public List<bool> LookAround()
@@ -173,14 +152,6 @@ namespace AoC
                                     knownTiles.Contains(south),
                                     knownTiles.Contains(west),
                                     knownTiles.Contains(east) };
-        }
-
-        public static string OppositeDir(string dir)
-        {
-            if (dir == "north") return "south";
-            if (dir == "south") return "north";
-            if (dir == "west") return "east";
-            return "west";
         }
     }
 }
