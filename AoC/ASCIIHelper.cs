@@ -16,16 +16,9 @@ namespace AoC
             List<BigInteger> output = s.Select(c => (BigInteger)c).ToList();
             if (withNewLine)
             {
-                output = WithNewLine(output);
+                output.Add(10);
             }
             return output;
-        }
-
-        public static List<BigInteger> WithNewLine(List<BigInteger> l)
-        {
-            List<BigInteger> ln = new List<BigInteger>(l);
-            ln.Add(10);
-            return ln;
         }
 
         public static string ASCIIToString(IEnumerable<int> ascii)
