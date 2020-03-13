@@ -10,7 +10,7 @@ namespace AoC
     {
         public static int SolvePartOne()
         {
-            string input = InputReader.StringFromLine("d15input.txt");
+            string input = InputReader.StringsFromTxt("d15input.txt")[0];
             List<BigInteger> program = input.Split(',').Select(x => BigInteger.Parse(x)).ToList();
             RepairBot rb = new RepairBot(program);
 
@@ -24,7 +24,7 @@ namespace AoC
 
         public static int SolvePartTwo()
         {
-            string input = InputReader.StringFromLine("d15input.txt");
+            string input = InputReader.StringsFromTxt("d15input.txt")[0];
             List<BigInteger> program = input.Split(',').Select(x => BigInteger.Parse(x)).ToList();
             RepairBot rb = new RepairBot(program);
 

@@ -9,7 +9,7 @@ namespace AoC
     {
         public static int SolvePartOne()
         {
-            string input = InputReader.StringFromLine("d8input.txt");
+            string input = InputReader.StringsFromTxt("d8input.txt")[0];
 
             int width = 25;
             int height = 6;
@@ -44,7 +44,7 @@ namespace AoC
             int width = 25;
             int height = 6;
             int pixelsPerLayer = width * height;
-            string input = InputReader.StringFromLine("d8input.txt");
+            string input = InputReader.StringsFromTxt("d8input.txt")[0];
             char[] solution = new char[pixelsPerLayer];
             List<string> layers = Enumerable.Range(0, input.Length / pixelsPerLayer).
                         Select(x => input.Substring(x * pixelsPerLayer, pixelsPerLayer)).ToList();

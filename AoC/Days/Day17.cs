@@ -10,7 +10,7 @@ namespace AoC
     {
         public static int SolvePartOne()
         {
-            string input = InputReader.StringFromLine("d17input.txt");
+            string input = InputReader.StringsFromTxt("d17input.txt")[0];
             Grid<char> map = CreateScaffoldMap(input);
 
             List<(int x, int y)> scaffolds = map.FindAllMatchingTiles('#');
@@ -32,7 +32,7 @@ namespace AoC
 
         public static int SolvePartTwo()
         {
-            string input = InputReader.StringFromLine("d17input.txt");
+            string input = InputReader.StringsFromTxt("d17input.txt")[0];
             List<BigInteger> program = input.Split(',').Select(g => BigInteger.Parse(g)).ToList();
             program[0] = 2; //Override movement logic
 
