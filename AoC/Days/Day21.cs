@@ -10,7 +10,7 @@ namespace AoC
     {
         public static int SolvePartOne()
         {
-            string input = InputReader.StringsFromTxt("d21input.txt")[0];
+            string input = InputReader.StringFromLine("d21input.txt");
             List<BigInteger> program = input.Split(',').Select(x => BigInteger.Parse(x)).ToList();
             SpringDroid springdroid = new SpringDroid(program, false);
 
@@ -26,7 +26,7 @@ namespace AoC
 
         public static int SolvePartTwo()
         {
-            string input = InputReader.StringsFromTxt("d21input.txt")[0];
+            string input = InputReader.StringFromLine("d21input.txt");
             List<BigInteger> program = input.Split(',').Select(x => BigInteger.Parse(x)).ToList();
             SpringDroid springdroid = new SpringDroid(program, false);
             springdroid.AddInstruction("NOT A T");

@@ -7,25 +7,19 @@ namespace AoC
 {
     static class Day6
     {
+
         public static int SolvePartOne()
         {
-            string[] input = InputReader.StringsFromTxt("d6input.txt");
-            List<(string, string)> orbitRelations = ParseOrbitRelations(input);
-            OrbitTree otree = OrbitTreeBuilder.MakeTrees(orbitRelations).First();
+            List<(string, string)> input = InputReader.ReadOrbitRelationsFromTxt("d6input.txt");
+            OrbitTree otree = OrbitTreeBuilder.MakeTrees(input).First();
             return otree.CountAllOrbits();
         }
 
         public static int SolvePartTwo()
         {
-            string[] input = InputReader.StringsFromTxt("d6input.txt");
-            List<(string, string)> orbitRelations = ParseOrbitRelations(input);
-            OrbitTree otree = OrbitTreeBuilder.MakeTrees(orbitRelations).First();
+            List<(string, string)> input = InputReader.ReadOrbitRelationsFromTxt("d6input.txt");
+            OrbitTree otree = OrbitTreeBuilder.MakeTrees(input).First();
             return otree.DistanceBetweenNodes("YOU", "SAN") - 2;
-        }
-
-        public static List<(string,string)> ParseOrbitRelations(IEnumerable<string> input)
-        {
-            return input.Select(r => r.Split(')')).Select(s => (s[0], s[1])).ToList();
         }
     }
 

@@ -10,7 +10,7 @@ namespace AoC
     {
         public static BigInteger SolvePartOne()
         {
-            string input = InputReader.StringsFromTxt("d23input.txt")[0];
+            string input = InputReader.StringFromLine("d23input.txt");
             List<BigInteger> program = input.Split(',').Select(x => BigInteger.Parse(x)).ToList();
             Network network = new Network(50, program);
             return network.Run().y;
@@ -18,7 +18,7 @@ namespace AoC
 
         public static BigInteger SolvePartTwo()
         {
-            string input = InputReader.StringsFromTxt("d23input.txt")[0];
+            string input = InputReader.StringFromLine("d23input.txt");
             List<BigInteger> program = input.Split(',').Select(x => BigInteger.Parse(x)).ToList();
             NatNetwork network = new NatNetwork(50, program);
             return network.Run().y;
