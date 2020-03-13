@@ -10,8 +10,7 @@ namespace AoC
     {
         public static int SolvePartOne()
         {
-            string line = InputReader.FirstLineFromTxt("d13input.txt");
-            List<BigInteger> program = line.Split(',').Select(x => BigInteger.Parse(x)).ToList();
+            List<BigInteger> program = InputReader.BigIntegersFromCSVLine("d13input.txt");
             BigIntCode bic = new BigIntCode(program);
             List<BigInteger> output = bic.Run();
             int c = 0;
@@ -29,8 +28,7 @@ namespace AoC
 
         public static int SolvePartTwo(bool draw)
         {
-            string line = InputReader.FirstLineFromTxt("d13input.txt");
-            List<BigInteger> program = line.Split(',').Select(x => BigInteger.Parse(x)).ToList();
+            List<BigInteger> program = InputReader.BigIntegersFromCSVLine("d13input.txt");
             program[0] = 2; //Activate free play mode
             BigIntCode bic = new BigIntCode(program);
             List<string> tiles = new List<string> { " ", "\u2588", "#", "=", "o" };

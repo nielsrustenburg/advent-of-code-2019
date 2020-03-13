@@ -10,7 +10,7 @@ namespace AoC
     {
         public static int SolvePartOne()
         {
-            List<BigInteger> program = ReadInput();
+            List<BigInteger> program = InputReader.BigIntegersFromCSVLine("d11input.txt");
             Grid<char> cgrid = new Grid<char>(' '); //Using different defaultTile so we can count all tiles that have been changed
             EmergencyHullPaintingRobot bot = new EmergencyHullPaintingRobot(program, cgrid);
 
@@ -24,7 +24,7 @@ namespace AoC
 
         public static List<string> SolvePartTwo()
         {
-            List<BigInteger> program = ReadInput();
+            List<BigInteger> program = InputReader.BigIntegersFromCSVLine("d11input.txt");
             Grid<char> cgrid = new Grid<char>('.');
             cgrid.SetTile(0, 0, '#');
             EmergencyHullPaintingRobot bot = new EmergencyHullPaintingRobot(program, cgrid);
@@ -34,14 +34,6 @@ namespace AoC
             }
             List<string> image = cgrid.RowsAsStrings();
             return image;
-        }
-
-        public static List<BigInteger> ReadInput(string fileName = "d11input.txt")
-        {
-            string strInput = InputReader.FirstLineFromTxt(fileName);
-            string[] splInput = strInput.Split(',');
-            List<BigInteger> program = splInput.Select(x => BigInteger.Parse(x)).ToList();
-            return program;
         }
     }
 

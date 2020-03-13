@@ -10,8 +10,7 @@ namespace AoC
     {
         public static BigInteger SolvePartOne()
         {
-            string input = InputReader.FirstLineFromTxt("d9input.txt");
-            List<BigInteger> program = input.Split(',').Select(x => BigInteger.Parse(x)).ToList();
+            List<BigInteger> program = InputReader.BigIntegersFromCSVLine("d9input.txt");
             BigIntCode bic = new BigIntCode(program);
             var output = bic.Run(new List<BigInteger> { (BigInteger)1 });
             return output.Last();
@@ -19,8 +18,7 @@ namespace AoC
 
         public static BigInteger SolvePartTwo()
         {
-            string input = InputReader.FirstLineFromTxt("d9input.txt");
-            List<BigInteger> program = input.Split(',').Select(x => BigInteger.Parse(x)).ToList();
+            List<BigInteger> program = InputReader.BigIntegersFromCSVLine("d9input.txt");
             BigIntCode bic = new BigIntCode(program);
             var output = bic.Run(new List<BigInteger> { (BigInteger)2 });
             return output.Last();

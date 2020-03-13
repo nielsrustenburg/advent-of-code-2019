@@ -10,8 +10,7 @@ namespace AoC
     {
         public static int SolvePartOne()
         {
-            string strInput = InputReader.FirstLineFromTxt("d19input.txt");
-            List<BigInteger> program = strInput.Split(',').Select(x => BigInteger.Parse(x)).ToList();
+            List<BigInteger> program = InputReader.BigIntegersFromCSVLine("d19input.txt");
             return TractorBeamSlice(program, 0,50,0,50);
         }
 
@@ -44,8 +43,7 @@ namespace AoC
 
         public static int SolvePartTwo()
         {
-            string strInput = InputReader.FirstLineFromTxt("d19input.txt");
-            List<BigInteger> program = strInput.Split(',').Select(a => BigInteger.Parse(a)).ToList();
+            List<BigInteger> program = InputReader.BigIntegersFromCSVLine("d19input.txt");
             int targetWidth = 100;
 
             int[] lefts = new int[targetWidth], rights = new int[targetWidth];

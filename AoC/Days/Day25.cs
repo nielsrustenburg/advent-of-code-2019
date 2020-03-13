@@ -10,8 +10,7 @@ namespace AoC
     {
         public static int SolvePartOne()
         {
-            string input = InputReader.FirstLineFromTxt("d25input.txt");
-            List<BigInteger> program = input.Split(',').Select(x => BigInteger.Parse(x)).ToList();
+            List<BigInteger> program = InputReader.BigIntegersFromCSVLine("d25input.txt");
 
             //Did this exercise manually
             //Strategy is to find all items that are safe to pick up (some end your game, or put your IntCode computer in an endless loop)

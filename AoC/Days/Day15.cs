@@ -10,22 +10,20 @@ namespace AoC
     {
         public static int SolvePartOne()
         {
-            string input = InputReader.FirstLineFromTxt("d15input.txt");
-            List<BigInteger> program = input.Split(',').Select(x => BigInteger.Parse(x)).ToList();
+            List<BigInteger> program = InputReader.BigIntegersFromCSVLine("d15input.txt");
             RepairBot rb = new RepairBot(program);
 
             rb.ExploreMaze();
 
             var oxygenSearch = rb.mazeMap.FloodFillDistanceFinder(0, 0, new List<string> { "O" });
             var stepsToOxygen = oxygenSearch.poi.Where(x => x.tile == "O").First().distance;
-            
+
             return stepsToOxygen;
         }
 
         public static int SolvePartTwo()
         {
-            string input = InputReader.FirstLineFromTxt("d15input.txt");
-            List<BigInteger> program = input.Split(',').Select(x => BigInteger.Parse(x)).ToList();
+            List<BigInteger> program = InputReader.BigIntegersFromCSVLine("d15input.txt");
             RepairBot rb = new RepairBot(program);
 
             rb.ExploreMaze();
@@ -61,7 +59,7 @@ namespace AoC
             List<Direction> validDirections = new List<Direction> { Direction.North, Direction.South, Direction.West, Direction.East };
             List<Direction> pathTaken = new List<Direction>();
 
-            if(draw) Console.Clear();
+            if (draw) Console.Clear();
             do
             {
                 //Explore all unknown surrounding tiles

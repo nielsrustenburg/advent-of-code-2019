@@ -10,16 +10,14 @@ namespace AoC
     {
         public static BigInteger SolvePartOne()
         {
-            string input = InputReader.FirstLineFromTxt("d23input.txt");
-            List<BigInteger> program = input.Split(',').Select(x => BigInteger.Parse(x)).ToList();
+            List<BigInteger> program = InputReader.BigIntegersFromCSVLine("d23input.txt");
             Network network = new Network(50, program);
             return network.Run().y;
         }
 
         public static BigInteger SolvePartTwo()
         {
-            string input = InputReader.FirstLineFromTxt("d23input.txt");
-            List<BigInteger> program = input.Split(',').Select(x => BigInteger.Parse(x)).ToList();
+            List<BigInteger> program = InputReader.BigIntegersFromCSVLine("d23input.txt");
             NatNetwork network = new NatNetwork(50, program);
             return network.Run().y;
         }

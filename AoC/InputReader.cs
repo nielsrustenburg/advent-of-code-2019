@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.Numerics;
 using System.Linq;
 
 namespace AoC
@@ -32,6 +33,12 @@ namespace AoC
         {
             string line = FirstLineFromTxt(fileName, fileDir);
             return line.Split(',').Select(strint => int.Parse(strint)).ToList();
+        }
+
+        public static List<BigInteger> BigIntegersFromCSVLine(string fileName, string fileDir = @"../../../Resources/")
+        {
+            string line = FirstLineFromTxt(fileName, fileDir);
+            return line.Split(',').Select(strint => BigInteger.Parse(strint)).ToList();
         }
 
         public static List<List<string>> MultipleStringListsFromCSV(string fileName, string fileDir = @"../../../Resources/")
