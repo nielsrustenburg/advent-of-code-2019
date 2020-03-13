@@ -10,16 +10,23 @@ namespace AoC
 
         public static int SolvePartOne()
         {
-            List<(string, string)> input = InputReader.ReadOrbitRelationsFromTxt("d6input.txt");
-            OrbitTree otree = OrbitTreeBuilder.MakeTrees(input).First();
+            var input = InputReader.StringsFromTxt("d6input.txt");
+            List<(string, string)> orbitRelations = ParseOrbitRelations(input);
+            OrbitTree otree = OrbitTreeBuilder.MakeTrees(orbitRelations).First();
             return otree.CountAllOrbits();
         }
 
         public static int SolvePartTwo()
         {
-            List<(string, string)> input = InputReader.ReadOrbitRelationsFromTxt("d6input.txt");
-            OrbitTree otree = OrbitTreeBuilder.MakeTrees(input).First();
+            var input = InputReader.StringsFromTxt("d6input.txt");
+            List<(string, string)> orbitRelations = ParseOrbitRelations(input);
+            OrbitTree otree = OrbitTreeBuilder.MakeTrees(orbitRelations).First();
             return otree.DistanceBetweenNodes("YOU", "SAN") - 2;
+        }
+
+        public static List<(string, string)> ParseOrbitRelations(IEnumerable<string> input)
+        {
+            return input.Select(r => r.Split(')')).Select(s => (s[0], s[1])).ToList();
         }
     }
 

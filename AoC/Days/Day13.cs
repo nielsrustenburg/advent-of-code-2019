@@ -10,7 +10,7 @@ namespace AoC
     {
         public static int SolvePartOne()
         {
-            string line = InputReader.StringFromLine("d13input.txt");
+            string line = InputReader.FirstLineFromTxt("d13input.txt");
             List<BigInteger> program = line.Split(',').Select(x => BigInteger.Parse(x)).ToList();
             BigIntCode bic = new BigIntCode(program);
             List<BigInteger> output = bic.Run();
@@ -29,7 +29,7 @@ namespace AoC
 
         public static int SolvePartTwo(bool draw)
         {
-            string line = InputReader.StringFromLine("d13input.txt");
+            string line = InputReader.FirstLineFromTxt("d13input.txt");
             List<BigInteger> program = line.Split(',').Select(x => BigInteger.Parse(x)).ToList();
             program[0] = 2; //Activate free play mode
             BigIntCode bic = new BigIntCode(program);

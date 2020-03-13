@@ -38,7 +38,7 @@ namespace AoC
 
         public static List<BigInteger> ReadInput(string fileName = "d11input.txt")
         {
-            string strInput = InputReader.StringFromLine(fileName);
+            string strInput = InputReader.FirstLineFromTxt(fileName);
             string[] splInput = strInput.Split(',');
             List<BigInteger> program = splInput.Select(x => BigInteger.Parse(x)).ToList();
             return program;

@@ -10,7 +10,7 @@ namespace AoC
     {
         public static int SolvePartOne()
         {
-            string input = InputReader.StringFromLine("d25input.txt");
+            string input = InputReader.FirstLineFromTxt("d25input.txt");
             List<BigInteger> program = input.Split(',').Select(x => BigInteger.Parse(x)).ToList();
 
             //Did this exercise manually

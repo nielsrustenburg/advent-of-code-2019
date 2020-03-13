@@ -9,7 +9,7 @@ namespace AoC
     {
         public static int SolvePartOne()
         {
-            string inputString = InputReader.StringFromLine("d16input.txt");
+            string inputString = InputReader.FirstLineFromTxt("d16input.txt");
             List<int> input = inputString.Select(x => (int)Char.GetNumericValue(x)).ToList();
             List<int> signal = input;
             List<int> pattern = new List<int>{ 0, 1, 0, -1 };
@@ -24,7 +24,7 @@ namespace AoC
 
         public static int SolvePartTwo()
         {
-            string inputString = InputReader.StringFromLine("d16input.txt");
+            string inputString = InputReader.FirstLineFromTxt("d16input.txt");
             List<int> input = inputString.Select(x => (int)Char.GetNumericValue(x)).ToList();
             List<int> signal = input;
             int messageOffset = int.Parse(inputString.Substring(0,7));
