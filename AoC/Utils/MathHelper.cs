@@ -4,7 +4,7 @@ using System.Text;
 using System.Linq;
 using System.Numerics;
 
-namespace AoC
+namespace AoC.Utils
 {
     static class MathHelper
     {

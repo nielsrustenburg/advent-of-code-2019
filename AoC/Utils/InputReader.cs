@@ -5,7 +5,7 @@ using System.IO;
 using System.Numerics;
 using System.Linq;
 
-namespace AoC
+namespace AoC.Utils
 {
     static class InputReader
     {

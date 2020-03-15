@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Numerics;
+using AoC.Utils;
 using System.Linq;
 
 namespace AoC

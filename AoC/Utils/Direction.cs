@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace AoC
+namespace AoC.Utils
 {
     //NW  N  NE    7  0  1
     //W       E    6     2

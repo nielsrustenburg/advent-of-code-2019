@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Numerics;
 using System.Linq;
+using AoC.Utils;
 
 namespace AoC
 {

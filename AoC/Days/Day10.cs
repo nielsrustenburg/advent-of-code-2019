@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using AoC.Utils;
 using System.Linq;
 
 namespace AoC

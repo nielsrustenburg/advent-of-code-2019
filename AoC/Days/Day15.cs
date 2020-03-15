@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using AoC.Utils;
 using System.Text;
 using System.Linq;
 using System.Numerics;
@@ -15,8 +16,8 @@ namespace AoC
 
             rb.ExploreMaze();
 
-            var oxygenSearch = rb.mazeMap.FloodFillDistanceFinder(0, 0, new List<string> { "O" });
-            var stepsToOxygen = oxygenSearch.poi.Where(x => x.tile == "O").First().distance;
+            var (totalSteps, poi) = rb.mazeMap.FloodFillDistanceFinder(0, 0, new List<string> { "O" });
+            var stepsToOxygen = poi.Where(x => x.tile == "O").First().distance;
 
             return stepsToOxygen;
         }
@@ -29,9 +30,9 @@ namespace AoC
             rb.ExploreMaze();
 
             var oxy = rb.mazeMap.FindFirstMatchingTile("O");
-            var oxygenFlooding = rb.mazeMap.FloodFillDistanceFinder(oxy.x, oxy.y, new List<string>());
+            var (totalSteps, poi) = rb.mazeMap.FloodFillDistanceFinder(oxy.x, oxy.y, new List<string>());
 
-            return oxygenFlooding.totalSteps;
+            return totalSteps;
         }
     }
 
