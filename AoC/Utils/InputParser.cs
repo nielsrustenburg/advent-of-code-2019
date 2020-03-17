@@ -23,6 +23,17 @@ namespace AoC.Utils
             return InputParser<IEnumerable<string>>.ParseLines(lines, ParseCSVLine);
         }
 
+        internal static IEnumerable<IEnumerable<int>> ParseCSVInts(IEnumerable<string> input)
+        {
+            return ParseCSVStrings(input).Select(l => ParseInts(l));
+        }
+
+        internal static IEnumerable<IEnumerable<BigInteger>> ParseCSVBigIntegers(IEnumerable<string> input)
+        {
+            return ParseCSVStrings(input).Select(l => ParseBigIntegers(l));
+        }
+
+
         public static IEnumerable<string> ParseCSVLine(string line)
         {
             return line.Split(',');

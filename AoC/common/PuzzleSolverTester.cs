@@ -11,6 +11,8 @@ namespace AoC.common
         string expectedOne;
         string expectedTwo;
 
+        public abstract void RunAll();
+
         protected PuzzleSolverTester(IPuzzleSolver solver, string expectedOne, string expectedTwo)
         {
             this.solver = solver;

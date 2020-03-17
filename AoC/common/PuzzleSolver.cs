@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using AoC.Utils;
 
 namespace AoC.common
 {
@@ -10,19 +11,38 @@ namespace AoC.common
         protected string resultPartTwo;
         protected int dayNum;
 
-        protected PuzzleSolver(int dayNum)
-        {
-            this.dayNum = dayNum;
-        }
+        protected abstract void ParseInput(IEnumerable<string> input);
 
-        public void WriteSolutions()
-        {
-            Console.WriteLine($"Day {dayNum} \n {resultPartOne} \n {resultPartTwo} \n");
-        }
+        protected abstract void PrepareSolution();
 
         protected abstract void SolvePartOne();
 
         protected abstract void SolvePartTwo();
+
+        protected PuzzleSolver(int dayNum)
+        {
+            this.dayNum = dayNum;
+            SolveChallenge(ReadInput());
+        }
+
+        protected PuzzleSolver(IEnumerable<string> input, int dayNum)
+        {
+            this.dayNum = dayNum;
+            SolveChallenge(input);
+        }
+
+        private IEnumerable<string> ReadInput()
+        {
+            return InputReader.StringsFromTxt($"d{dayNum}input.txt");
+        }
+
+        private void SolveChallenge(IEnumerable<string> input)
+        {
+            ParseInput(input);
+            PrepareSolution();
+            SolvePartOne();
+            SolvePartTwo();
+        }
 
         public string SolutionOne()
         {
@@ -33,5 +53,11 @@ namespace AoC.common
         {
             return resultPartTwo;
         }
+
+        public void WriteSolutions()
+        {
+            Console.WriteLine($"Day {dayNum} \n{resultPartOne} \n{resultPartTwo} \n");
+        }
     }
 }
+

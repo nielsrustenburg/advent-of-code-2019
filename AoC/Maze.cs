@@ -18,6 +18,11 @@ namespace AoC
             passableTerrain = passable.ToHashSet();
         }
 
+        public Maze(Maze<T> copyMe) : base(copyMe)
+        {
+            passableTerrain = copyMe.passableTerrain.ToHashSet();
+        }
+
         public (int totalSteps, List<(T tile, int distance)> poi) FloodFillDistanceFinder(int xStart, int yStart, IEnumerable<T> pointsOfInterest)
         {
             HashSet<T> poi = pointsOfInterest.ToHashSet();
