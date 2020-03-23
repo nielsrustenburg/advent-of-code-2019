@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using AoC.Utils;
 
-namespace AoC.common
+namespace AoC.Common
 {
     abstract class PuzzleSolver : IPuzzleSolver
     {

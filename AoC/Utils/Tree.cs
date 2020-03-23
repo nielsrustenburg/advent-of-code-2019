@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 
-namespace AoC
+namespace AoC.Utils
 {
     abstract class Tree<T> : IInspectableTree where T : TreeNode
     {

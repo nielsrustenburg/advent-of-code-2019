@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace AoC
+namespace AoC.Utils
 {
     public interface IEditableGraph
     {

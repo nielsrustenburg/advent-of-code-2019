@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace AoC.common
+namespace AoC.Common
 {
     public interface IPuzzleSolver
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using AoC.common;
+using AoC.Common;
 using System.Linq;
 using AoC.Utils;
 

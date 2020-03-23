@@ -1,5 +1,4 @@
 ﻿using System;
-using AoC.Tests;
 
 namespace AoC
 {
@@ -7,8 +6,6 @@ namespace AoC
     {
         static void Main(string[] args)
         {
-            TestSuite.RunTests();
-
             //Console.WriteLine(...SolvePartOne());
             //Console.WriteLine(...SolvePartTwo());
 

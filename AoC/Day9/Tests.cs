@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using AoC.Computers;
 using AoC.Utils;
 using NUnit.Framework;
 

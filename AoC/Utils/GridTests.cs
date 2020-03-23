@@ -4,7 +4,7 @@ using System.Text;
 using System.Linq;
 using NUnit.Framework;
 
-namespace AoC
+namespace AoC.Utils
 {
     class GridTests
     {

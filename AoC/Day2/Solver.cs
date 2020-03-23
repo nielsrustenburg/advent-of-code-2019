@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
-using AoC.common;
+using AoC.Computers;
+using AoC.Common;
 using AoC.Utils;
 
 
