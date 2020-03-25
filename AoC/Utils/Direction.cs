@@ -8,7 +8,7 @@ namespace AoC.Utils
     //W       E    6     2
     //SW  S  SE    5  4  3
 
-    enum Direction : int
+    public enum Direction : int
     {
         North,
         NorthEast,
@@ -20,60 +20,65 @@ namespace AoC.Utils
         NorthWest,
     }
 
-    static class DirectionHelper
+    public static class DirectionHelper
     {
         public static Direction ClockWiseByQuarter(this Direction dir)
         {
-            return ShiftedBy(dir, 2);
+            return ShiftBy(dir, 2);
         }
 
         public static Direction CounterClockWiseByQuarter(this Direction dir)
         {
-            return ShiftedBy(dir, -2);
+            return ShiftBy(dir, -2);
         }
 
         public static Direction ClockWiseByEighth(this Direction dir)
         {
-            return ShiftedBy(dir, 1);
+            return ShiftBy(dir, 1);
         }
 
         public static Direction CounterClockWiseByEighth(this Direction dir)
         {
-            return ShiftedBy(dir, -1);
+            return ShiftBy(dir, -1);
         }
 
         public static Direction Opposite(this Direction dir)
         {
-            return ShiftedBy(dir, 4);
+            return ShiftBy(dir, 4);
         }
 
-        public static Direction ShiftedBy(Direction dir, int increment)
+        public static Direction ShiftBy(Direction dir, int increment)
         {
             return (Direction)MathHelper.Mod((int)dir + increment, 8);
         }
 
-        public static (int x, int y) NeighbourInDirection(Direction dir, int x, int y)
+        public static (int x, int y) StepInDirection(Direction dir, int x, int y, int distance )
         {
             int newY = y;
             if (dir < Direction.East || dir > Direction.West)
             {
-                newY++;
+                newY += distance;
             }
             else if (dir > Direction.East && dir < Direction.West)
             {
-                newY--;
+                newY -= distance;
             }
 
             int newX = x;
             if (dir > Direction.North && dir < Direction.South)
             {
-                newX++;
+                newX += distance;
             }
             else if (dir > Direction.South)
             {
-                newX--;
+                newX -= distance;
             }
             return (newX, newY);
+        }
+
+        public static (int x, int y) NeighbourInDirection(Direction dir, int x, int y)
+        {
+            return StepInDirection(dir, x, y, 1);
         }
     }
 }

@@ -17,22 +17,22 @@ U62,R66,U55,R34,D71,R55,D58,R83";
 U98,R91,D20,R16,D67,R40,U7,R15,U6,R7";
 
 
-        [TestCase(testCase1, 6)]
-        [TestCase(testCase2, 159)]
-        [TestCase(testCase3, 135)]
-        public void TestClosestIntersectionDistance(string input, int expectedOutput)
+        [TestCase(testCase1, "6")]
+        [TestCase(testCase2, "159")]
+        [TestCase(testCase3, "135")]
+        public void TestPartOne(string input, string expectedOutput)
         {
-            var output = 0;
-            Assert.AreEqual(expectedOutput, output);
+            Solver solver = new Solver(Common.Input.InputMode.String, input);
+            Assert.AreEqual(expectedOutput, solver.SolutionOne());
         }
 
-        [TestCase(testCase1, 40)]
-        [TestCase(testCase2, 610)]
-        [TestCase(testCase3, 410)]
-        public void TestCombinedStepsToIntersection(string input, int expectedOutput)
+        [TestCase(testCase1, "30")]
+        [TestCase(testCase2, "610")]
+        [TestCase(testCase3, "410")]
+        public void TestPartTwo(string input, string expectedOutput)
         {
-            var output = 0;
-            Assert.AreEqual(expectedOutput, output);
+            Solver solver = new Solver(Common.Input.InputMode.String, input);
+            Assert.AreEqual(expectedOutput, solver.SolutionTwo());
         }
 
         [TestCase("352", "43848")]

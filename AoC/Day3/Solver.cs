@@ -9,9 +9,10 @@ namespace AoC.Day3
 {
     class Solver : PuzzleSolver
     {
-        List<IEnumerable<string>> wireDirs;
-        Wire wire1;
-        Wire wire2;
+        List<(Direction, int)>[] wirePaths;
+        NewWire wire1;
+        NewWire wire2;
+        List<NewWire.Intersection> intersections;
 
         public Solver() : this(Input.InputMode.Embedded, "input")
         {
@@ -24,226 +25,168 @@ namespace AoC.Day3
         protected override void ParseInput(string input)
         {
             var lines = InputParser.Split(input);
-            wireDirs = lines.Select(line => InputParser<string>.ParseCSVLine(line, s => s)).ToList();
+            wirePaths = lines.Select(line => InputParser<(Direction, int)>.ParseCSVLine(line, ParseWireStep).ToList()).ToArray();
+            wire1 = new NewWire(wirePaths[0]);
+            wire2 = new NewWire(wirePaths[1]);
+
+            (Direction dir, int dist) ParseWireStep(string step)
+            {
+                Direction dir;
+                switch (step[0])
+                {
+                    case 'U': dir = Direction.North; break;
+                    case 'D': dir = Direction.South; break;
+                    case 'L': dir = Direction.West; break;
+                    case 'R': dir = Direction.East; break;
+                    default: throw new ArgumentException("expecting first character to be U,D,L or R");
+                }
+                int dist = int.Parse(step.Substring(1));
+                return (dir, dist);
+            }
         }
 
         protected override void PrepareSolution()
         {
-            wire1 = new Wire(wireDirs[0]);
-            wire2 = new Wire(wireDirs[1]);
+            intersections = wire1.FindIntersectionsWith(wire2);
         }
 
         protected override void SolvePartOne()
         {
-            resultPartOne = IntersectionDistClosestToOrigin(wire1, wire2).ToString();
+            var distanceOfClosestIntersection = intersections.Select(intersection => MathHelper.ManhattanDistance((0, 0), (intersection.x, intersection.y)))
+                                                             .Aggregate(int.MaxValue, (a, b) => a <= b ? a : b);
+
+            resultPartOne = distanceOfClosestIntersection.ToString();
         }
 
         protected override void SolvePartTwo()
         {
-            resultPartTwo = ShortestIntersectionDist(wire1, wire2).ToString();
-        }
+            var intersectionCombinedWireLengths = intersections.Select(intersection => intersection.combinedWireLength)
+                                                               .Aggregate(int.MaxValue, (a, b) => a <= b ? a : b);
 
-        public static int IntersectionDistClosestToOrigin(Wire w1, Wire w2)
-        {
-            List<(int x, int y)> intersections = w1.Intersections(w2);
-
-            //Filter out the intersection at the origin
-            var valid_intersections = intersections.Where(interx => !(interx.x == 0 && interx.y == 0));
-            return valid_intersections.Select(interx => MathHelper.ManhattanDistance((0, 0), interx)).Min();
-        }
-
-        public static int ShortestIntersectionDist(Wire wire_a, Wire wire_b)
-        {
-            UnrollableWire uwireA = new UnrollableWire(wire_a);
-            UnrollableWire uwireB = new UnrollableWire(wire_b);
-            int shortestFound = int.MaxValue;
-
-            while (uwireA.HasPotential(shortestFound) || uwireB.HasPotential(shortestFound))
-            {
-                ((GridLine gl, int distFromOG) segment, List<(GridLine, int)> other) = UnrollShortestWire(uwireA, uwireB);
-                (bool found, int dist) = CheckForShorterIntersection(segment, other, shortestFound);
-                if (found) shortestFound = dist;
-            }
-            return shortestFound;
-        }
-
-        public static ((GridLine gl, int distFromOG) segment, List<(GridLine, int)> other) UnrollShortestWire(UnrollableWire w1, UnrollableWire w2)
-        {
-            if (w1.fullyUnrolled && w2.fullyUnrolled) throw new Exception("WHY ARE YOU UNROLLING TWO FULLY UNROLLED WIRES????");
-            if (w2.fullyUnrolled || (w1.unrolledLength <= w2.unrolledLength && !w1.fullyUnrolled))
-            {
-                return (w1.UnrollNext(), w2.unrolledSegmentsAndDists);
-            }
-            else
-            {
-                return (w2.UnrollNext(), w1.unrolledSegmentsAndDists);
-            }
-        }
-
-        public static (bool, int) CheckForShorterIntersection((GridLine gline, int dist) line, List<(GridLine, int)> other_lines, int max_dist)
-        {
-            foreach ((GridLine gline, int dist) other in other_lines)
-            {
-                if (line.dist + other.dist > max_dist) return (false, int.MaxValue);
-                var intersection = line.gline.GetIntersection(other.gline);
-                if (intersection.intersects)
-                {
-                    int total_dist = line.dist + other.dist +
-                                     MathHelper.ManhattanDistance(line.gline.from, intersection.coords) +
-                                     MathHelper.ManhattanDistance(other.gline.from, intersection.coords);
-
-                    if (total_dist > max_dist || total_dist == 0) //Wires intersecting at the origin are not interesting to us
-                    {
-                        return (false, int.MaxValue);
-                    }
-                    else
-                    {
-                        return (true, total_dist);
-                    }
-                }
-            }
-            return (false, int.MaxValue);
+            resultPartTwo = intersectionCombinedWireLengths.ToString(); 
         }
     }
-
-    class UnrollableWire
+    public class NewWire
     {
-        public Wire wire;
-        public bool fullyUnrolled;
-        public int unrolledUntilId;
-        public int unrolledLength;
-        public List<(GridLine gl, int glDistFromOrigin)> unrolledSegmentsAndDists;
-
-        public UnrollableWire(Wire w)
+        List<WirePiece> path;
+        public NewWire(IEnumerable<(Direction, int)> inputPath)
         {
-            wire = w;
-            unrolledUntilId = 0;
-            unrolledLength = 0;
-            unrolledSegmentsAndDists = new List<(GridLine gl, int glDistFromOrigin)>();
-        }
-
-        public (GridLine gl, int glDistFromOrigin) UnrollNext()
-        {
-            unrolledSegmentsAndDists.Add((wire.GetWireSegmentAt(unrolledUntilId), unrolledLength));
-            unrolledUntilId++;
-            unrolledLength += unrolledSegmentsAndDists.Last().gl.length;
-            UpdateFullyUnrolledStatus();
-            return unrolledSegmentsAndDists.Last();
-        }
-
-        public void UpdateFullyUnrolledStatus()
-        {
-            fullyUnrolled = wire.Count <= unrolledUntilId;
-        }
-
-        public bool HasPotential(int shortestFound)
-        {
-            return (!fullyUnrolled && unrolledLength < shortestFound);
-        }
-    }
-
-    class Wire
-    {
-        List<GridLine> lines = new List<GridLine>();
-        public int Count { get { return lines.Count; } }
-
-        public Wire(IEnumerable<string> path)
-        {
+            path = new List<WirePiece>();
             int x = 0;
             int y = 0;
-            foreach (string instruction in path)
+            int wireLength = 0;
+            foreach ((Direction dir, int length) in inputPath)
             {
-                char direction = instruction[0];
-                int distance = Int32.Parse(instruction.Substring(1));
-                GridLine new_line = new GridLine((x, y), direction, distance);
-                lines.Add(new_line);
-                x = new_line.to.x;
-                y = new_line.to.y;
+                path.Add(new WirePiece(x, y, wireLength, dir, length));
+
+                wireLength += length;
+                (x, y) = DirectionHelper.StepInDirection(dir, x, y, length);
             }
         }
 
-        public GridLine GetWireSegmentAt(int id)
+        public List<Intersection> FindIntersectionsWith(NewWire other)
         {
-            return lines[id];
-        }
-
-        public List<(int x, int y)> Intersections(Wire other)
-        {
-            List<(int x, int y)> intersections = new List<(int x, int y)>();
-            foreach (GridLine line in lines)
+            var intersections = new List<Intersection>();
+            foreach (var wirePiece in path)
             {
-                foreach (GridLine other_line in other.lines)
+                foreach (var otherWirePiece in other.path)
                 {
-                    var intersection = line.GetIntersection(other_line);
-                    if (intersection.intersects) intersections.Add(intersection.coords);
+                    var intersection = wirePiece.FindIntersection(otherWirePiece);
+                    if (intersection != null)
+                    {
+                        intersections.Add(intersection);
+                    }
                 }
             }
             return intersections;
         }
 
-        internal IEnumerator<GridLine> GetLineEnumerator()
+        struct WirePiece
         {
-            return lines.GetEnumerator();
-        }
-    }
+            public readonly int x;
+            public readonly int y;
+            public readonly int toX;
+            public readonly int toY;
+            public readonly int distanceFromOrigin;
+            public readonly Direction direction;
 
-    class GridLine
-    {
-        public (int x, int y) from;
-        public (int x, int y) to;
-        char direction;
-        public int length;
-
-        public GridLine((int, int) start, char direction, int distance)
-        {
-            from = start;
-            this.direction = direction;
-            length = distance;
-
-            if (direction == 'R') to = (from.x + distance, from.y);
-            if (direction == 'L') to = (from.x - distance, from.y);
-            if (direction == 'U') to = (from.x, from.y + distance);
-            if (direction == 'D') to = (from.x, from.y - distance);
-        }
-
-        public bool IsHorizontal()
-        {
-            return direction == 'L' || direction == 'R';
-        }
-
-        public bool Intersects(GridLine other)
-        {
-            if (IsHorizontal() == other.IsHorizontal()) return false;
-
-            GridLine hline = IsHorizontal() ? this : other;
-            GridLine vline = IsHorizontal() ? other : this;
-
-            int left = hline.direction == 'R' ? hline.from.x : hline.to.x;
-            int right = hline.direction == 'R' ? hline.to.x : hline.from.x;
-
-            int down = vline.direction == 'U' ? vline.from.y : vline.to.y;
-            int up = vline.direction == 'U' ? vline.to.y : vline.from.y;
-
-            bool hmatch = left <= vline.from.x && vline.from.x <= right;
-            bool vmatch = down <= hline.from.y && hline.from.y <= up;
-
-            return hmatch && vmatch;
-        }
-
-        public (bool intersects, (int x, int y) coords) GetIntersection(GridLine other)
-        {
-            if (this.Intersects(other))
+            public WirePiece(int x, int y, int distFromOrigin, Direction direction, int length)
             {
-                if (from.x == to.x)
+                this.x = x;
+                this.y = y;
+                distanceFromOrigin = distFromOrigin;
+                this.direction = direction;
+                (toX, toY) = DirectionHelper.StepInDirection(direction, x, y, length);
+            }
+
+            public Intersection FindIntersection(WirePiece other)
+            {
+                if (direction == other.direction || direction == other.direction.Opposite()) return null;
+
+                // I assume you only use N/E/S/W for wirepieces.. perhaps I need to make a separate enum?
+                WirePiece horizontal, vertical;
+                if (direction == Direction.North || direction == Direction.South)
                 {
-                    return (true, (from.x, other.from.y));
+                    horizontal = other;
+                    vertical = this;
                 }
                 else
                 {
-                    return (true, (other.from.x, from.y));
+                    horizontal = this;
+                    vertical = other;
+                }
+
+                int left, right;
+                if (horizontal.direction == Direction.East)
+                {
+                    left = horizontal.x;
+                    right = horizontal.toX;
+                }
+                else
+                {
+                    left = horizontal.toX;
+                    right = horizontal.x;
+                }
+
+                int top, bottom;
+                if (vertical.direction == Direction.North)
+                {
+                    bottom = vertical.y;
+                    top = vertical.toY;
+                }
+                else
+                {
+                    bottom = vertical.toY;
+                    top = vertical.y;
+                }
+
+                var horizontalMatch = left <= vertical.x && right >= vertical.x;
+                var verticalMatch = bottom <= horizontal.y && top >= horizontal.y;
+
+                if (horizontalMatch && verticalMatch && !(vertical.x == 0 && horizontal.y == 0))
+                {
+                    var combinedWireLength = horizontal.distanceFromOrigin + vertical.distanceFromOrigin + Math.Abs(horizontal.x - vertical.x) + Math.Abs(vertical.y - horizontal.y);
+                    return new Intersection(vertical.x, horizontal.y, combinedWireLength);
+                }
+                else
+                {
+                    return null;
                 }
             }
-            return (false, (int.MaxValue, int.MaxValue));
+        }
+
+        public class Intersection
+        {
+            public readonly int x;
+            public readonly int y;
+            public readonly int combinedWireLength;
+
+            public Intersection(int x, int y, int combinedLength)
+            {
+                this.x = x;
+                this.y = y;
+                combinedWireLength = combinedLength;
+            }
         }
     }
 }
