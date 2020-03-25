@@ -15,17 +15,17 @@ namespace AoC.Day4
         List<int> partOnePasswords;
         List<int> partTwoPasswords;
 
-        public Solver() : base(4)
+        public Solver() : this(Input.InputMode.Embedded, "input")
         {
         }
 
-        public Solver(IEnumerable<string> input) : base(input, 4)
+        public Solver(Input.InputMode mode, string input) : base(mode, input)
         {
         }
 
-        protected override void ParseInput(IEnumerable<string> input)
+        protected override void ParseInput(string input)
         {
-            var lowerUpper = InputParser.ParseInts(input.First().Split('-')).ToList();
+            var lowerUpper = InputParser<int>.SplitAndParse(input, int.Parse, new char[] { '-' }).ToArray();
             lower = lowerUpper[0];
             upper = lowerUpper[1];
         }

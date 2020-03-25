@@ -13,17 +13,17 @@ namespace AoC.Day1
         List<int> masses;
         List<int> fuelPerModule;
 
-        public Solver() : base(1)
+        public Solver() : this(Input.InputMode.Embedded, "input")
         {
         }
 
-        public Solver(IEnumerable<string> input) : base(input, 1)
+        public Solver(Input.InputMode mode, string input) : base(mode, input)
         {
         }
 
-        protected override void ParseInput(IEnumerable<string> input)
+        protected override void ParseInput(string input)
         {
-            masses = InputParser.ParseInts(input).ToList();
+            masses = InputParser<int>.SplitAndParse(input, int.Parse).ToList();
         }
 
         protected override void PrepareSolution()
@@ -38,27 +38,24 @@ namespace AoC.Day1
 
         protected override void SolvePartTwo()
         {
-            int totalFuelRequired = fuelPerModule.Select(fuel => TotalFuelForModule(fuel)).Sum();
+            var totalFuelRequired = fuelPerModule.Select(fuel => RecursiveFuelForModule(fuel, fuel)).Sum();
             resultPartTwo = totalFuelRequired.ToString();
         }
 
         public static int FuelForModule(int mass)
         {
+            if (mass < 6) return 0;
+
             return (mass / 3) - 2; 
         }
 
-        public static int TotalFuelForModule(int moduleFuel)
+        public static int RecursiveFuelForModule(int mass, int fuelCount)
         {
-            int totalFuel = 0;
-            int addFuel = moduleFuel;
-            do
-            {
-                totalFuel += addFuel;
-                addFuel = FuelForModule(addFuel);
-            } while (addFuel > 0);
-            return totalFuel;
+            if (mass < 1) return fuelCount;
+
+            var fuelMass = FuelForModule(mass);
+
+            return RecursiveFuelForModule(fuelMass, fuelCount + fuelMass);
         }
-
-
     }
 }

@@ -12,16 +12,19 @@ namespace AoC.Day14
     {
         List<ChemicalProductionRecipe> recipes;
         ChemicalProductionGraph cpgraph;
-        public Solver() : base(14)
+        public Solver() : this(Input.InputMode.Embedded, "input")
         {
         }
 
-        public Solver(IEnumerable<string> input) : base(input, 14)
+        public Solver(Input.InputMode mode, string input) : base(mode, input)
         {
+
         }
 
-        protected override void ParseInput(IEnumerable<string> input)
+        protected override void ParseInput(string input)
         {
+            recipes = InputParser<ChemicalProductionRecipe>.SplitAndParse(input, ParseRecipe).ToList();
+
             ChemicalProductionRecipe ParseRecipe(string recipe)
             {
                 (string, int) SplitAmountIngredient(string amountIngredient)
@@ -38,8 +41,6 @@ namespace AoC.Day14
 
                 return new ChemicalProductionRecipe(ingredients, product, batchSize);
             }
-
-            recipes = InputParser<ChemicalProductionRecipe>.ParseLines(input, ParseRecipe).ToList();
         }
 
         protected override void PrepareSolution()
@@ -101,14 +102,14 @@ namespace AoC.Day14
         string product;
         int batchSize;
 
-        public ChemicalProductionRecipe(IEnumerable<(string,int)> ingredients, string product, int batchSize)
+        public ChemicalProductionRecipe(IEnumerable<(string, int)> ingredients, string product, int batchSize)
         {
             this.ingredients = new List<(string, int)>(ingredients);
             this.product = product;
             this.batchSize = batchSize;
         }
 
-        public (List<(string,int)>, string,int) GetRecipeTuple()
+        public (List<(string, int)>, string, int) GetRecipeTuple()
         {
             return (ingredients, product, batchSize);
         }

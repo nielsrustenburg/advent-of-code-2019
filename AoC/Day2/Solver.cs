@@ -13,17 +13,17 @@ namespace AoC.Day2
     {
         List<int> backup;
 
-        public Solver() : base(2)
+        public Solver() : this(Input.InputMode.Embedded, "input")
         {
         }
 
-        public Solver(IEnumerable<string> input) : base(input, 2)
+        public Solver(Input.InputMode mode, string input) : base(mode, input)
         {
         }
 
-        protected override void ParseInput(IEnumerable<string> input)
+        protected override void ParseInput(string input)
         {
-            backup = InputParser.ParseCSVInts(input).First().ToList();
+            backup = InputParser<int>.ParseCSVLine(input, int.Parse).ToList();
         }
 
         protected override void PrepareSolution()

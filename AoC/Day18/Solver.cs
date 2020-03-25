@@ -19,16 +19,18 @@ namespace AoC.Day18
         int yStart;
         TritonGraph tGraph;
 
-        public Solver() : base(18)
+        public Solver() : this(Input.InputMode.Embedded, "input")
         {
         }
 
-        public Solver(IEnumerable<string> input) : base(input, 18)
+        public Solver(Input.InputMode mode, string input) : base(mode, input)
         {
         }
 
-        protected override void ParseInput(IEnumerable<string> input)
+        protected override void ParseInput(string input)
         {
+            //PLZ FIX
+            var lines = InputParser.Split(input);
             string alphabet = "abcdefghijklmnopqrstuvwxyz";
             keys = alphabet.ToCharArray().Select(c => c.ToString()).ToHashSet();
             doors = keys.Select(k => k.ToUpper()).ToHashSet();
@@ -37,7 +39,7 @@ namespace AoC.Day18
 
             //Set new List<string> { '.' } as passable floors for graphs with less edges
             //Use floors instead if you want to know what is actually reachable from each position
-            maze = new Maze<string>(input.Select(r => r.ToCharArray().Select(c => c.ToString())), "#", new List<string> { "." });
+            maze = new Maze<string>(lines.Select(r => r.ToCharArray().Select(c => c.ToString())), "#", new List<string> { "." });
         }
 
         protected override void PrepareSolution()

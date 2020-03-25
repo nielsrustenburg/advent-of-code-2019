@@ -11,17 +11,17 @@ namespace AoC.Day24
     class Solver : PuzzleSolver
     {
         string[] rows;
-        public Solver() : base(24)
+        public Solver() : this(Input.InputMode.Embedded, "input")
         {
         }
 
-        public Solver(IEnumerable<string> input) : base(input, 24)
+        public Solver(Input.InputMode mode, string input) : base(mode, input)
         {
         }
 
-        protected override void ParseInput(IEnumerable<string> input)
+        protected override void ParseInput(string input)
         {
-            rows = input.ToArray();
+            rows = InputParser.Split(input).ToArray();
         }
 
         protected override void PrepareSolution()

@@ -8,43 +8,35 @@ namespace AoC.Utils
 {
     static class InputParser
     {
-        public static IEnumerable<int> ParseInts(IEnumerable<string> lines)
+        public static IEnumerable<string> Split(string input, char[] separators = null)
         {
-            return InputParser<int>.ParseLines(lines, int.Parse);
+            separators = separators ?? new char[] { '\r', '\n' };
+            return input.Split(separators, StringSplitOptions.RemoveEmptyEntries);
         }
 
-        public static IEnumerable<BigInteger> ParseBigIntegers(IEnumerable<string> lines)
+        public static IEnumerable<string> SplitCSV(string input, char separator = ',')
         {
-            return InputParser<BigInteger>.ParseLines(lines, BigInteger.Parse);
-        }
-
-        public static IEnumerable<IEnumerable<string>> ParseCSVStrings(IEnumerable<string> lines)
-        {
-            return InputParser<IEnumerable<string>>.ParseLines(lines, ParseCSVLine);
-        }
-
-        internal static IEnumerable<IEnumerable<int>> ParseCSVInts(IEnumerable<string> input)
-        {
-            return ParseCSVStrings(input).Select(l => ParseInts(l));
-        }
-
-        internal static IEnumerable<IEnumerable<BigInteger>> ParseCSVBigIntegers(IEnumerable<string> input)
-        {
-            return ParseCSVStrings(input).Select(l => ParseBigIntegers(l));
-        }
-
-
-        public static IEnumerable<string> ParseCSVLine(string line)
-        {
-            return line.Split(',');
+            return input.Split(new char[] { separator });
         }
     }
 
     static class InputParser<T>
     {
-        public static IEnumerable<T> ParseLines(IEnumerable<string> lines, Func<string, T> parse)
+        public static IEnumerable<T> ParseLines(IEnumerable<string> lines, Func<string, T> Parse)
         {
-            return lines.Select(l => parse(l));
+            return lines.Select(l => Parse(l));
+        }
+
+        public static IEnumerable<T> SplitAndParse(string input ,Func<string, T> Parse, char[] separators = null)
+        {
+            var splitInput = InputParser.Split(input, separators);
+            return splitInput.Select(element => Parse(element));
+        }
+
+        public static IEnumerable<T> ParseCSVLine(string line, Func<string,T> Parse)
+        {
+            var separators = new char[] { ',' };
+            return SplitAndParse(line, Parse, separators);
         }
     }
 }

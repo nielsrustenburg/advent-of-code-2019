@@ -13,17 +13,18 @@ namespace AoC.Day3
         Wire wire1;
         Wire wire2;
 
-        public Solver() : base(3)
+        public Solver() : this(Input.InputMode.Embedded, "input")
         {
         }
 
-        public Solver(IEnumerable<string> input) : base(input, 3)
+        public Solver(Input.InputMode mode, string input) : base(mode, input)
         {
         }
 
-        protected override void ParseInput(IEnumerable<string> input)
+        protected override void ParseInput(string input)
         {
-            wireDirs = InputParser.ParseCSVStrings(input).ToList();
+            var lines = InputParser.Split(input);
+            wireDirs = lines.Select(line => InputParser<string>.ParseCSVLine(line, s => s)).ToList();
         }
 
         protected override void PrepareSolution()

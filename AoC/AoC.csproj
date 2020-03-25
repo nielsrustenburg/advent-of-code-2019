@@ -8,11 +8,59 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Day10\input.txt" />
+    <None Remove="Day11\input.txt" />
+    <None Remove="Day12\input.txt" />
+    <None Remove="Day13\input.txt" />
+    <None Remove="Day14\input.txt" />
+    <None Remove="Day15\input.txt" />
+    <None Remove="Day16\input.txt" />
+    <None Remove="Day17\input.txt" />
+    <None Remove="Day18\input.txt" />
+    <None Remove="Day19\input.txt" />
     <None Remove="Day1\input.txt" />
+    <None Remove="Day20\input.txt" />
+    <None Remove="Day21\input.txt" />
+    <None Remove="Day22\input.txt" />
+    <None Remove="Day23\input.txt" />
+    <None Remove="Day24\input.txt" />
+    <None Remove="Day25\input.txt" />
+    <None Remove="Day2\input.txt" />
+    <None Remove="Day3\input.txt" />
+    <None Remove="Day4\input.txt" />
+    <None Remove="Day5\input.txt" />
+    <None Remove="Day6\input.txt" />
+    <None Remove="Day7\input.txt" />
+    <None Remove="Day8\input.txt" />
+    <None Remove="Day9\input.txt" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Day10\input.txt" />
+    <EmbeddedResource Include="Day11\input.txt" />
+    <EmbeddedResource Include="Day12\input.txt" />
+    <EmbeddedResource Include="Day13\input.txt" />
+    <EmbeddedResource Include="Day14\input.txt" />
+    <EmbeddedResource Include="Day15\input.txt" />
+    <EmbeddedResource Include="Day16\input.txt" />
+    <EmbeddedResource Include="Day17\input.txt" />
+    <EmbeddedResource Include="Day18\input.txt" />
+    <EmbeddedResource Include="Day19\input.txt" />
     <EmbeddedResource Include="Day1\input.txt" />
+    <EmbeddedResource Include="Day20\input.txt" />
+    <EmbeddedResource Include="Day21\input.txt" />
+    <EmbeddedResource Include="Day22\input.txt" />
+    <EmbeddedResource Include="Day23\input.txt" />
+    <EmbeddedResource Include="Day24\input.txt" />
+    <EmbeddedResource Include="Day25\input.txt" />
+    <EmbeddedResource Include="Day2\input.txt" />
+    <EmbeddedResource Include="Day3\input.txt" />
+    <EmbeddedResource Include="Day4\input.txt" />
+    <EmbeddedResource Include="Day5\input.txt" />
+    <EmbeddedResource Include="Day6\input.txt" />
+    <EmbeddedResource Include="Day7\input.txt" />
+    <EmbeddedResource Include="Day8\input.txt" />
+    <EmbeddedResource Include="Day9\input.txt" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,7 +68,7 @@
     <PackageReference Include="NUnit" Version="3.12.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.16.1">
       <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
 

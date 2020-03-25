@@ -13,17 +13,17 @@ namespace AoC.Day20
         Maze<string> dmaze;
         DonutGraph dgraph;
 
-        public Solver() : base(20)
+        public Solver() : this(Input.InputMode.Embedded, "input")
         {
         }
 
-        public Solver(IEnumerable<string> input) : base(input, 20)
+        public Solver(Input.InputMode mode, string input) : base(mode, input)
         {
         }
 
-        protected override void ParseInput(IEnumerable<string> input)
+        protected override void ParseInput(string input)
         {
-            mazeRows = input.ToArray();
+            mazeRows = InputParser.Split(input).ToArray();
         }
 
         protected override void PrepareSolution()

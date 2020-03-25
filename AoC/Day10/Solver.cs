@@ -13,17 +13,19 @@ namespace AoC.Day10
         List<AsteroidVisionSet> avsets;
         AsteroidVisionSet bestAVSet;
 
-        public Solver() : base(10)
+        public Solver() : this(Input.InputMode.Embedded, "input")
         {
         }
 
-        public Solver(IEnumerable<string> input) : base(input, 10)
+        public Solver(Input.InputMode mode, string input) : base(mode, input)
         {
         }
 
-        protected override void ParseInput(IEnumerable<string> input)
+        protected override void ParseInput(string input)
         {
-            afield = new AsteroidField(input);
+            //plzfix
+            var lines = InputParser.Split(input);
+            afield = new AsteroidField(lines);
         }
 
         protected override void PrepareSolution()

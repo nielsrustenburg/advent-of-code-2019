@@ -1,4 +1,5 @@
 ﻿using System;
+using AoC.Common;
 
 namespace AoC
 {
@@ -9,8 +10,19 @@ namespace AoC
             //Console.WriteLine(...SolvePartOne());
             //Console.WriteLine(...SolvePartTwo());
 
+            for(int i = 1; i <= 25; i++)
+            {
+                var solverType = Type.GetType($"AoC.Day{i}.Solver");
+                var solver = (PuzzleSolver) Activator.CreateInstance(solverType);
+                Console.WriteLine($"Day{i}: \n{solver.SolutionOne()}\n{solver.SolutionTwo()}\n");
+            }
             Console.WriteLine("Finished! Press any key to close");
             Console.ReadKey();
         }
+    }
+
+    class Dog
+    {
+
     }
 }

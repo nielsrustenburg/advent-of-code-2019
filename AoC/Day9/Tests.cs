@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using System.Numerics;
 using AoC.Computers;
 using AoC.Utils;
 using NUnit.Framework;
@@ -14,7 +15,7 @@ namespace AoC.Day9
         [TestCase("104,1125899906842624,99", "1125899906842624")]
         public void TestOutputs(string input, string expectedOutput)
         {
-            var program = InputParser.ParseBigIntegers(input.Split(','));
+            var program = InputParser<BigInteger>.ParseCSVLine(input, BigInteger.Parse);
             var intcode = new BigIntCode(program);
             var output = string.Join(',', intcode.Run().Select(x => x.ToString()));
             Assert.AreEqual(expectedOutput, output);
@@ -23,7 +24,7 @@ namespace AoC.Day9
         [TestCase("1102,34915192,34915192,7,4,7,99,0", 16)]
         public void TestOutputDigitCount(string input, int digits)
         {
-            var program = InputParser.ParseBigIntegers(input.Split(','));
+            var program = InputParser<BigInteger>.ParseCSVLine(input, BigInteger.Parse);
             var intcode = new BigIntCode(program);
             var output = intcode.Run().First().ToString();
             Assert.AreEqual(digits, output.Length);

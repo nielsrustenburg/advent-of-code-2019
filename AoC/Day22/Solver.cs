@@ -11,17 +11,18 @@ namespace AoC.Day22
     class Solver : PuzzleSolver
     {
         List<string> shuffleMoves;
-        public Solver() : base(22)
+        public Solver() : this(Input.InputMode.Embedded, "input")
         {
         }
 
-        public Solver(IEnumerable<string> input) : base(input, 22)
+        public Solver(Input.InputMode mode, string input) : base(mode, input)
         {
         }
 
-        protected override void ParseInput(IEnumerable<string> input)
+        protected override void ParseInput(string input)
         {
-            shuffleMoves = input.ToList();
+            var lines = InputParser.Split(input);
+            shuffleMoves = lines.ToList();
         }
 
         protected override void PrepareSolution()

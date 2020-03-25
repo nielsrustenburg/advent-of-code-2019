@@ -10,18 +10,17 @@ namespace AoC.Day16
     class Solver : PuzzleSolver
     {
         List<int> signal;
-        public Solver() : base(16)
+        public Solver() : this(Input.InputMode.Embedded, "input")
         {
         }
 
-        public Solver(IEnumerable<string> input) : base(input, 16)
+        public Solver(Input.InputMode mode, string input) : base(mode, input)
         {
         }
 
-        protected override void ParseInput(IEnumerable<string> input)
+        protected override void ParseInput(string input)
         {
-            string inputString = input.First();
-            signal = inputString.Select(x => (int)char.GetNumericValue(x)).ToList();
+            signal = input.Select(digit => (int)char.GetNumericValue(digit)).ToList();
         }
 
         protected override void PrepareSolution()

@@ -12,24 +12,25 @@ namespace AoC.Day12
     {
         List<(int,int,int)> moonStates;
 
-        public Solver() : base(12)
+        public Solver() : this(Input.InputMode.Embedded, "input")
         {
         }
 
-        public Solver(IEnumerable<string> input) : base(input, 12)
+        public Solver(Input.InputMode mode, string input) : base(mode, input)
         {
         }
 
-        protected override void ParseInput(IEnumerable<string> input)
+        protected override void ParseInput(string input)
         {
-            (int,int,int) ParseMoonState(string moonStateString)
+            moonStates = InputParser<(int,int,int)>.SplitAndParse(input, ParseMoonState).ToList();
+
+            //FIX DIS PLZ
+            (int, int, int) ParseMoonState(string moonStateString)
             {
                 var removedBrackets = moonStateString.Substring(1, moonStateString.Length - 2);
-                var valueDeclarations = removedBrackets.Split(',');
-                var values = InputParser.ParseInts(valueDeclarations.Select(d => d.Split('=')[1])).ToArray();
-                return (values[0],values[1],values[2]);
+                var values = InputParser<int>.ParseCSVLine(removedBrackets, valDec => int.Parse(valDec.Split('=')[1])).ToArray();
+                return (values[0], values[1], values[2]);
             }
-            moonStates = InputParser<(int,int,int)>.ParseLines(input, ParseMoonState).ToList();
         }
 
         protected override void PrepareSolution()

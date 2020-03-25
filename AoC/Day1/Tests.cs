@@ -21,7 +21,7 @@ namespace AoC.Day1
         [TestCase(100756, 50346)]
         public void TestRecursiveFuelForModule(int input, int expectedOutput)
         {
-            Assert.AreEqual(expectedOutput, Solver.TotalFuelForModule(input)); //need to substract input for desired values... might be worth refactoring
+            Assert.AreEqual(expectedOutput, Solver.RecursiveFuelForModule(input, 0));
         }
 
         [TestCase("3362507", "5040874")]

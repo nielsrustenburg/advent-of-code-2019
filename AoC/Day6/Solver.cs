@@ -12,28 +12,23 @@ namespace AoC.Day6
         List<(string, string)> orbitRelations;
         OrbitTree otree;
 
-        public Solver() : base(6)
+        public Solver() : this(Input.InputMode.Embedded, "input")
         {
         }
 
-        public Solver(IEnumerable<string> input) : base(input, 6)
+        public Solver(Input.InputMode mode, string input) : base(mode, input)
         {
         }
 
-        public static List<(string, string)> ParseOrbitRelations(IEnumerable<string> input)
+        protected override void ParseInput(string input)
         {
-            return input.Select(r => r.Split(')')).Select(s => (s[0], s[1])).ToList();
-        }
+            orbitRelations = InputParser<(string,string)>.SplitAndParse(input, ParseOrbitRelation).ToList();
 
-        protected override void ParseInput(IEnumerable<string> input)
-        {
-            (string,string) ParseOrbitRelation(string inp)
+            (string, string) ParseOrbitRelation(string inp)
             {
                 var sp = inp.Split(')');
                 return (sp[0], sp[1]);
             }
-
-            orbitRelations = InputParser<(string,string)>.ParseLines(input, ParseOrbitRelation).ToList();
         }
 
         protected override void PrepareSolution()

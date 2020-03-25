@@ -15,17 +15,17 @@ namespace AoC.Day8
         int pixelsPerLayer;
         List<string> layers;
 
-        public Solver() : base(8)
+        public Solver() : this(Input.InputMode.Embedded, "input")
         {
         }
 
-        public Solver(IEnumerable<string> input) : base(input, 8)
+        public Solver(Input.InputMode mode, string input) : base(mode, input)
         {
         }
 
-        protected override void ParseInput(IEnumerable<string> input)
+        protected override void ParseInput(string input)
         {
-            this.input = input.First();
+            this.input = input;
         }
 
         protected override void PrepareSolution()

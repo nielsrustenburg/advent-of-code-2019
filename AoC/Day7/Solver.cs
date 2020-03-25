@@ -12,17 +12,17 @@ namespace AoC.Day7
     {
         List<int> program;
 
-        public Solver() : base(7)
+        public Solver() : this(Input.InputMode.Embedded, "input")
         {
         }
 
-        public Solver(IEnumerable<string> input) : base(input, 7)
+        public Solver(Input.InputMode mode, string input) : base(mode, input)
         {
         }
 
-        protected override void ParseInput(IEnumerable<string> input)
+        protected override void ParseInput(string input)
         {
-            program = InputParser.ParseCSVInts(input).First().ToList();
+            program = InputParser<int>.ParseCSVLine(input, int.Parse).ToList();
         }
 
         protected override void PrepareSolution()

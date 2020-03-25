@@ -14,16 +14,17 @@ namespace AoC.Day5
         List<int> output1;
         List<int> output2;
 
-        public Solver() : base(5)
-        {
-        }
-        public Solver(IEnumerable<string> input) : base(input, 5)
+        public Solver() : this(Input.InputMode.Embedded, "input")
         {
         }
 
-        protected override void ParseInput(IEnumerable<string> input)
+        public Solver(Input.InputMode mode, string input) : base(mode, input)
         {
-            program = InputParser.ParseCSVInts(input).First().ToList();
+        }
+
+        protected override void ParseInput(string input)
+        {
+            program = InputParser<int>.ParseCSVLine(input, int.Parse).ToList();
         }
 
         protected override void PrepareSolution()

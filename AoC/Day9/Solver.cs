@@ -15,17 +15,17 @@ namespace AoC.Day9
         List<BigInteger> output1;
         List<BigInteger> output2;
 
-        public Solver() : base(9)
+        public Solver() : this(Input.InputMode.Embedded, "input")
         {
         }
 
-        public Solver(IEnumerable<string> input) : base(input, 9)
+        public Solver(Input.InputMode mode, string input) : base(mode, input)
         {
         }
 
-        protected override void ParseInput(IEnumerable<string> input)
+        protected override void ParseInput(string input)
         {
-            program = InputParser.ParseCSVBigIntegers(input).First().ToList();
+            program = InputParser<BigInteger>.ParseCSVLine(input, BigInteger.Parse).ToList();
         }
 
         protected override void PrepareSolution()
