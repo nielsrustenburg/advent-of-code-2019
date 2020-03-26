@@ -23,12 +23,12 @@ namespace AoC.Day6
         protected override void ParseInput(string input)
         {
             orbitRelations = InputParser<(string,string)>.SplitAndParse(input, ParseOrbitRelation).ToList();
+        }
 
-            (string, string) ParseOrbitRelation(string inp)
-            {
-                var sp = inp.Split(')');
-                return (sp[0], sp[1]);
-            }
+        public static (string, string) ParseOrbitRelation(string inp)
+        {
+            var sp = inp.Split(')');
+            return (sp[0], sp[1]);
         }
 
         protected override void PrepareSolution()
