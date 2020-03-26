@@ -68,13 +68,17 @@ namespace AoC.Utils
             return depthDict;
         }
 
-        public List<string> PathToRoot(string from)
+        public IEnumerable<string> Ancestors(string from)
         {
-            if (from == root) return new List<string> { root };
-
-            List<string> parentsPath = PathToRoot(Parent(from));
-            parentsPath.Add(from);
-            return parentsPath;
+            if (from != root)
+            {
+                var parent = Parent(from);
+                foreach (var ancestor in Ancestors(parent))
+                {
+                    yield return ancestor;
+                }
+                yield return parent;
+            }
         }
 
         protected abstract T CopyNode(T copyMe);

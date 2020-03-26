@@ -43,7 +43,7 @@ namespace AoC.Day6
 
         protected override void SolvePartTwo()
         {
-            resultPartTwo = (otree.DistanceBetweenNodes("YOU", "SAN") - 2).ToString();
+            resultPartTwo = (otree.DistanceBetweenNodes("YOU", "SAN")).ToString();
         }
     }
 
@@ -84,8 +84,8 @@ namespace AoC.Day6
         public int DistanceBetweenNodes(string nodeA, string nodeB)
         {
             //Find common ancestor, or the other node
-            List<string> pathToRootA = PathToRoot(nodeA);
-            List<string> pathToRootB = PathToRoot(nodeB);
+            List<string> pathToRootA = Ancestors(nodeA).ToList();
+            List<string> pathToRootB = Ancestors(nodeB).ToList();
 
             int shortestPathCount = pathToRootA.Count < pathToRootB.Count ? pathToRootA.Count : pathToRootB.Count;
             int distance = -1;
