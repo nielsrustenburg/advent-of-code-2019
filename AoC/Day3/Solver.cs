@@ -10,9 +10,9 @@ namespace AoC.Day3
     class Solver : PuzzleSolver
     {
         List<(Direction, int)>[] wirePaths;
-        NewWire wire1;
-        NewWire wire2;
-        List<NewWire.Intersection> intersections;
+        Wire wire1;
+        Wire wire2;
+        List<Wire.Intersection> intersections;
 
         public Solver() : this(Input.InputMode.Embedded, "input")
         {
@@ -26,8 +26,8 @@ namespace AoC.Day3
         {
             var lines = InputParser.Split(input);
             wirePaths = lines.Select(line => InputParser<(Direction, int)>.ParseCSVLine(line, ParseWireStep).ToList()).ToArray();
-            wire1 = new NewWire(wirePaths[0]);
-            wire2 = new NewWire(wirePaths[1]);
+            wire1 = new Wire(wirePaths[0]);
+            wire2 = new Wire(wirePaths[1]);
 
             (Direction dir, int dist) ParseWireStep(string step)
             {
@@ -66,10 +66,10 @@ namespace AoC.Day3
             resultPartTwo = intersectionCombinedWireLengths.ToString(); 
         }
     }
-    public class NewWire
+    public class Wire
     {
         List<WirePiece> path;
-        public NewWire(IEnumerable<(Direction, int)> inputPath)
+        public Wire(IEnumerable<(Direction, int)> inputPath)
         {
             path = new List<WirePiece>();
             int x = 0;
@@ -84,7 +84,7 @@ namespace AoC.Day3
             }
         }
 
-        public List<Intersection> FindIntersectionsWith(NewWire other)
+        public List<Intersection> FindIntersectionsWith(Wire other)
         {
             var intersections = new List<Intersection>();
             foreach (var wirePiece in path)
