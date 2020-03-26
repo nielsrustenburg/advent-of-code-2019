@@ -7,14 +7,40 @@ namespace AoC.Day8
 {
     class Tests
     {
-        const string p2expout = "111  1  1 1111 111  111  \n" +
-                                "1  1 1  1    1 1  1 1  1 \n" +
-                                "1  1 1  1   1  111  1  1 \n" +
-                                "111  1  1  1   1  1 111  \n" +
-                                "1 1  1  1 1    1  1 1    \n" +
-                                "1  1  11  1111 111  1    ";
+        const string expectedImage1 = @"123
+456
 
-        [TestCase("1441", p2expout)]
+789
+012";
+
+        const string expectedImage2 = @"02
+22
+
+11
+22
+
+22
+12
+
+00
+00";
+
+        const string expectedImageSolverP2 = @"111  1  1 1111 111  111  
+1  1 1  1    1 1  1 1  1 
+1  1 1  1   1  111  1  1 
+111  1  1  1   1  1 111  
+1 1  1  1 1    1  1 1    
+1  1  11  1111 111  1    ";
+
+        [TestCase("123456789012", 3,2,expectedImage1)]
+        [TestCase("0222112222120000", 2,2,expectedImage2)]
+        public void TestImage(string input, int width, int height, string expectedOutput)
+        {
+            var img = new Image(width, height, input);
+            Assert.AreEqual(expectedOutput, img.ShowLayers());
+        }
+
+        [TestCase("1441", expectedImageSolverP2)]
         public void TestSolver(string expOut1, string expOut2)
         {
             var solver = new Solver();
