@@ -23,7 +23,6 @@ namespace AoC.Day10
 
         protected override void ParseInput(string input)
         {
-            //plzfix
             var lines = InputParser.Split(input);
             afield = new AsteroidField(lines);
         }
@@ -124,10 +123,12 @@ namespace AoC.Day10
             int bucketsRemaining = bucketSizes.Count;
             HashSet<int> breakPoints = bucketSizes.Distinct().ToHashSet();
 
+            int asteroidsToVaporize = n;
+
             int i = 0;
-            while (n > bucketsRemaining)
+            while (asteroidsToVaporize > bucketsRemaining)
             {
-                n = n - bucketsRemaining;
+                asteroidsToVaporize = asteroidsToVaporize - bucketsRemaining;
                 i++;
                 if (breakPoints.Contains(i))
                 {
@@ -137,14 +138,14 @@ namespace AoC.Day10
 
             for (int j = 0; j < sortedIds.Count; j++)
             {
-                if (n == 0) return otherRoids[sortedIds[j][i]];
+                if (asteroidsToVaporize == 0) return otherRoids[sortedIds[j][i]];
                 if (sortedIds[j].Count >= i)
                 {
-                    n--;
+                    asteroidsToVaporize--;
                 }
             }
 
-            throw new Exception("Bad Implementation, shouldn't be possible to reach this point");
+            throw new Exception($"ran out of asteroids to vaporize before {n}th asteroid, {asteroidsToVaporize} left");
         }
 
         public static (int x, int y) SmallestStepBetweenAsteroids(Asteroid a1, Asteroid a2)
@@ -159,7 +160,6 @@ namespace AoC.Day10
 
         public static double StepTo360Angle((int x, int y) step)
         {
-            //y-axis important!! up or down increase value????
             double resultingAngle = Math.Atan2(step.y, step.x) * 180 / Math.PI;
             resultingAngle = resultingAngle * -1;
             resultingAngle = (resultingAngle + 450) % 360;
