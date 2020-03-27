@@ -7,21 +7,14 @@ namespace AoC.Day11
 {
     class Tests
     {
-        [TestCase("", "")]
-        public void Test(string input, string expectedOutput)
-        {
-            var output = "";
-            Assert.AreEqual(expectedOutput, output);
-        }
+        const string expectedSolverImage = @"..##..###..#....###....##.####..##..#..#...
+.#..#.#..#.#....#..#....#....#.#..#.#..#...
+.#....###..#....#..#....#...#..#....#..#...
+.#....#..#.#....###.....#..#...#....#..#...
+.#..#.#..#.#....#....#..#.#....#..#.#..#...
+..##..###..####.#.....##..####..##...##....";
 
-        const string p2expOut = "..##..###..#....###....##.####..##..#..#...\n" +
-                                ".#..#.#..#.#....#..#....#....#.#..#.#..#...\n" +
-                                ".#....###..#....#..#....#...#..#....#..#...\n" +
-                                ".#....#..#.#....###.....#..#...#....#..#...\n" +
-                                ".#..#.#..#.#....#....#..#.#....#..#.#..#...\n" +
-                                "..##..###..####.#.....##..####..##...##....";
-
-        [TestCase("2276", p2expOut)]
+        [TestCase("2276", expectedSolverImage)]
         public void TestSolver(string expOut1, string expOut2)
         {
             var solver = new Solver();

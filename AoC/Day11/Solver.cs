@@ -54,7 +54,7 @@ namespace AoC.Day11
 
             }
             List<string> image = cgrid.RowsAsStrings();
-            string imgString = string.Join((char) 10, image);
+            string imgString = string.Join("\r\n", image);
             resultPartTwo = imgString;
         }
     }
