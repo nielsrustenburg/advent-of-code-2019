@@ -11,8 +11,7 @@ namespace AoC.Day13
 {
     class Solver : PuzzleSolver
     {
-        List<BigInteger> program;
-        List<BigInteger> output1;
+        ArcadeMachine game;
 
         public Solver() : this(Input.InputMode.Embedded, "input")
         {
@@ -24,7 +23,8 @@ namespace AoC.Day13
 
         protected override void ParseInput(string input)
         {
-            program = InputParser<BigInteger>.ParseCSVLine(input, BigInteger.Parse).ToList();
+            var program = InputParser<BigInteger>.ParseCSVLine(input, BigInteger.Parse).ToList();
+            game = new ArcadeMachine(program);
         }
 
         protected override void PrepareSolution()
@@ -34,70 +34,118 @@ namespace AoC.Day13
 
         protected override void SolvePartOne()
         {
-            BigIntCode bic = new BigIntCode(program);
-            output1 = bic.Run();
-            int c = 0;
-            for (int i = 2; i < output1.Count; i += 3)
-            {
-                if (output1[i] == 2) c++;
-            }
-            resultPartOne = c.ToString();
+            resultPartOne = game.Blocks.ToString();
         }
 
-        //Move large portion of code to some ArcadeGame class? 
         protected override void SolvePartTwo()
         {
-            bool draw = false;
-            var program2 = new List<BigInteger>(program);
-            program2[0] = 2;//Activate free play mode
-            BigIntCode bic = new BigIntCode(program2);
-            List<string> tiles = new List<string> { " ", "\u2588", "#", "=", "o" };
-            Grid<string> game = new Grid<string>(" ");
-            int score = 0;
-            int padx = 0;
-            int ballx = 0;
-            bool stopNext = false;
-            List<BigInteger> output = bic.Run();
-            if (draw) Console.Clear();
-            while (!stopNext)
-            {
-                if (draw) Console.SetCursorPosition(0, 0);
-                stopNext = bic.Halted;
-                //Draw current state to grid
-                for (int i = 0; i < output.Count - 2; i += 3)
-                {
-                    int x = (int)output[i];
-                    int y = (int)output[i + 1];
-                    if (!(x == -1 && y == 0))
-                    {
-                        int val = (int)output[i + 2];
-                        game.GetTile(x, y);
-                        game.SetTile(x, y, tiles[val]);
-                        if (val == 4) ballx = x;
-                        if (val == 3) padx = x;
-                    }
-                    else
-                    {
-                        score = (int)output[i + 2];
-                    }
-                }
-                if (draw)
-                {
-                    IEnumerable<string> gameState = game.RowsAsStrings();
-                    Console.WriteLine($"Score: {score}");
-                    foreach (string row in gameState.Reverse())
-                    {
-                        Console.WriteLine(row);
-                    }
-                    System.Threading.Thread.Sleep(50);
-                }
-                BigInteger command = 0;
-                if (padx > ballx) command = -1;
-                if (padx < ballx) command = 1;
-                output = bic.Run(new List<BigInteger> { command });
+            game.Play();
+            resultPartTwo = game.Score.ToString();
+        }
+    }
 
+    class ArcadeMachine
+    {
+        static readonly string[] tiles = new string[] { " ", "\u2588", "#", "=", "o" };
+        BigInteger[] factorySettings;
+        bool drawGame;
+
+        BigIntCode backend;
+        Grid<string> gameGrid;
+        List<BigInteger> gameState;
+
+        public int Blocks { get; private set; }
+        public int Score { get; private set; }
+        int paddleX;
+        int ballX;
+
+
+        enum PaddleMove
+        {
+            Left = -1,
+            Stay = 0,
+            Right = 1,
+        }
+
+        public ArcadeMachine(IEnumerable<BigInteger> program, bool draw = false)
+        {
+            factorySettings = program.ToArray();
+            drawGame = draw;
+            Restart();
+            gameState = backend.Run();
+            UpdateGameGrid();
+        }
+
+        public void Restart()
+        {
+            backend = new BigIntCode(factorySettings);
+            gameGrid = new Grid<string>(" ");
+        }
+
+        public void Play()
+        {
+            Restart();
+            backend.SetValAtMemIndex(0, 2);
+            backend.Run();
+            UpdateGameGrid();
+
+            if (drawGame)
+            {
+                Console.Clear();
+                DrawGameState();
             }
-            resultPartTwo = score.ToString();
+
+            do
+            {
+                MovePaddle(GetNextMove());
+                UpdateGameGrid();
+                if (drawGame) DrawGameState();
+            } while (!backend.Halted);
+        }
+
+        private PaddleMove GetNextMove()
+        {
+            return paddleX == ballX ? PaddleMove.Stay : (paddleX > ballX ? PaddleMove.Left : PaddleMove.Right);
+        }
+
+        private void MovePaddle(PaddleMove move)
+        {
+            gameState = backend.Run(new BigInteger[] {(int) move });
+        }
+
+        private void DrawGameState()
+        {
+            Console.SetCursorPosition(0, 0);
+            IEnumerable<string> gameScreen = gameGrid.RowsAsStrings();
+            Console.WriteLine($"Score: {Score}");
+            foreach (string row in gameScreen.Reverse())
+            {
+                Console.WriteLine(row);
+            }
+            System.Threading.Thread.Sleep(50);
+        }
+
+        private void UpdateGameGrid()
+        {
+            Blocks = 0;
+            for (int i = 0; i < gameState.Count - 2; i += 3)
+            {
+                int x = (int)gameState[i];
+                int y = (int)gameState[i + 1];
+                if (!(x == -1 && y == 0))
+                {
+                    int val = (int)gameState[i + 2];
+                    gameGrid.GetTile(x, y);
+                    gameGrid.SetTile(x, y, tiles[val]);
+                    if (val == 4) ballX = x;
+                    if (val == 3) paddleX = x;
+                    if (val == 2) Blocks++;
+                }
+                else
+                {
+                    Score = (int)gameState[i + 2];
+                }
+            }
         }
     }
 }

@@ -260,6 +260,11 @@ namespace AoC.Computers
             return memory[index];
         }
 
+        public void SetValAtMemIndex(int index, BigInteger value)
+        {
+            memory[index] = value;
+        }
+
         public override string ToString()
         {
             return $"IC[{String.Join(',', memory.Select(x => x.ToString()))}]";
