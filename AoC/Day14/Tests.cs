@@ -63,14 +63,15 @@ namespace AoC.Day14
 7 XCVML => 6 RJRHP
 5 BHXH, 4 VRPVC => 5 LTCX";
 
-        [TestCase(testCase1,31)]
-        [TestCase(testCase2,165)]
-        [TestCase(testCase3,13312)]
-        [TestCase(testCase4,180697)]
-        [TestCase(testCase5,2210736)]
+        [TestCase(testCase1,"31")]
+        [TestCase(testCase2,"165")]
+        [TestCase(testCase3,"13312")]
+        [TestCase(testCase4,"180697")]
+        [TestCase(testCase5,"2210736")]
         public void TestOrePerFuel(string input, string expectedOutput)
         {
-            var output = "test not implemented";
+            var solver = new Solver(Common.Input.InputMode.String, input);
+            var output = solver.SolutionOne();
             Assert.AreEqual(expectedOutput, output);
         }
 
@@ -79,7 +80,8 @@ namespace AoC.Day14
         [TestCase(testCase5, "460664")]
         public void TestFuelForOneTrillionOre(string input, string expectedOutput)
         {
-            var output = "test not implemented";
+            var solver = new Solver(Common.Input.InputMode.String, input);
+            var output = solver.SolutionTwo();
             Assert.AreEqual(expectedOutput, output);
         }
 
