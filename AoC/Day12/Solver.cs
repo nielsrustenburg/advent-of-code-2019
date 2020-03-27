@@ -10,7 +10,7 @@ namespace AoC.Day12
 {
     class Solver : PuzzleSolver
     {
-        List<(int,int,int)> moonStates;
+        JupiterMoon[] moons;
 
         public Solver() : this(Input.InputMode.Embedded, "input")
         {
@@ -22,9 +22,9 @@ namespace AoC.Day12
 
         protected override void ParseInput(string input)
         {
-            moonStates = InputParser<(int,int,int)>.SplitAndParse(input, ParseMoonState).ToList();
+            var moonStates = InputParser<(int x, int y, int z)>.SplitAndParse(input, ParseMoonState);
+            moons = moonStates.Select(coords => new JupiterMoon(coords.x, coords.y, coords.z)).ToArray();
 
-            //FIX DIS PLZ
             (int, int, int) ParseMoonState(string moonStateString)
             {
                 var removedBrackets = moonStateString.Substring(1, moonStateString.Length - 2);
@@ -40,26 +40,43 @@ namespace AoC.Day12
 
         protected override void SolvePartOne()
         {
-            var jmoons = InitializeMoons(moonStates);
-
-            for (int i = 0; i < 1000; i++)
-            {
-                SimulateStep(jmoons);
-            }
-
-            resultPartOne = jmoons.Sum(x => x.TotalEnergy()).ToString();
+            SimulateSteps(1000);
+            resultPartOne = EnergyInSystem().ToString();
         }
 
         protected override void SolvePartTwo()
         {
-            var jmoons = InitializeMoons(moonStates);
+            resultPartTwo = FindCycle().ToString();
+        }
 
-            //Find the cycle for X,Y,Z on velocity+position using the initial state as our start of the cycle
+        public void SimulateSteps(int n)
+        {
+            for (int i = 0; i < n; i++)
+            {
+                SimulateStep();
+            }
+        }
 
-            List<int> initialXpositions = jmoons.Select(j => j.X).ToList();
-            List<int> initialYpositions = jmoons.Select(j => j.Y).ToList();
-            List<int> initialZpositions = jmoons.Select(j => j.Z).ToList();
-            List<int> initialVelocities = new List<int> { 0, 0, 0, 0 }; //Same for each axis
+        public void SimulateStep()
+        {
+            foreach (var moon in moons)
+            {
+                moon.UpdateVelocity(moons);
+            }
+            foreach (var moon in moons)
+            {
+                moon.UpdatePosition();
+            }
+        }
+
+        public int EnergyInSystem()
+        {
+            return moons.Sum(x => x.TotalEnergy());
+        }
+
+        public BigInteger FindCycle()
+        {
+            ResetMoons();
 
             BigInteger xCycle = 0;
             BigInteger yCycle = 0;
@@ -67,50 +84,18 @@ namespace AoC.Day12
             BigInteger step = 0;
             while (xCycle == 0 || yCycle == 0 || zCycle == 0)
             {
-                SimulateStep(jmoons);
+                SimulateStep();
                 step++;
-                if (xCycle == 0)
-                {
-                    IEnumerable<int> xVels = jmoons.Select(j => j.velocity.x);
-                    IEnumerable<int> xPos = jmoons.Select(j => j.X);
-                    if (xVels.SequenceEqual(initialVelocities) && xPos.SequenceEqual(initialXpositions)) xCycle = step;
-                }
-                if (yCycle == 0)
-                {
-                    IEnumerable<int> yVels = jmoons.Select(j => j.velocity.y);
-                    IEnumerable<int> yPos = jmoons.Select(j => j.Y);
-                    if (yVels.SequenceEqual(initialVelocities) && yPos.SequenceEqual(initialYpositions)) yCycle = step;
-                }
-                if (zCycle == 0)
-                {
-                    IEnumerable<int> zVels = jmoons.Select(j => j.velocity.z);
-                    IEnumerable<int> zPos = jmoons.Select(j => j.Z);
-                    if (zVels.SequenceEqual(initialVelocities) && zPos.SequenceEqual(initialZpositions)) zCycle = step;
-                }
+                if (xCycle == 0 && moons.All(moon => moon.initialX == moon.X && moon.velocity.x == 0)) xCycle = step;
+                if (yCycle == 0 && moons.All(moon => moon.initialY == moon.Y && moon.velocity.y == 0)) yCycle = step;
+                if (zCycle == 0 && moons.All(moon => moon.initialZ == moon.Z && moon.velocity.z == 0)) zCycle = step;
             }
-            resultPartTwo = MathHelper.LCM(new List<BigInteger> { xCycle, yCycle, zCycle }).ToString();
+            return MathHelper.LCM(new List<BigInteger> { xCycle, yCycle, zCycle });
         }
 
-        public static void SimulateStep(List<JupiterMoon> jmoons)
+        public void ResetMoons()
         {
-            foreach (var moon in jmoons)
-            {
-                moon.UpdateVelocity(jmoons);
-            }
-            foreach (var moon in jmoons)
-            {
-                moon.UpdatePosition();
-            }
-        }
-
-        public static List<JupiterMoon> InitializeMoons(IEnumerable<(int,int,int)> moonStates)
-        {
-            List<JupiterMoon> jmoons = new List<JupiterMoon>();
-            foreach(var (x,y,z) in moonStates)
-            {
-                jmoons.Add(new JupiterMoon(x, y, z));
-            }
-            return jmoons;
+            foreach (var moon in moons) moon.Reset();
         }
     }
 
@@ -119,11 +104,19 @@ namespace AoC.Day12
         public int X { get; private set; }
         public int Y { get; private set; }
         public int Z { get; private set; }
+
+        public readonly int initialX;
+        public readonly int initialY;
+        public readonly int initialZ;
+
         public (int x, int y, int z) velocity;
         public string initialState;
 
         public JupiterMoon(int x, int y, int z)
         {
+            initialX = x;
+            initialY = y;
+            initialZ = z;
             X = x;
             Y = y;
             Z = z;
@@ -172,6 +165,14 @@ namespace AoC.Day12
         public string PosToString()
         {
             return $"p:{X},{Y},{Z}";
+        }
+
+        public void Reset()
+        {
+            X = initialX;
+            Y = initialY;
+            Z = initialZ;
+            velocity = (0, 0, 0);
         }
     }
 }

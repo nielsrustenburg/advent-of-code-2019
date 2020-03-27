@@ -17,19 +17,24 @@ namespace AoC.Day12
 <x=2, y=-7, z=3>
 <x=9, y=-8, z=-3>";
 
-        [TestCase(testCase1,10,"179")]
-        [TestCase(testCase2,100,"1940")]
-        public void TestSimulateStep(string input,int numSteps, string expectedOutput)
+        [TestCase(testCase1,10,179)]
+        [TestCase(testCase2,100,1940)]
+        public void TestSimulateStep(string input,int numSteps, int expectedOutput)
         {
-            var output = "";
-            Assert.AreEqual(expectedOutput, output);
+            Solver solver = new Solver(Common.Input.InputMode.String, input);
+            solver.ResetMoons();
+            solver.SimulateSteps(numSteps);
+
+            Assert.AreEqual(expectedOutput, solver.EnergyInSystem());
         }
 
         [TestCase(testCase1, "2772")]
         [TestCase(testCase2, "4686774924")]
         public void TestFindCycle(string input, string expectedOutput)
         {
-
+            Solver solver = new Solver(Common.Input.InputMode.String, input);
+            var output = solver.FindCycle().ToString();
+            Assert.AreEqual(expectedOutput, output);
         }
 
         [TestCase("10635", "583523031727256")]
