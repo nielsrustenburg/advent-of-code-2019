@@ -20,7 +20,7 @@ namespace AoC.Day16
 
         protected override void ParseInput(string input)
         {
-            signal = input.Select(digit => (int)char.GetNumericValue(digit)).ToList();
+            signal = InputParser.Split(input).First().Select(digit => (int)char.GetNumericValue(digit)).ToList();
         }
 
         protected override void PrepareSolution()
@@ -30,20 +30,27 @@ namespace AoC.Day16
 
         protected override void SolvePartOne()
         {
-            var pattern = new List<int> { 0, 1, 0, -1 };
-            var newSignal = new List<int>(signal);
-            for (int i = 0; i < 100; i++)
-            {
-                newSignal = FlawedFrequencyTransmission(newSignal, pattern);
-            }
-            resultPartOne = newSignal.Take(8).Aggregate(0, (a, b) => a * 10 + b).ToString();
+            var digits = Solver.RunFFT(signal, 100).Take(8);
+            resultPartOne = string.Join("", digits.Select(d => d.ToString()));
         }
 
         protected override void SolvePartTwo()
         {
-            int messageOffset = signal.Take(7).Aggregate(0, (a, b) => a * 10 + b); 
-            var newSignal = CheatMode(signal, 10000, messageOffset);
-            resultPartTwo = newSignal.Take(8).Aggregate(0, (a, b) => a * 10 + b).ToString();
+            int messageOffset = signal.Take(7).Aggregate(0, (a, b) => a * 10 + b);
+            var newSignal = CheatMode(signal, 10000, 100, messageOffset);
+            var digits = newSignal.Take(8);
+            resultPartTwo = string.Join("", digits.Select(d => d.ToString()));
+        }
+
+        public static List<int> RunFFT(IEnumerable<int> signal, int phases)
+        {
+            var pattern = new List<int> { 0, 1, 0, -1 };
+            var newSignal = new List<int>(signal);
+            for (int i = 0; i < phases; i++)
+            {
+                newSignal = FlawedFrequencyTransmission(newSignal, pattern);
+            }
+            return newSignal;
         }
 
         public static List<int> FlawedFrequencyTransmission(List<int> signal, List<int> pattern)
@@ -63,7 +70,7 @@ namespace AoC.Day16
             return outputSignal;
         }
 
-        public static List<int> CheatMode(List<int> ogSig, int reps, int messageOffset)
+        public static List<int> CheatMode(List<int> ogSig, int reps, int phases, int messageOffset)
         {
             //My solution works under the assumption that our message offset is past the halfway point of the signal digits
             //This makes our sum easy to compute (everything before becomes 0, everything after becomes 1)
@@ -80,7 +87,7 @@ namespace AoC.Day16
                 signal.AddRange(ogSig);
             }
 
-            for (int n = 0; n < 100; n++)
+            for (int n = 0; n < phases; n++)
             {
                 List<int> newSignal = new List<int>();
                 int numSum = signal.Sum();
