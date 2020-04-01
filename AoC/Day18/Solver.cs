@@ -9,6 +9,7 @@ namespace AoC.Day18
 {
     class Solver : PuzzleSolver
     {
+        const string alphabet = "abcdefghijklmnopqrstuvwxyz";
         Maze<string> maze;
         HashSet<string> keys;
         HashSet<string> doors;
@@ -29,9 +30,8 @@ namespace AoC.Day18
 
         protected override void ParseInput(string input)
         {
-            //PLZ FIX
-            var lines = InputParser.Split(input);
-            string alphabet = "abcdefghijklmnopqrstuvwxyz";
+            var rows = InputParser.Split(input);
+
             keys = alphabet.ToCharArray().Select(c => c.ToString()).ToHashSet();
             doors = keys.Select(k => k.ToUpper()).ToHashSet();
             walls = new HashSet<string> { "#" };
@@ -39,7 +39,8 @@ namespace AoC.Day18
 
             //Set new List<string> { '.' } as passable floors for graphs with less edges
             //Use floors instead if you want to know what is actually reachable from each position
-            maze = new Maze<string>(lines.Select(r => r.ToCharArray().Select(c => c.ToString())), "#", new List<string> { "." });
+            var tilesByRowAndColumn = rows.Select(r => r.ToCharArray().Select(c => c.ToString()));
+            maze = new Maze<string>(tilesByRowAndColumn, "#", new List<string> { "." });
         }
 
         protected override void PrepareSolution()
