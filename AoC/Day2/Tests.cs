@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Numerics;
+using System.Linq;
 using NUnit.Framework;
+using AoC.Computers;
+using AoC.Common;
+using AoC.Utils;
 
 namespace AoC.Day2
 {
     class Tests
     {
-        //phase out IntCode in favor of BigIntCode before making IntCode tests?
-
         [TestCase("1,9,10,3,2,3,11,0,99,30,40,50", "3500,9,10,70,2,3,11,0,99,30,40,50")]
         [TestCase("1,0,0,0,99", "2,0,0,0,99")]
         [TestCase("2,3,0,3,99", "2,3,0,6,99")]
@@ -16,7 +19,11 @@ namespace AoC.Day2
         [TestCase("1,1,1,4,99,5,6,0,99", "30,1,1,4,2,5,6,0,99")]
         public void TestAddAndMultiply(string input, string expectedOutput)
         {
-            var output = "";
+            var program = InputParser<BigInteger>.ParseCSVLine(input, BigInteger.Parse).ToList();
+            var computer = new IntCode(program);
+            computer.Run();
+            var (_, memory) = computer.GetInternalState();
+            var output = string.Join(',', memory.Select(m => m.ToString()));
             Assert.AreEqual(expectedOutput, output);
         }
 

@@ -50,7 +50,7 @@ namespace AoC.Day13
         BigInteger[] factorySettings;
         bool drawGame;
 
-        BigIntCode backend;
+        IntCode backend;
         Grid<string> gameGrid;
         List<BigInteger> gameState;
 
@@ -78,7 +78,7 @@ namespace AoC.Day13
 
         public void Restart()
         {
-            backend = new BigIntCode(factorySettings);
+            backend = new IntCode(factorySettings);
             gameGrid = new Grid<string>(" ");
         }
 

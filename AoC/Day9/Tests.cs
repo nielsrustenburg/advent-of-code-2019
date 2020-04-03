@@ -16,7 +16,7 @@ namespace AoC.Day9
         public void TestOutputs(string input, string expectedOutput)
         {
             var program = InputParser<BigInteger>.ParseCSVLine(input, BigInteger.Parse);
-            var intcode = new BigIntCode(program);
+            var intcode = new IntCode(program);
             var output = string.Join(',', intcode.Run().Select(x => x.ToString()));
             Assert.AreEqual(expectedOutput, output);
         }
@@ -25,7 +25,7 @@ namespace AoC.Day9
         public void TestOutputDigitCount(string input, int digits)
         {
             var program = InputParser<BigInteger>.ParseCSVLine(input, BigInteger.Parse);
-            var intcode = new BigIntCode(program);
+            var intcode = new IntCode(program);
             var output = intcode.Run().First().ToString();
             Assert.AreEqual(digits, output.Length);
         }

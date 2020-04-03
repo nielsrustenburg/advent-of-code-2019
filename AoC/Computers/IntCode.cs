@@ -2,30 +2,31 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using System.Numerics;
 
 namespace AoC.Computers
 {
     class IntCode
     {
-        List<int> memory;
+        List<BigInteger> memory;
         int pointer;
-        List<int> output;
+        List<BigInteger> output;
         int relativeBase;
         public bool Halted { get; private set; }
-        IEnumerator<int> inputEnum;
+        IEnumerator<BigInteger> inputEnum;
 
-        public IntCode(IEnumerable<int> vals)
+        public IntCode(IEnumerable<BigInteger> vals)
         {
-            this.memory = new List<int>(vals);
+            this.memory = new List<BigInteger>(vals);
             pointer = 0;
             Halted = false;
             relativeBase = 0;
         }
 
-        public List<int> Run(IEnumerable<int> input = null)
+        public List<BigInteger> Run(IEnumerable<BigInteger> input = null)
         {
-            input = input ?? new List<int>();
-            output = new List<int>();
+            input = input ?? new List<BigInteger>();
+            output = new List<BigInteger>();
             inputEnum = input.GetEnumerator();
             while (DoStep())
             {
@@ -35,9 +36,9 @@ namespace AoC.Computers
 
         public bool DoStep()
         {
-            int instruction = memory[pointer];
-            int opcode = instruction % 100;
-            int paramModes = instruction / 100;
+            BigInteger instruction = memory[pointer];
+            BigInteger opcode = instruction % 100;
+            BigInteger paramModes = instruction / 100;
 
             if (opcode == 99) return Halt();
             if (opcode == 1) return Add(paramModes);
@@ -59,37 +60,37 @@ namespace AoC.Computers
             return false;
         }
 
-        private bool Add(int paramCode)
+        private bool Add(BigInteger paramCode)
         {
             List<string> paramModes = GetParameterModes(paramCode, 3);
-            List<int> parameters = GetParameters(3);
+            List<BigInteger> parameters = GetParameters(3);
 
-            int result = Read(parameters[0], paramModes[0]) + Read(parameters[1], paramModes[1]);
-            Write(parameters[2], result);
+            BigInteger result = Read(parameters[0], paramModes[0]) + Read(parameters[1], paramModes[1]);
+            Write(parameters[2], paramModes[2], result);
             MovePointer(parameters.Count + 1);
             return true;
         }
 
-        private bool Multiply(int paramCode)
+        private bool Multiply(BigInteger paramCode)
         {
             List<string> paramModes = GetParameterModes(paramCode, 3);
-            List<int> parameters = GetParameters(3);
+            List<BigInteger> parameters = GetParameters(3);
 
-            int result = Read(parameters[0], paramModes[0]) * Read(parameters[1], paramModes[1]);
-            Write(parameters[2], result);
+            BigInteger result = Read(parameters[0], paramModes[0]) * Read(parameters[1], paramModes[1]);
+            Write(parameters[2], paramModes[2], result);
             MovePointer(parameters.Count + 1);
             return true;
         }
 
-        private bool Input(int paramCode)
+        private bool Input(BigInteger paramCode)
         {
             List<string> paramModes = GetParameterModes(paramCode, 1);
-            List<int> parameters = GetParameters(1);
+            List<BigInteger> parameters = GetParameters(1);
 
             if (inputEnum.MoveNext())
             {
-                int input = inputEnum.Current;
-                Write(parameters[0], input);
+                BigInteger input = inputEnum.Current;
+                Write(parameters[0], paramModes[0], input);
                 MovePointer(parameters.Count + 1);
                 return true;
             }
@@ -102,21 +103,21 @@ namespace AoC.Computers
             }
         }
 
-        private bool Output(int paramCode)
+        private bool Output(BigInteger paramCode)
         {
             List<string> paramModes = GetParameterModes(paramCode, 1);
-            List<int> parameters = GetParameters(1);
+            List<BigInteger> parameters = GetParameters(1);
 
-            int addToOutput = Read(parameters[0], paramModes[0]);
+            BigInteger addToOutput = Read(parameters[0], paramModes[0]);
             output.Add(addToOutput);
             MovePointer(parameters.Count + 1);
             return true;
         }
 
-        private bool JumpIfTrue(int paramCode)
+        private bool JumpIfTrue(BigInteger paramCode)
         {
             List<string> paramModes = GetParameterModes(paramCode, 2);
-            List<int> parameters = GetParameters(2);
+            List<BigInteger> parameters = GetParameters(2);
 
             if (Read(parameters[0], paramModes[0]) != 0)
             {
@@ -129,10 +130,10 @@ namespace AoC.Computers
             return true;
         }
 
-        private bool JumpIfFalse(int paramCode)
+        private bool JumpIfFalse(BigInteger paramCode)
         {
             List<string> paramModes = GetParameterModes(paramCode, 2);
-            List<int> parameters = GetParameters(2);
+            List<BigInteger> parameters = GetParameters(2);
 
             if (Read(parameters[0], paramModes[0]) == 0)
             {
@@ -145,58 +146,66 @@ namespace AoC.Computers
             return true;
         }
 
-        private bool LessThan(int paramCode)
+        private bool LessThan(BigInteger paramCode)
         {
             List<string> paramModes = GetParameterModes(paramCode, 3);
-            List<int> parameters = GetParameters(3);
+            List<BigInteger> parameters = GetParameters(3);
 
-            if (Read(parameters[0], paramModes[0]) < Read(parameters[1], paramModes[1])) Write(parameters[2], 1);
-            else Write(parameters[2], 0);
+            if (Read(parameters[0], paramModes[0]) < Read(parameters[1], paramModes[1])) Write(parameters[2], paramModes[2], 1);
+            else Write(parameters[2], paramModes[2], 0);
 
             MovePointer(parameters.Count + 1);
             return true;
         }
 
-        private bool Equals(int paramCode)
+        private bool Equals(BigInteger paramCode)
         {
             List<string> paramModes = GetParameterModes(paramCode, 3);
-            List<int> parameters = GetParameters(3);
+            List<BigInteger> parameters = GetParameters(3);
 
-            if (Read(parameters[0], paramModes[0]) == Read(parameters[1], paramModes[1])) Write(parameters[2], 1);
-            else Write(parameters[2], 0);
+            if (Read(parameters[0], paramModes[0]) == Read(parameters[1], paramModes[1])) Write(parameters[2], paramModes[2], 1);
+            else Write(parameters[2], paramModes[2], 0);
 
             MovePointer(parameters.Count + 1);
             return true;
         }
 
-        private bool AdjustRelativeBase(int paramCode)
+        private bool AdjustRelativeBase(BigInteger paramCode)
         {
             List<string> paramModes = GetParameterModes(paramCode, 1);
-            List<int> parameters = GetParameters(1);
+            List<BigInteger> parameters = GetParameters(1);
 
-            relativeBase += Read(parameters[0], paramModes[0]);
+            relativeBase += (int) Read(parameters[0], paramModes[0]);
             MovePointer(2);
             return true;
         }
 
-        internal void Write(int param, int value)
+        internal void Write(BigInteger param, string mode, BigInteger value)
         {
-            IncreaseMemoryIfNeeded(param);
-            memory[param] = value;
+            int index;
+            if(mode == "relative")
+            {
+                index = (int)param + relativeBase;
+            } else
+            {
+                index = (int)param;
+            }
+            IncreaseMemoryIfNeeded(index);
+            memory[index] = value;
         }
 
-        private int Read(int param, string mode)
+        private BigInteger Read(BigInteger param, string mode)
         {
             if (mode == "immediate") return param;
             if (mode == "positional")
             {
-                IncreaseMemoryIfNeeded(param);
-                return memory[param];
+                IncreaseMemoryIfNeeded((int)param);
+                return memory[(int)param];
             }
             if (mode == "relative")
             {
-                IncreaseMemoryIfNeeded(param + relativeBase);
-                return memory[param + relativeBase];
+                IncreaseMemoryIfNeeded((int) param + relativeBase);
+                return memory[(int) param + relativeBase];
             }
             throw new Exception($"Unexpected parameter mode {mode}");
         }
@@ -206,17 +215,17 @@ namespace AoC.Computers
             pointer += stepSize;
         }
 
-        void JumpPointer(int address)
+        void JumpPointer(BigInteger address)
         {
-            pointer = address;
+            pointer = (int) address;
         }
 
-        public List<int> GetParameters(int n)
+        public List<BigInteger> GetParameters(int n)
         {
             return memory.Skip(pointer + 1).Take(n).ToList();
         }
 
-        public List<string> GetParameterModes(int paramCode, int nParams)
+        public List<string> GetParameterModes(BigInteger paramCode, int nParams)
         {
             string CharToParamMode(Char c)
             {
@@ -231,7 +240,7 @@ namespace AoC.Computers
                                             ToList();
         }
 
-        public List<int> GetMemory()
+        public List<BigInteger> GetMemory()
         {
             return memory;
         }
@@ -242,13 +251,23 @@ namespace AoC.Computers
             if (upToIndex >= memory.Count)
             {
                 int difference = upToIndex - memory.Count + 1;
-                memory.AddRange(Enumerable.Repeat(0, difference));
+                memory.AddRange(Enumerable.Repeat((BigInteger) 0, difference));
             }
         }
 
-        public int GetValAtMemIndex(int index)
+        public BigInteger GetValAtMemIndex(int index)
         {
             return memory[index];
+        }
+
+        public void SetValAtMemIndex(int index, BigInteger value)
+        {
+            memory[index] = value;
+        }
+
+        public (BigInteger pointerIndex, List<BigInteger> memory) GetInternalState()
+        {
+            return (pointer, new List<BigInteger>(memory));
         }
 
         public override string ToString()

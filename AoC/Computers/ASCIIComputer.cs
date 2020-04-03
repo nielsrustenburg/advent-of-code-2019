@@ -5,7 +5,7 @@ using AoC.Utils;
 
 namespace AoC.Computers
 {
-    class ASCIIComputer : BigIntCode
+    class ASCIIComputer : IntCode
     {
         public ASCIIComputer(IEnumerable<BigInteger> vals) : base(vals)
         {

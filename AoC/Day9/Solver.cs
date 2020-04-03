@@ -35,14 +35,14 @@ namespace AoC.Day9
 
         protected override void SolvePartOne()
         {
-            BigIntCode bic = new BigIntCode(program);
+            IntCode bic = new IntCode(program);
             output1 = bic.Run(new List<BigInteger> { 1 });
             resultPartOne = output1.Last().ToString();
         }
 
         protected override void SolvePartTwo()
         {
-            BigIntCode bic = new BigIntCode(program);
+            IntCode bic = new IntCode(program);
             output2 = bic.Run(new List<BigInteger> { 2 });
             resultPartTwo = output2.Last().ToString();
         }

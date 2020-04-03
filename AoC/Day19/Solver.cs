@@ -73,7 +73,7 @@ namespace AoC.Day19
                 string row = "";
                 for (int x = 0; x < xCount; x++)
                 {
-                    BigIntCode bot = new BigIntCode(program);
+                    IntCode bot = new IntCode(program);
                     List<BigInteger> output = bot.Run(new List<BigInteger> { x + xStart, y + yStart });
                     pulls += (int)output[0];
                     row = row + (output[0] == 0 ? "." : "#");
@@ -98,7 +98,7 @@ namespace AoC.Day19
             BigInteger tractorStatus;
             do
             {
-                BigIntCode EdgeFinder = new BigIntCode(program);
+                IntCode EdgeFinder = new IntCode(program);
                 tractorStatus = EdgeFinder.Run(new List<BigInteger> { x, y }).First();
                 x++;
             } while (tractorStatus == whileStatus);

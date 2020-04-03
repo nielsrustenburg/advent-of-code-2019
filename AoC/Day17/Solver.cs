@@ -45,11 +45,10 @@ namespace AoC.Day17
         //Hardcoded with manually found pattern
         protected override void SolvePartTwo()
         {
-            string input = InputReader.FirstLineFromTxt("d17input.txt");
-            List<BigInteger> program = input.Split(',').Select(g => BigInteger.Parse(g)).ToList();
-            program[0] = 2; //Override movement logic
+            var programCopy = new List<BigInteger>(program);
+            programCopy[0] = 2; //Override movement logic
 
-            ASCIIComputer vacuumBot = new ASCIIComputer(program);
+            ASCIIComputer vacuumBot = new ASCIIComputer(programCopy);
 
             string routine = string.Join<char>(',', "AABCBCBCBA");
             string a = string.Join<char>(',', "R6L84R6");

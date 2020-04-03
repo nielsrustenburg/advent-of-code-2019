@@ -64,7 +64,7 @@ namespace AoC.Day11
         int xPos;
         int yPos;
         Direction dir;
-        BigIntCode brain;
+        IntCode brain;
         public Grid<char> PaintGrid { get; private set; }
 
         public EmergencyHullPaintingRobot(List<BigInteger> programming, Grid<char> cgrid, int xPos = 0, int yPos = 0)
@@ -73,7 +73,7 @@ namespace AoC.Day11
             this.yPos = yPos;
             dir = Direction.North;
             PaintGrid = cgrid;
-            brain = new BigIntCode(programming);
+            brain = new IntCode(programming);
         }
 
         public bool PerformStep()

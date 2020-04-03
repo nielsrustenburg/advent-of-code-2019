@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Numerics;
 using System.Linq;
 using AoC.Computers;
 using AoC.Common;
@@ -10,9 +11,9 @@ namespace AoC.Day5
 {
     class Solver : PuzzleSolver
     {
-        List<int> program;
-        List<int> output1;
-        List<int> output2;
+        List<BigInteger> program;
+        List<BigInteger> output1;
+        List<BigInteger> output2;
 
         public Solver() : this(Input.InputMode.Embedded, "input")
         {
@@ -24,15 +25,15 @@ namespace AoC.Day5
 
         protected override void ParseInput(string input)
         {
-            program = InputParser<int>.ParseCSVLine(input, int.Parse).ToList();
+            program = InputParser<BigInteger>.ParseCSVLine(input, BigInteger.Parse).ToList();
         }
 
         protected override void PrepareSolution()
         {
             var ic1 = new IntCode(program);
-            output1 = ic1.Run(new List<int> { 1 });
+            output1 = ic1.Run(new List<BigInteger> { 1 });
             var ic2 = new IntCode(program);
-            output2 = ic2.Run(new List<int> { 5 });
+            output2 = ic2.Run(new List<BigInteger> { 5 });
         }
 
         protected override void SolvePartOne()

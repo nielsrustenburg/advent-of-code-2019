@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using System.Numerics;
 using AoC.Common;
 using AoC.Computers;
 using AoC.Utils;
@@ -10,7 +11,7 @@ namespace AoC.Day7
 {
     class Solver : PuzzleSolver
     {
-        List<int> program;
+        List<BigInteger> program;
 
         public Solver() : this(Input.InputMode.Embedded, "input")
         {
@@ -22,7 +23,7 @@ namespace AoC.Day7
 
         protected override void ParseInput(string input)
         {
-            program = InputParser<int>.ParseCSVLine(input, int.Parse).ToList();
+            program = InputParser<BigInteger>.ParseCSVLine(input, BigInteger.Parse).ToList();
         }
 
         protected override void PrepareSolution()
@@ -30,67 +31,62 @@ namespace AoC.Day7
             //No common preparation for this one
         }
 
-        //Still quite a bit of overlap in code between part 1 and 2, refactor sometime
         protected override void SolvePartOne()
         {
-            List<int> ampOptions = Enumerable.Range(0, 5).ToList();
-            List<List<int>> ampSettingPermutations = SetHelper.Permutations(ampOptions);
-
-            int bestOutput = 0;
-            List<int> bestSetting = null;
-
-            foreach (List<int> ampSetting in ampSettingPermutations)
-            {
-                List<IntCode> amplifiers = Enumerable.Range(0, 5).Select(_ => new IntCode(program)).ToList();
-
-                List<List<int>> intcodeInstructions = SetHelper.AsSingletons(ampSetting);
-                int output = RunAmplifiersWithInstructions(amplifiers, intcodeInstructions, 0);
-
-                if (output > bestOutput)
-                {
-                    bestOutput = output;
-                    bestSetting = ampSetting;
-                }
-            }
-
-            resultPartOne = bestOutput.ToString();
+            resultPartOne = RunAmplifiersWithRoutine(RunAmplifiersOnce, 0).ToString();
         }
 
         protected override void SolvePartTwo()
         {
-            List<int> ampOptions = Enumerable.Range(5, 5).ToList(); //6-10
-            List<List<int>> ampSettingPermutations = SetHelper.Permutations(ampOptions);
-
-            int bestOutput = 0;
-            List<int> bestSetting = null;
-
-            foreach (List<int> ampSetting in ampSettingPermutations)
-            {
-                List<IntCode> amplifiers = Enumerable.Range(0, 5).Select(_ => new IntCode(program)).ToList();
-
-                int prevOutput = 0;
-                List<List<int>> intcodeInstructions = SetHelper.AsSingletons(ampSetting);
-                while (!amplifiers.Last().Halted)
-                {
-                    prevOutput = RunAmplifiersWithInstructions(amplifiers, intcodeInstructions, prevOutput);
-                    intcodeInstructions = ampSetting.Select(_ => new List<int>()).ToList();
-                }
-
-                if (prevOutput > bestOutput)
-                {
-                    bestOutput = prevOutput;
-                    bestSetting = ampSetting;
-                }
-            }
-            resultPartTwo = bestOutput.ToString();
+            resultPartTwo = RunAmplifiersWithRoutine(RunAmplifiersUntilHalted, 5).ToString();
         }
 
-        public static int RunAmplifiersWithInstructions(List<IntCode> amplifiers, List<List<int>> instructions, int previousOutput)
+        public BigInteger RunAmplifiersWithRoutine(Func<(IntCode amplifier, List<BigInteger> instructions)[], BigInteger> Routine, int firstAmplifierId, int amountOfAmplifiers = 5)
         {
-            for (int i = 0; i < amplifiers.Count; i++)
+            var amplifierOptions = Enumerable.Range(firstAmplifierId, amountOfAmplifiers).Select(n => (BigInteger)n).ToList();
+            var amplifierOptionPermutations = SetHelper.Permutations(amplifierOptions);
+
+            BigInteger bestOutput = 0;
+            List<BigInteger> bestConfiguration = null;
+
+            foreach (List<BigInteger> amplifiersConfiguration in amplifierOptionPermutations)
             {
-                instructions[i].Add(previousOutput);
-                previousOutput = amplifiers[i].Run(instructions[i]).Last();
+                var amplifiersAndInstructions = amplifiersConfiguration.Select(phaseSetting => (new IntCode(program), new List<BigInteger> { phaseSetting })).ToArray();
+
+                var output = Routine(amplifiersAndInstructions);
+
+                if (output > bestOutput)
+                {
+                    bestOutput = output;
+                    bestConfiguration = amplifiersConfiguration;
+                }
+            }
+            return bestOutput;
+        }
+
+        private BigInteger RunAmplifiersOnce((IntCode amplifier, List<BigInteger> instructions)[] amplifiersAndInstructions)
+        {
+            return RunAmplifiersWithInstructions(amplifiersAndInstructions, 0);
+        }
+
+        private BigInteger RunAmplifiersUntilHalted((IntCode amplifier, List<BigInteger> instructions)[] amplifiersAndInstructions)
+        {
+            BigInteger prevOutput = 0;
+            while (!amplifiersAndInstructions.Last().amplifier.Halted)
+            {
+                prevOutput = (int)RunAmplifiersWithInstructions(amplifiersAndInstructions, prevOutput);
+                amplifiersAndInstructions = amplifiersAndInstructions.Select(ani => (ani.amplifier, new List<BigInteger>())).ToArray();
+            }
+            return prevOutput;
+        }
+
+        private BigInteger RunAmplifiersWithInstructions((IntCode amplifier, List<BigInteger> instructions)[] amplifiersAndInstructions, BigInteger initialInput)
+        {
+            BigInteger previousOutput = initialInput;
+            foreach ((var amplifier, var instruction) in amplifiersAndInstructions)
+            {
+                instruction.Add(previousOutput);
+                previousOutput = amplifier.Run(instruction).Last();
             }
             return previousOutput;
         }

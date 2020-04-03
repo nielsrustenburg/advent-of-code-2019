@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using NUnit.Framework;
 using AoC.Utils;
+using AoC.Common;
 
 namespace AoC.Day20
 {
@@ -106,10 +108,11 @@ RE....#.#                           #......RF
                A A D   M                     ";
 
         [TestCase(testCase1, "23")]
-        [TestCase(testCase2, "58")]
+        //[TestCase(testCase2, "58")] Solver runs both part one and two at once, but testCase2 is unsolvable for part two
         public void TestPartOne(string input, string expectedOutput)
         {
-            var output = "";
+            var solver = new Solver(Input.InputMode.String, input);
+            var output = solver.SolutionOne();
             Assert.AreEqual(expectedOutput, output);
         }
 
@@ -117,15 +120,18 @@ RE....#.#                           #......RF
         [TestCase(testCase3, "396")]
         public void TestPartTwo(string input, string expectedOutput)
         {
-            var output = "";
+            var solver = new Solver(Input.InputMode.String, input);
+            var output = solver.SolutionTwo();
             Assert.AreEqual(expectedOutput, output);
         }
 
-        [TestCase("babydonut.txt",4)]
-        [TestCase("d20input.txt", 34)]
+        [TestCase(testCase1,4)]
+        [TestCase(testCase2,6)]
+        [TestCase(testCase3,6)]
         public void TestFindDonutThickness(string inputFile, int expectedOutput)
         {
-            var donut = InputReader.StringsFromTxt(inputFile);
+            var donutString = Input.GetInput(Input.InputMode.String, inputFile);
+            var donut = InputParser.Split(donutString).ToArray();
             Assert.AreEqual(expectedOutput, Solver.FindDonutThickness(donut));
         }
 

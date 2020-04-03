@@ -50,12 +50,12 @@ namespace AoC.Utils
             return a * b / GCD(a, b);
         }
 
-        public static BigInteger LCM(IList<BigInteger> nums)
+        public static BigInteger LCM(IEnumerable<BigInteger> nums)
         {
-            BigInteger result = nums[0];
-            for(int i = 1; i < nums.Count; i++)
+            BigInteger result = nums.First();
+            foreach(var num in nums.Skip(1))
             {
-                result = LCM(result, nums[i]);
+                result = LCM(result, num);
             }
             return result;
         }

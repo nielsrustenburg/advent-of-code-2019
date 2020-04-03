@@ -1,16 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 using NUnit.Framework;
+using AoC.Common;
+using AoC.Utils;
 
 namespace AoC.Day24
 {
     class Tests
     {
-        [TestCase("", "")]
-        public void Test(string input, string expectedOutput)
+        const string testCase1 = @"....#
+#..#.
+#..##
+..#..
+#....";
+
+        [TestCase(testCase1, "2129920")]
+        public void TestPartOne(string input, string expectedOutput)
         {
-            var output = "";
+            var solver = new Solver(Input.InputMode.String, input);
+            var output = solver.SolutionOne();
+            Assert.AreEqual(expectedOutput, output);
+        }
+
+        [TestCase(testCase1, 10, 99)]
+        public void TestRecursive(string input, int steps, int expectedOutput)
+        {
+            var inputString = Input.GetInput(Input.InputMode.String, input);
+            var rows = InputParser.Split(inputString);
+            var recursiveGoE = new RecursiveGameOfEris(rows);
+            var output = recursiveGoE.Run(10);
             Assert.AreEqual(expectedOutput, output);
         }
 

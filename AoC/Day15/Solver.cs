@@ -49,7 +49,7 @@ namespace AoC.Day15
 
     class RepairBot
     {
-        BigIntCode brain;
+        IntCode brain;
         public int X { get; private set; }
         public int Y { get; private set; }
         public bool Finished { get; private set; }
@@ -58,7 +58,7 @@ namespace AoC.Day15
 
         public RepairBot(List<BigInteger> programming)
         {
-            brain = new BigIntCode(programming);
+            brain = new IntCode(programming);
             X = 0;
             Y = 0;
             mentalMap = new Grid<string>(" ");

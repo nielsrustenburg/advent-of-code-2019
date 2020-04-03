@@ -187,13 +187,13 @@ namespace AoC.Day23
 
     class NetworkInterfaceController
     {
-        BigIntCode bic;
+        IntCode bic;
         BigInteger id;
 
         public NetworkInterfaceController(BigInteger id, IEnumerable<BigInteger> programming)
         {
             this.id = id;
-            bic = new BigIntCode(programming.ToList());
+            bic = new IntCode(programming.ToList());
         }
 
         public List<BigInteger> StartUp()
