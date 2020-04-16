@@ -10,6 +10,8 @@ namespace AoC
             //Console.WriteLine(...SolvePartOne());
             //Console.WriteLine(...SolvePartTwo());
 
+            var d25 = new Day25.Solver();
+
             for(int i = 1; i <= 25; i++)
             {
                 var solverType = Type.GetType($"AoC.Day{i}.Solver");
