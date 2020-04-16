@@ -9,7 +9,7 @@ namespace AoC.Utils.AStar
         public static SearchNode Execute(SearchNode rootNode)
         {
             var expanded = new Dictionary<SearchNode, int>();
-            expanded.Add(rootNode, rootNode.LBCost);
+            expanded.Add(rootNode, rootNode.LowerBoundCost);
 
             var prioQueue = new T();
             prioQueue.Enqueue(rootNode);
@@ -19,17 +19,18 @@ namespace AoC.Utils.AStar
                 var currentNode = prioQueue.Dequeue();
                 if (currentNode.IsAtTarget()) return currentNode;
 
-                var haveNotFoundCheaper = expanded[currentNode] >= currentNode.LBCost;
+                var haveNotFoundCheaper = expanded[currentNode] >= currentNode.LowerBoundCost;
                 if (haveNotFoundCheaper)
                 {
                     var neighbours = currentNode.GetNeighbours();
                     foreach (var neighbour in neighbours)
                     {
                         int bestKnownCost;
-                        if (!expanded.TryGetValue(neighbour, out bestKnownCost) || bestKnownCost > neighbour.LBCost)
+                        var alreadyFound = expanded.TryGetValue(neighbour, out bestKnownCost);
+                        if (!alreadyFound || bestKnownCost > neighbour.LowerBoundCost)
                         {
                             prioQueue.Enqueue(neighbour);
-                            expanded[neighbour] = neighbour.LBCost;
+                            expanded[neighbour] = neighbour.LowerBoundCost;
                         }
                     }
                 }

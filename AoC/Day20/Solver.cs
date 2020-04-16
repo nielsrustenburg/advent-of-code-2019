@@ -4,14 +4,15 @@ using System.Text;
 using System.Linq;
 using AoC.Common;
 using AoC.Utils;
+using AoC.Utils.AStar;
 
 namespace AoC.Day20
 {
     class Solver : PuzzleSolver
     {
         string[] mazeRows;
-        Maze<string> dmaze;
-        DonutGraph dgraph;
+        Maze<string> maze;
+        DonutGraph graph;
 
         public Solver() : this(Input.InputMode.Embedded, "input")
         {
@@ -28,17 +29,20 @@ namespace AoC.Day20
 
         protected override void PrepareSolution()
         {
-            (dmaze, dgraph) = BuildDonutMaze(mazeRows);
+            (maze, graph) = BuildDonutMaze(mazeRows);
         }
 
         protected override void SolvePartOne()
         {
-            resultPartOne = dgraph.BestFirstPath("AA:OUT", "ZZ:IN").ToString();
+            var (path, dist) = GraphSearch.Dijkstra(graph, "AA:OUT", "ZZ:OUT");
+            resultPartOne = dist.ToString(); 
         }
 
         protected override void SolvePartTwo()
         {
-            resultPartTwo = dgraph.BestFirstPath("AA:OUT", "ZZ:IN", true).ToString();
+            var aaStart = new RecursiveDonutSearchNode(graph, "AA:OUT", 0, "ZZ:OUT", 0);
+            var zzEnd = Search<NaivePriorityQueue<SearchNode>>.Execute(aaStart);
+            resultPartTwo = zzEnd.cost.ToString();
         }
 
         private static (Maze<string>, DonutGraph) BuildDonutMaze(string[] input)
@@ -112,33 +116,36 @@ namespace AoC.Day20
             }
 
             //Create the graph
-            DonutGraph dgraph = new DonutGraph(thickness);
+            var graph = new DonutGraph(thickness);
+            var existingPortals = maze.GetAllTileTypes().Where(tile => tile.Length > 1).ToHashSet();
 
-            foreach (string label in portals)
+            foreach (string portal in existingPortals)
             {
-                dgraph.AddNode(label + ":IN");
-                dgraph.AddNode(label + ":OUT");
+                graph.AddNode(portal);
+            }
+
+            foreach (var innerPortal in graph.Nodes().Where(portal => graph.IsInnerPortal(portal)))
+            {
+                var otherSide = graph.GetLabel(innerPortal) + ":OUT";
+                if (graph.ContainsNode(otherSide))
+                {
+                    graph.AddEdge(innerPortal, otherSide, 1);
+                }
             }
 
             //For every portal set up the reachable locations
-            HashSet<string> existingPortals = maze.GetAllTileTypes();
-            existingPortals.ExceptWith(nonPortalLabels); //discard non-portal-tiletypes;
             foreach (string portal in existingPortals)
             {
                 (bool _, int x, int y) = maze.FindFirstMatchingTile(portal);
                 (int _, List<(string tile, int distance)> reachablePortals) = maze.FloodFillDistanceFinder(x, y, existingPortals);
                 foreach ((string reachable, int distance) in reachablePortals)
                 {
-                    //If you can walk from any portal to an out-portal then it should connect to the in-portal and vice versa
-                    //Since there is no reason to walk to a portal and not take it
-                    string[] split = reachable.Split(':');
-                    string otherSide = split[0] + (split[1] == "IN" ? ":OUT" : ":IN");
-                    dgraph.AddEdge(portal, otherSide, distance + 1);
+                    graph.AddEdge(portal, reachable, distance);
                 }
             }
 
 
-            return (maze, dgraph);
+            return (maze, graph);
         }
 
         public static int FindDonutThickness(string[] input)
@@ -154,12 +161,18 @@ namespace AoC.Day20
                     return i - 1;
                 }
             }
-            throw new Exception("Should've found the inside before reaching half the donut thickness");
+            throw new Exception("Should've found the inside before reaching half the donut width");
         }
     }
-    class DonutGraph : AdjacencyDiGraph<DonutGraphNode>
+
+    class DonutGraph : AdjacencyGraph<DonutGraphNode>
     {
-        readonly int donutThickness; //useful for A* heuristic
+        public readonly int donutThickness; //useful for A* heuristic
+
+        public DonutGraph(int thickness) : base()
+        {
+            donutThickness = thickness;
+        }
 
         public void AddNode(string name)
         {
@@ -171,69 +184,89 @@ namespace AoC.Day20
             return nodes[name].IsInnerPortal;
         }
 
-        public DonutGraph(int thickness) : base()
+        public string GetLabel(string name)
         {
-            donutThickness = thickness;
-        }
-
-        public int BestFirstPath(string from, string to, bool depthCheck = false, int maxDist = int.MaxValue)
-        {
-            List<(string, int distance, int depth, int aStarDist)> priorityQueue = new List<(string, int, int, int)>();
-            if (from == to) return 0;
-
-            //make it so we end on depth 0 for my implementation of the graph 
-            //(as we don't actually take ZZ:OUT to reach ZZ:IN, but still count it as using an OUT portal)
-            int initialDepth = IsInnerPortal(to) ? 1 : -1;
-
-            priorityQueue.Add((from, 0, initialDepth, donutThickness));
-            while (priorityQueue.Any())
-            {
-                (string portal, int distance, int depth, int _) = priorityQueue[0];
-                if (portal == to && (!depthCheck || depth == 0))
-                {
-                    return distance - 1; //We don't take the last portal
-                }
-
-                priorityQueue.RemoveAt(0);
-
-                foreach ((string nb, int weight) in OutNeighbours(portal))
-                {
-                    int newDist = distance + weight;
-                    int newDepth = depth + (nb.Split(':')[1] == "OUT" ? 1 : -1);
-                    int newaStarDist = newDist + Math.Abs(newDepth) * donutThickness;
-
-                    //(potential) distance must be within positive integer range
-                    if (newDist <= maxDist &&
-                        newDist > 0 &&
-                        (newDepth >= 0 || nb == to) &&
-                        !(depthCheck && (newaStarDist > maxDist || newaStarDist < 0))
-                        )
-                    {
-
-                        int insertAt;
-                        if (depthCheck)
-                        {
-                            insertAt = priorityQueue.FindLastIndex(p => p.aStarDist <= newaStarDist);
-                        }
-                        else
-                        {
-                            insertAt = priorityQueue.FindLastIndex(p => p.distance <= newDist);
-                        }
-                        priorityQueue.Insert(insertAt + 1, (nb, newDist, newDepth, newaStarDist));
-                    }
-                }
-            }
-            throw new Exception("couldn't find a path within the allowed maxDistance");
+            return nodes[name].label;
         }
     }
-
-    class DonutGraphNode : AdjacencyDiGraphNode
+    class DonutGraphNode : AdjacencyGraphNode
     {
         public bool IsInnerPortal { get; }
+        public readonly string label;
 
         public DonutGraphNode(string name) : base(name)
         {
-            IsInnerPortal = name.Split(':')[1] == "IN";
+            var split = name.Split(':');
+            label = split[0];
+            IsInnerPortal = split[1] == "IN";
+        }
+    }
+    class RecursiveDonutSearchNode : SearchNode
+    {
+        string portal;
+        string target;
+        int layer;
+        DonutGraph graph;
+
+        public RecursiveDonutSearchNode(DonutGraph graph, string portal, int layer, string target, int cost, RecursiveDonutSearchNode parent = null) : base(cost, parent)
+        {
+            this.graph = graph;
+            this.portal = portal;
+            this.layer = layer;
+            this.target = target;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj == null) return false;
+            var other = obj as RecursiveDonutSearchNode;
+            return layer == other.layer && portal == other.portal && target == other.target;
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hash = 99877;
+                hash = hash * 90371 + layer.GetHashCode();
+                hash = hash * 90371 + portal.GetHashCode();
+                hash = hash * 90371 + target.GetHashCode();
+                return hash;
+            }
+        }
+
+        public override int GetHeuristicCost()
+        {
+            return graph.donutThickness * layer;
+        }
+
+        public override SearchNode[] GetNeighbours()
+        {
+            var neighbours = graph.GetReachableNodes(portal);
+            return GenerateSearchNodes().ToArray();
+
+            IEnumerable<SearchNode> GenerateSearchNodes()
+            {
+                foreach (var neighbour in neighbours)
+                {
+                    var nbLayer = layer;
+                    if (graph.GetLabel(portal) == graph.GetLabel(neighbour.node))
+                    {
+                        nbLayer = nbLayer + (graph.IsInnerPortal(portal) ? 1 : -1);
+                    }
+
+                    if (nbLayer >= 0)
+                    {
+                        yield return new RecursiveDonutSearchNode(graph, neighbour.node, nbLayer, target, cost + neighbour.weight, this);
+                    }
+                }
+            }
+        }
+
+        public override bool IsAtTarget()
+        {
+            return layer == 0 && portal == target;
         }
     }
 }

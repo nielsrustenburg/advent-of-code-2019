@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using AoC.Utils.AStar;
 
 namespace AoC.Utils
 {
-    abstract class AdjacencyGraph<N> : IInspectableGraph where N : IGraphNode
+    abstract class AdjacencyGraph<N> : IInspectableGraph, ISearchableGraph
+        where N : IGraphNode
     {
         protected Dictionary<string, N> nodes;
 
@@ -55,6 +57,11 @@ namespace AoC.Utils
         public IEnumerable<string> Nodes()
         {
             return nodes.Keys;
+        }
+
+        public IEnumerable<(string node, int weight)> GetReachableNodes(string from)
+        {
+            return Neighbours(from);
         }
     }
 

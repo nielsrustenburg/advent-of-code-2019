@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using AoC.Utils.AStar;
 using System.Text;
 
 namespace AoC.Utils
 {
-    abstract class AdjacencyDiGraph<N> : IInspectableDiGraph where N : IDiGraphNode
+    abstract class AdjacencyDiGraph<N> : IInspectableDiGraph, ISearchableGraph
+        where N : IDiGraphNode
     {
         protected Dictionary<string, N> nodes;
 
@@ -54,6 +56,11 @@ namespace AoC.Utils
         public IEnumerable<(string nb, int weight)> OutNeighbours(string name)
         {
             return nodes[name].OutNeighbours();
+        }
+
+        public IEnumerable<(string node, int weight)> GetReachableNodes(string from)
+        {
+            return OutNeighbours(from);
         }
     }
 

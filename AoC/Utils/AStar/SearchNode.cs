@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace AoC.Utils.AStar
 {
-    public abstract class SearchNode : IEquatable<SearchNode>, IComparable<SearchNode>
+    public abstract class SearchNode : IComparable<SearchNode>
     {
         public int cost;
         public SearchNode parent;
@@ -13,8 +13,8 @@ namespace AoC.Utils.AStar
         public abstract bool IsAtTarget();
         public abstract int GetHeuristicCost();
         public abstract SearchNode[] GetNeighbours();
-        public abstract bool Equals(SearchNode other);
-        public abstract int GetHashCode(SearchNode obj);
+        public override abstract bool Equals(object obj);
+        public override abstract int GetHashCode();
 
         public SearchNode(int cost)
         {
@@ -26,7 +26,7 @@ namespace AoC.Utils.AStar
             this.parent = parent;
         }
 
-        public int LBCost
+        public int LowerBoundCost
         {
             get
             {
@@ -44,7 +44,7 @@ namespace AoC.Utils.AStar
 
         int IComparable<SearchNode>.CompareTo(SearchNode other)
         {
-            if (LBCost != other.LBCost) return LBCost.CompareTo(other.LBCost);
+            if (LowerBoundCost != other.LowerBoundCost) return LowerBoundCost.CompareTo(other.LowerBoundCost);
             return GetHeuristicCost().CompareTo(other.GetHeuristicCost());
         }
     }

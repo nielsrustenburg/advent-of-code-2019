@@ -41,15 +41,15 @@ namespace AoC.Utils.AStar
             this.target = target;
         }
 
-        public override bool Equals(SearchNode other)
+        public override bool Equals(object obj)
         {
-            if (ReferenceEquals(this, other)) return true;
-            if (other == null) return false;
-            var oth = other as GridNode;
-            return x == oth.x && y == oth.y && target == oth.target;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj == null) return false;
+            var other = obj as GridNode;
+            return x == other.x && y == other.y && target == other.target;
         }
 
-        public override int GetHashCode(SearchNode obj)
+        public override int GetHashCode()
         {
             unchecked
             {
