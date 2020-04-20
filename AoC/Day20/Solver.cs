@@ -82,25 +82,25 @@ namespace AoC.Day20
                 {
                     var part1 = maze.GetNeighbours(x, y).Where(kvp => !nonPortalLabels.Contains(kvp.Value)).First();
                     string portalName;
-                    if (part1.Key == "N")
+                    if (part1.Key == Direction.North)
                     {
                         portalName = maze.GetTile(x, y + 2) + maze.GetTile(x, y + 1);
                         maze.SetTile(x, y + 2, " ");
                         maze.SetTile(x, y + 1, " ");
                     }
-                    else if (part1.Key == "E")
+                    else if (part1.Key == Direction.East)
                     {
                         portalName = maze.GetTile(x + 1, y) + maze.GetTile(x + 2, y);
                         maze.SetTile(x + 1, y, " ");
                         maze.SetTile(x + 2, y, " ");
                     }
-                    else if (part1.Key == "S")
+                    else if (part1.Key == Direction.South)
                     {
                         portalName = maze.GetTile(x, y - 1) + maze.GetTile(x, y - 2);
                         maze.SetTile(x, y - 2, " ");
                         maze.SetTile(x, y - 1, " ");
                     }
-                    else if (part1.Key == "W")
+                    else if (part1.Key == Direction.West)
                     {
                         portalName = maze.GetTile(x - 2, y) + maze.GetTile(x - 1, y);
                         maze.SetTile(x - 1, y, " ");

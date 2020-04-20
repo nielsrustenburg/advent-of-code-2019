@@ -45,7 +45,7 @@ namespace AoC.Utils
                     {
                         if (!floodNeighbours[key])
                         {
-                            var neighbourCoords = ModifyCoordinates(x, y, key);
+                            var neighbourCoords = DirectionHelper.StepInDirection(key, x, y, 1); 
                             if (poi.Contains(neighbours[key]))
                             {
                                 poiFound.Add((neighbours[key], steps + 1));
@@ -94,7 +94,7 @@ namespace AoC.Utils
                             {
                                 if (!nb.Value.Equals(turnInto))
                                 {
-                                    var nbCoords = ModifyCoordinates(x, y, nb.Key);
+                                    var nbCoords = DirectionHelper.StepInDirection(nb.Key, x, y, 1);
                                     if (originalCandidates.Any(t => t.x == nbCoords.x && t.y == nbCoords.y))
                                     {
                                         potentialNewDeadEnds.Add(nbCoords);

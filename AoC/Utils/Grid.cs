@@ -142,23 +142,19 @@ namespace AoC.Utils
             return tileCount.ContainsKey(tile) ? tileCount[tile] : 0;
         }
 
-        public Dictionary<string, T> GetNeighbours(int x, int y, bool includeDiagonal = false)
+        public Dictionary<Direction, T> GetNeighbours(int x, int y, bool includeDiagonal = false)
         {
-            Dictionary<string, T> nb = new Dictionary<string, T>
+            var directions = Enum.GetValues(typeof(Direction));
+            var neighbours = new Dictionary<Direction, T>();
+            foreach(Direction dir in directions)
             {
-                { "N", GetTile(x, y + 1) },
-                { "E", GetTile(x + 1, y) },
-                { "S", GetTile(x, y - 1) },
-                { "W", GetTile(x - 1, y) }
-            };
-            if (includeDiagonal)
-            {
-                nb.Add("NE", GetTile(x + 1, y + 1));
-                nb.Add("SE", GetTile(x + 1, y - 1));
-                nb.Add("SW", GetTile(x - 1, y - 1));
-                nb.Add("NW", GetTile(x - 1, y + 1));
+                if(includeDiagonal || ((int) dir % 2) == 0)
+                {
+                    var (modX, modY) = DirectionHelper.StepInDirection(dir, x, y, 1);
+                    neighbours.Add(dir, GetTile(modX, modY));
+                }
             }
-            return nb;
+            return neighbours;
         }
 
         public (int x, int y) ModifyCoordinates(int x, int y, string direction)
