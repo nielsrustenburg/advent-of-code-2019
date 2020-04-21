@@ -48,104 +48,130 @@ namespace AoC.Day17
         {
             var testrobot = new SimulationRobot(scaffoldImageRows);
             var greedyPath = testrobot.FindGreedyPath();
-            var routine = FindValidMovementRoutine(greedyPath);
+            var routine = FindValidMovementRoutine(greedyPath, new List<string>[0], new int[0]);
             var robot = new ASCIIComputer(program);
             resultPartTwo = routine.UploadToASCIIComputer(robot);
         }
 
-        public static MovementRoutine FindValidMovementRoutine(string[] fullPath)
+        public static MovementRoutine FindValidMovementRoutine(IEnumerable<string> path, List<string>[] previousPatterns, int[] patternsUsed)
         {
-            var abc = new string[] { "A", "B", "C" };
-            var fullPathString = string.Join(',', fullPath);
-            var patternABuilder = new StringBuilder();
-            //Pattern A
-            for (int a = 0; a < fullPath.Length; a++)
-            {
-                patternABuilder.Append(fullPath[a]);
-                var branchesAfterFittingA = TryFittingPathWithPatterns(fullPathString, new string[] { patternABuilder.ToString() });
-                foreach (var (pathAfterA, patternsUsedA) in branchesAfterFittingA)
-                {
-                    //Pattern B
-                    var patternBBuilder = new StringBuilder();
-                    for (int b = patternsUsedA.Count * (a+1); b < fullPath.Length; b++)
-                    {
-                        patternBBuilder.Append(fullPath[b]);
-                        var branchesAfterFittingAB = TryFittingPathWithPatterns(pathAfterA, new string[] { patternABuilder.ToString(), patternBBuilder.ToString() });
-                        foreach (var (pathAfterAB, patternsUsedAB) in branchesAfterFittingAB)
-                        {
-                            //Pattern C
-                            var patternCBuilder = new StringBuilder();
-                            for(int c = b+1; c < fullPath.Length; c++)
-                            {
-                                patternCBuilder.Append(fullPath[c]);
-                                var branchesAfterFittingABC = TryFittingPathWithPatterns(pathAfterAB, new string[] { patternABuilder.ToString(), patternBBuilder.ToString(), patternCBuilder.ToString() });
-                                foreach(var(pathAfterABC, patternsUsedABC) in branchesAfterFittingABC)
-                                {
-                                    if(pathAfterABC == string.Empty)
-                                    {
-                                        var intRoutine = new List<int>(patternsUsedA);
-                                        intRoutine.AddRange(patternsUsedAB);
-                                        intRoutine.AddRange(patternsUsedABC);
+            const int maxCharacters = MovementRoutine.characterLimit;
+            const int maxPatternsInRoutine = MovementRoutine.maxPatternsInRoutine;
 
-                                        var main = string.Join(',',intRoutine.Select(x => abc[x]));
-                                        var routine = new MovementRoutine(main, patternABuilder.ToString(), patternBBuilder.ToString(), patternCBuilder.ToString());
-                                        if (routine.IsValid) return routine;
-                                    }
-                                }
-                                patternCBuilder.Append(',');
-                            }
-                        }
-                        patternBBuilder.Append(',');
+            if (!path.Any())
+            {
+                var abc = new string[] { "A", "B", "C" };
+                var mainRoutine = patternsUsed.Select(p => abc[p]);
+                var moveRoutine = new MovementRoutine(mainRoutine, previousPatterns[0], previousPatterns[1], previousPatterns[2]);
+                if (moveRoutine.IsWithinCharacterLimits) return moveRoutine; else return null;
+            }
+            if (previousPatterns.Length >= 3) return null;
+
+            var patternsWithNew = new List<string>[previousPatterns.Length + 1];
+            for (int patternId = 0; patternId < previousPatterns.Length; patternId++)
+            {
+                patternsWithNew[patternId] = previousPatterns[patternId];
+            }
+            var newPattern = new List<string>();
+            patternsWithNew[previousPatterns.Length] = newPattern;
+
+            var pathAfterNewPattern = path;
+            int patternLengthSansCommas = 0;
+            bool patternIsValid = true;
+            var pathEnumerator = path.GetEnumerator();
+            while (patternIsValid && pathEnumerator.MoveNext())
+            {
+                patternLengthSansCommas += pathEnumerator.Current.Length;
+                if ((patternLengthSansCommas + newPattern.Count) <= maxCharacters)
+                {
+                    newPattern.Add(pathEnumerator.Current);
+                    pathAfterNewPattern = pathAfterNewPattern.Skip(1);
+                    var branches = TryFittingPathWithPatterns(pathAfterNewPattern, patternsWithNew, maxPatternsInRoutine-patternsUsed.Length);
+                    foreach (var (remainingPath, patternsUsedInBranch) in branches)
+                    {
+                        var updatedPatternsUsed = patternsUsed.Concat(new int[] { previousPatterns.Length }).Concat(patternsUsedInBranch).ToArray();
+                        var result = FindValidMovementRoutine(remainingPath, patternsWithNew, updatedPatternsUsed);
+                        if (result != null) return result;
                     }
                 }
-                patternABuilder.Append(',');
+                else
+                {
+                    patternIsValid = false;
+                }
             }
-            throw new Exception("No valid routine could be found");
+            return null;
         }
 
-        private static IEnumerable<(string, List<int>)> TryFittingPathWithPatterns(string path, string[] patterns)
+        private static IEnumerable<(IEnumerable<string>, List<int>)> TryFittingPathWithPatterns(IEnumerable<string> path, List<string>[] patterns, int patternBudget)
         {
-            var remainingPathsWithPatternSequence = new List<(string, List<int>)>();
-            if (path.Length > 0 && path[0] == ',') path = path.Substring(1);
-            for (int i = 0; i < patterns.Length; i++)
+            var result = new List<(IEnumerable<string>, List<int>)>();
+            if (patternBudget > 0)
             {
-                if (path.Length >= patterns[i].Length && path.Substring(0, patterns[i].Length) == patterns[i])
+                for (int patternIndex = 0; patternIndex < patterns.Length; patternIndex++)
                 {
-                    var branch = TryFittingPathWithPatterns(path.Substring(patterns[i].Length), patterns);
-                    foreach (var (remainingPath, patternsUsed) in branch)
+                    var pattern = patterns[patternIndex];
+                    var pathEnumerator = path.GetEnumerator();
+                    var patternEnumerator = pattern.GetEnumerator();
+                    var patternFits = true;
+                    while (patternFits)
                     {
-                        patternsUsed.Insert(0, i);
-                        remainingPathsWithPatternSequence.Add((remainingPath, patternsUsed));
+                        patternFits = pathEnumerator.MoveNext();
+                        if (!patternEnumerator.MoveNext())
+                        {
+                            var partialResults = TryFittingPathWithPatterns(path.Skip(pattern.Count), patterns, patternBudget-1);
+                            foreach (var (remainingPath, patternsUsed) in partialResults)
+                            {
+                                patternsUsed.Insert(0, patternIndex);
+                                result.Add((remainingPath, patternsUsed));
+                            }
+                            break;
+                        }
+                        patternFits = patternFits && pathEnumerator.Current == patternEnumerator.Current;
                     }
                 }
             }
-            if (!remainingPathsWithPatternSequence.Any()) remainingPathsWithPatternSequence.Add((path, new List<int>()));
-            return remainingPathsWithPatternSequence;
+            result.Add((path, new List<int>()));
+            return result;
         }
     }
 
     class MovementRoutine
     {
-        public bool IsValid { get; private set; }
+        public bool IsWithinCharacterLimits { get; private set; }
 
-        MovementFunction[] main;
+        public const int characterLimit = 20;
+        public const int maxPatternsInRoutine = (characterLimit + 1) / 2;
+
+        MovementFunctionId[] main;
         string[] a;
         string[] b;
         string[] c;
 
-        public MovementRoutine(string main, string a, string b, string c)
+        public MovementRoutine(string main, string a, string b, string c) : this(main.Split(','), a.Split(','), b.Split(','), c.Split(','))
         {
-            IsValid = true;
-            this.main = ParseMainRoutine(main);
-            this.a = ParseMovementFunction(a);
-            this.b = ParseMovementFunction(b);
-            this.c = ParseMovementFunction(c);
+        }
+
+        public MovementRoutine(IEnumerable<string> main, IEnumerable<string> a, IEnumerable<string> b, IEnumerable<string> c)
+        {
+            this.main = ParseMainRoutineInput(main);
+            this.a = ParseMovementFunctionInput(a);
+            this.b = ParseMovementFunctionInput(b);
+            this.c = ParseMovementFunctionInput(c);
+            CheckCharacterLimits();
+        }
+
+        private void CheckCharacterLimits()
+        {
+            IsWithinCharacterLimits = main.Length <= maxPatternsInRoutine && 
+                                      MovementFunctionIsWithinCharacterLimits(a) &&
+                                      MovementFunctionIsWithinCharacterLimits(b) &&
+                                      MovementFunctionIsWithinCharacterLimits(c);
         }
 
         public bool TryMainRoutine(SimulationRobot robot)
         {
             var routineIsValid = true;
-            var routineEnumerator = ((IEnumerable<MovementFunction>)main).GetEnumerator();
+            var routineEnumerator = ((IEnumerable<MovementFunctionId>)main).GetEnumerator();
             while (routineEnumerator.MoveNext() && routineIsValid)
             {
                 var currentRoutine = SelectRoutine(routineEnumerator.Current);
@@ -192,41 +218,38 @@ namespace AoC.Day17
             return true;
         }
 
-        private string[] SelectRoutine(MovementFunction mf)
+        private string[] SelectRoutine(MovementFunctionId mf)
         {
             switch (mf)
             {
-                case MovementFunction.A:
+                case MovementFunctionId.A:
                     return a;
-                case MovementFunction.B:
+                case MovementFunctionId.B:
                     return b;
-                case MovementFunction.C:
+                case MovementFunctionId.C:
                     return c;
                 default:
                     throw new Exception("use the MovementFunction enum");
             }
         }
 
-        private string[] ParseMovementFunction(string input)
+        private string[] ParseMovementFunctionInput(IEnumerable<string> input)
         {
-            if (input.Length > 20) IsValid = false;
-            var result = input.Split(',');
-            foreach (var instruction in result)
+            foreach (var instruction in input)
             {
                 if (!(instruction == "R" || instruction == "L" || int.Parse(instruction) > -1)) throw new Exception($"instructions unclear, expected L,R or a positive integer, found: {instruction}");
             }
-            return result;
+            return input.ToArray();
         }
 
-        private MovementFunction[] ParseMainRoutine(string input)
+        private MovementFunctionId[] ParseMainRoutineInput(IEnumerable<string> input)
         {
-            if (input.Length > 20) IsValid = false;
-            var split = input.Split(',');
-            MovementFunction[] result = new MovementFunction[split.Length];
+            var inputArray = input.ToArray();
+            MovementFunctionId[] result = new MovementFunctionId[inputArray.Length];
             for (int i = 0; i < result.Length; i++)
             {
-                var mfString = split[i];
-                if (Enum.TryParse(mfString, out MovementFunction mf))
+                var mfString = inputArray[i];
+                if (Enum.TryParse(mfString, out MovementFunctionId mf))
                 {
                     result[i] = mf;
                 }
@@ -238,7 +261,17 @@ namespace AoC.Day17
             return result;
         }
 
-        enum MovementFunction
+        private bool MovementFunctionIsWithinCharacterLimits(string[] mf)
+        {
+            int characters = mf.Length - 1;
+            foreach(var instruction in mf){
+                characters += instruction.Length;
+                if (characters > characterLimit) return false;
+            }
+            return true;
+        }
+
+        enum MovementFunctionId
         {
             A,
             B,

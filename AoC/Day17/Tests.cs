@@ -69,7 +69,7 @@ namespace AoC.Day17
             var layoutRows = layout.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
             var robot = new SimulationRobot(layoutRows);
             var path = robot.FindGreedyPath();
-            var routine = Solver.FindValidMovementRoutine(path);
+            var routine = Solver.FindValidMovementRoutine(path, new List<string>[0], new int[0]);
             Assert.IsTrue(routine.TryMainRoutine(robot));
         }
 
