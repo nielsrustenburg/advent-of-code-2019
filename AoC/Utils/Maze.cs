@@ -64,16 +64,16 @@ namespace AoC.Utils
             return (steps-1, poiFound);
         }
 
-        public void EliminateDeadEnds(HashSet<T> checkTilesOfType, T turnInto, HashSet<T> eliminatingTiles)
+        public void EliminateDeadEnds(HashSet<T> checkTilesOfType, T turnInto, HashSet<T> killerTiles)
         {
             IEnumerable<(int, int)> positionsToCheck = FindAllMatchingTiles(checkTilesOfType);
-            EliminateDeadEnds(positionsToCheck, turnInto, eliminatingTiles);
+            EliminateDeadEnds(positionsToCheck, turnInto, killerTiles);
         }
 
-        public void EliminateDeadEnds(IEnumerable<(int x, int y)> checkPositions, T turnInto, HashSet<T> eliminatingTiles)
+        public void EliminateDeadEnds(IEnumerable<(int x, int y)> checkPositions, T turnInto, HashSet<T> killerTiles)
         {
             List<(int x, int y)> originalCandidates = checkPositions.ToList();
-            bool requiresDoubleCheck = eliminatingTiles.Contains(turnInto);
+            bool requiresDoubleCheck = killerTiles.Contains(turnInto);
 
             List<(int x, int y)> eliminationCandidates = new List<(int x, int y)>(originalCandidates);
 
@@ -85,7 +85,7 @@ namespace AoC.Utils
                 foreach ((int x, int y) in eliminationCandidates)
                 {
                     var neighbours = GetNeighbours(x, y);
-                    if (neighbours.Values.Count(t => eliminatingTiles.Contains(t)) >= 3)
+                    if (neighbours.Values.Count(t => killerTiles.Contains(t)) >= 3)
                     {
                         tilesToEliminate.Add((x, y));
                         if (requiresDoubleCheck)

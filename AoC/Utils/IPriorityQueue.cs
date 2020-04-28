@@ -14,13 +14,38 @@ namespace AoC.Utils
         T Dequeue();
     }
 
+    public class HeapPriorityQueue<T> : IPriorityQueue<T> where T : IComparable<T>
+    {
+        MinHeap<T> heap;
+
+        public HeapPriorityQueue()
+        {
+            heap = new MinHeap<T>();
+        }
+
+        public T Dequeue()
+        {
+            return heap.Delete();
+        }
+
+        public void Enqueue(T element)
+        {
+            heap.Insert(element);
+        }
+
+        public bool IsEmpty()
+        {
+            return !heap.Any();
+        }
+    }
+
     public class SortedNaivePriorityQueue<T> : IPriorityQueue<T> where T : IComparable<T>
     {
         List<T> queue;
 
         public SortedNaivePriorityQueue()
         {
-            queue = new  List<T>();
+            queue = new List<T>();
         }
 
         public T Dequeue()
@@ -38,7 +63,7 @@ namespace AoC.Utils
 
         public bool IsEmpty()
         {
-            return! queue.Any();
+            return !queue.Any();
         }
     }
 

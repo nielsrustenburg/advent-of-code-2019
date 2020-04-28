@@ -17,37 +17,47 @@ namespace AoC.Utils
         South,
         SouthWest,
         West,
-        NorthWest,
+        NorthWest
     }
 
     public static class DirectionHelper
     {
+        public static Direction[] GetAll(this Direction dir)
+        {
+            var result = new Direction[8];
+            result[0] = dir;
+            for(int i = 1; i < 8; i++)
+            {
+                result[i] = dir.ShiftBy(i);
+            }
+            return result;
+        }
         public static Direction ClockWiseByQuarter(this Direction dir)
         {
-            return ShiftBy(dir, 2);
+            return dir.ShiftBy(2);
         }
 
         public static Direction CounterClockWiseByQuarter(this Direction dir)
         {
-            return ShiftBy(dir, -2);
+            return dir.ShiftBy(-2);
         }
 
         public static Direction ClockWiseByEighth(this Direction dir)
         {
-            return ShiftBy(dir, 1);
+            return dir.ShiftBy(1);
         }
 
         public static Direction CounterClockWiseByEighth(this Direction dir)
         {
-            return ShiftBy(dir, -1);
+            return dir.ShiftBy(-1);
         }
 
         public static Direction Opposite(this Direction dir)
         {
-            return ShiftBy(dir, 4);
+            return dir.ShiftBy(4);
         }
 
-        public static Direction ShiftBy(Direction dir, int increment)
+        public static Direction ShiftBy(this Direction dir, int increment)
         {
             return (Direction)MathHelper.Mod((int)dir + increment, 8);
         }

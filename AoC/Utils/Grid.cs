@@ -101,6 +101,11 @@ namespace AoC.Utils
             return new HashSet<T>(allTileTypes);
         }
 
+        public Dictionary<T,int> GetTileCounts()
+        {
+            return new Dictionary<T, int>(tileCount);
+        }
+
         private void UpdateTileCount(T tileType, int incBy)
         {
             if (!tileType.Equals(DefaultTile))
