@@ -10,7 +10,7 @@ namespace AoC.Utils.AStar
         public static (string[] path, int distance) Dijkstra(ISearchableGraph graph, string from, string to)
         {
             DijkstraNode startNode = new DijkstraNode(graph, from, 0, to);
-            var result = Search<SortedNaivePriorityQueue<SearchNode>>.Execute(startNode);
+            var result = Search<HeapPriorityQueue<SearchNode>>.Execute(startNode);
 
             var path = result.GetPath().Select(sn => {
                 var gsn = sn as DijkstraNode;
