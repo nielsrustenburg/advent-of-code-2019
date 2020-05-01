@@ -7,19 +7,14 @@ namespace AoC
     {
         static void Main(string[] args)
         {
-            //Console.WriteLine(...SolvePartOne());
-            //Console.WriteLine(...SolvePartTwo());
-
-            var d18 = new Day18.Solver();
-
-            for(int i = 1; i <= 25; i++)
+            for (int dayCounter = 1; dayCounter <= 25; dayCounter++)
             {
-                var solverType = Type.GetType($"AoC.Day{i}.Solver");
-                var solver = (PuzzleSolver) Activator.CreateInstance(solverType);
-                Console.WriteLine($"Day{i}: \n{solver.SolutionOne()}\n{solver.SolutionTwo()}\n");
+                var solverType = Type.GetType($"AoC.Day{dayCounter}.Solver");
+                var solver = (PuzzleSolver)Activator.CreateInstance(solverType);
+                //Console.WriteLine($"Day{dayCounter}: \n{solver.SolutionOne()}\n{solver.SolutionTwo()}\n");
             }
             Console.WriteLine("Finished! Press any key to close");
-            Console.ReadKey();
+            //Console.ReadKey();
         }
     }
 
