@@ -12,6 +12,8 @@ namespace AoC.Day19
     class Solver : PuzzleSolver
     {
         List<BigInteger> program;
+        TractorBeamChecker tractorBeam;
+
         public Solver() : this(Input.InputMode.Embedded, "input")
         {
         }
@@ -27,82 +29,132 @@ namespace AoC.Day19
 
         protected override void PrepareSolution()
         {
-            //no common prep
+            tractorBeam = new TractorBeamChecker(program);
         }
 
         protected override void SolvePartOne()
         {
-            resultPartOne = TractorBeamSlice(program, 0, 50, 0, 50).ToString();
+            resultPartOne = FindTractorBeamSurface(0, 50, 0, 50).ToString();
         }
 
         protected override void SolvePartTwo()
         {
-            int targetWidth = 100;
+            resultPartTwo = ExponentialSearch(100).ToString();
+        }
 
-            int[] lefts = new int[targetWidth], rights = new int[targetWidth];
-            int pointer = 0;
-
-            int xLeft = 0, xRight = 0, y = 50;
-            while (true)
+        public int FindTractorBeamSurface(int xStart, int xCount, int yStart, int yCount)
+        {
+            int xLeft = 0, xRight = 0, surface = 0;
+            int xLimit = xStart + xCount;
+            int yLimit = yStart + yCount;
+            for(int y = yStart; y < yLimit; y++)
             {
-                xLeft = FindTractorBeamEdge(program, xLeft, y, 0);
-
-                if (xRight < xLeft) xRight = xLeft; //make sure we start inside the tractorbeam (should only be necessary for first iteration)
-                xRight = FindTractorBeamEdge(program, xRight, y, 1) - 1; //-1 because we want the last x where the tractor was turned on
-
-                int topPointer = (pointer + 1) % targetWidth;
-                if (xLeft + targetWidth - 1 <= rights[topPointer])
+                xLeft = tractorBeam.FindEdge(xLeft, y, false, xLimit);
+                if (tractorBeam[xLeft, y]) //Tractorbeam has some gaps early on, if we can't find the left edge there is no right edge
                 {
-                    resultPartTwo = (10000 * xLeft + y - targetWidth + 1).ToString();
-                    break;
+                    xRight = xRight > xLeft ? xRight : xLeft;
+                    xRight = tractorBeam.FindEdge(xRight, y, true, xLimit);
+                    surface += xRight - xLeft; //xLeft is part of the tractorbeam xRight isn't
                 }
+            }
+            return surface;
+        }
 
-                lefts[pointer] = xLeft;
-                rights[pointer] = xRight;
-                pointer = (pointer + 1) % targetWidth;
-                y++;
+        public int ExponentialSearch(int targetWidth)
+        {
+            int previousX = 0, x = 0, bound = 1;
+            bool potentialTargetFound = false;
+
+            while (!potentialTargetFound)
+            {
+                previousX = x;
+                int y = bound - 1;
+                x = tractorBeam.FindEdge(x, y + (targetWidth - 1), false);
+                potentialTargetFound = tractorBeam[x + (targetWidth - 1), y];
+                if (!potentialTargetFound) bound *= 2;
+            }
+
+            var lowerBound = bound / 2;
+            return BinarySearch(lowerBound - 1, lowerBound, previousX, x, targetWidth);
+        }
+
+        //Call with y and stepsize s.t. y fails while y+stepSize succeeds
+        private int BinarySearch(int y, int stepSize, int topX, int botX, int targetWidth)
+        {
+            if (stepSize == 1) return botX * 10000 + y + 1;
+
+            int newStepSize = stepSize / 2;
+
+            int middleY = y + newStepSize;
+            int middleX = tractorBeam.FindEdge(topX, middleY+(targetWidth-1), false);
+            if(tractorBeam[middleX+(targetWidth-1), middleY])
+            {
+                return BinarySearch(y, newStepSize, topX, middleX, targetWidth);
+            } else
+            {
+                return BinarySearch(middleY, newStepSize, middleX, botX, targetWidth);
             }
         }
 
-        public static int TractorBeamSlice(List<BigInteger> program, int xStart, int xCount, int yStart, int yCount, bool draw = false)
+        class TractorBeamChecker
         {
-            int pulls = 0;
-            List<string> rows = new List<string>();
-            for (int y = 0; y < yCount; y++)
-            {
-                string row = "";
-                for (int x = 0; x < xCount; x++)
-                {
-                    IntCode bot = new IntCode(program);
-                    List<BigInteger> output = bot.Run(new List<BigInteger> { x + xStart, y + yStart });
-                    pulls += (int)output[0];
-                    row = row + (output[0] == 0 ? "." : "#");
-                }
-                rows.Add(row);
-            }
-            if (draw)
-            {
-                Console.Clear();
-                foreach (var row in rows)
-                {
-                    Console.WriteLine(row);
-                }
-            }
-            return pulls;
-        }
+            int droidsUsed;
+            int previousResultsUsed;
+            Dictionary<string, bool> tractorBeamLocations;
+            List<BigInteger> droidProgram;
 
-        public static int FindTractorBeamEdge(IEnumerable<BigInteger> program, int initialXval, int y, BigInteger whileStatus)
-        {
-            //Finds the x at which the tractorstatus does not match whileStatus
-            int x = initialXval;
-            BigInteger tractorStatus;
-            do
+            public TractorBeamChecker(IEnumerable<BigInteger> droidProgram)
             {
-                IntCode EdgeFinder = new IntCode(program);
-                tractorStatus = EdgeFinder.Run(new List<BigInteger> { x, y }).First();
-                x++;
-            } while (tractorStatus == whileStatus);
-            return x - 1;
+                this.droidProgram = droidProgram.ToList();
+                droidsUsed = 0;
+                previousResultsUsed = 0;
+                tractorBeamLocations = new Dictionary<string, bool>();
+            }
+
+            public bool this[int x, int y]
+            {
+                get
+                {
+                    var coordString = $"{x},{y}";
+                    if (!tractorBeamLocations.TryGetValue(coordString, out bool tractorPresence))
+                    {
+                        tractorPresence = SendDroid(x, y);
+                        tractorBeamLocations[coordString] = tractorPresence;
+                    }
+                    else
+                    {
+                        previousResultsUsed++;
+                    }
+                    return tractorPresence;
+                }
+            }
+
+            //Finds the first x (starting at xStart) for which the beam status is opposite to beamWasActive
+            public int FindEdge(int xStart, int y, bool beamWasActive, int xLimit = int.MaxValue)
+            {
+                int x = xStart;
+                bool beamIsActive = beamWasActive;
+                while (beamIsActive == beamWasActive && x < xLimit)
+                {
+                    beamIsActive = this[x, y];
+                    x++;
+                }
+                if (beamIsActive != beamWasActive) return x - 1; //succeeded within limits
+                return 0;
+            }
+
+            public bool SendDroid(int x, int y)
+            {
+                droidsUsed++;
+                var droid = new IntCode(droidProgram);
+                var output = droid.Run(new BigInteger[] { x, y }).First();
+                return output == 1;
+            }
+
+            public void PrintUsageSummary()
+            {
+                Console.WriteLine($"This solver used: {droidsUsed} new droids and reused: {previousResultsUsed} results from earlier droids");
+            }
         }
     }
 }
