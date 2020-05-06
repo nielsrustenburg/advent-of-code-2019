@@ -4,12 +4,14 @@ using System.Text;
 using System.Linq;
 using AoC.Common;
 using AoC.Utils;
+using System.Xml.Schema;
 
 namespace AoC.Day16
 {
     class Solver : PuzzleSolver
     {
-        List<int> signal;
+        internal static readonly int[] pattern = new int[] { 0, 1, 0, -1 };
+        int[] signal;
         public Solver() : this(Input.InputMode.Embedded, "input")
         {
         }
@@ -20,7 +22,7 @@ namespace AoC.Day16
 
         protected override void ParseInput(string input)
         {
-            signal = InputParser.Split(input).First().Select(digit => (int)char.GetNumericValue(digit)).ToList();
+            signal = InputParser.Split(input).First().Select(digit => (int)char.GetNumericValue(digit)).ToArray();
         }
 
         protected override void PrepareSolution()
@@ -42,35 +44,60 @@ namespace AoC.Day16
             resultPartTwo = string.Join("", digits.Select(d => d.ToString()));
         }
 
-        public static List<int> RunFFT(IEnumerable<int> signal, int phases)
+        public static int[] RunFFT(int[] signal, int phases)
         {
             var pattern = new List<int> { 0, 1, 0, -1 };
-            var newSignal = new List<int>(signal);
+            var newSignal = signal;
             for (int i = 0; i < phases; i++)
             {
-                newSignal = FlawedFrequencyTransmission(newSignal, pattern);
+                newSignal = FlawedFrequencyTransmission(newSignal);
             }
             return newSignal;
         }
 
-        public static List<int> FlawedFrequencyTransmission(List<int> signal, List<int> pattern)
+        public static int[] FlawedFrequencyTransmission(int[] signal)
         {
-            List<int> outputSignal = new List<int>();
-            for (int i = 0; i < signal.Count; i++)
+            var cumulativeSums = new int[signal.Length];
+            int previousSum = 0;
+            for (int i = 1; i <= cumulativeSums.Length; i++)
             {
-                int outcome = 0;
-                //Multiply entire list by i*repeat pattern
-                for (int j = 0; j < signal.Count; j++)
-                {
-                    int num = MultiplyByPattern(signal[j], j + 1, i + 1, pattern);
-                    outcome += num;
-                }
-                outputSignal.Add(Math.Abs(outcome % 10));
+                var index = cumulativeSums.Length - i;
+                cumulativeSums[index] = signal[index] + previousSum;
+                previousSum = cumulativeSums[index];
             }
+
+            var outputSignal = Enumerable.Range(0, signal.Length).Select(index => ApplyPattern(index)).ToArray();
             return outputSignal;
+
+            int ApplyPattern(int index)
+            {
+                int value = 0;
+                int chunkFirst = index;
+                int chunkLast = index * 2;
+
+                int patternPart = 1;
+                while (chunkFirst < signal.Length)
+                {
+                    int excessCumulativeSum;
+                    if (chunkLast >= signal.Length - 1)
+                    {
+                        excessCumulativeSum = 0;
+                    }
+                    else
+                    {
+                        excessCumulativeSum = cumulativeSums[chunkLast + 1];
+                    }
+                    value += pattern[patternPart] * (cumulativeSums[chunkFirst] - excessCumulativeSum);
+
+                    patternPart = (patternPart + 1) % 4;
+                    chunkFirst += index + 1;
+                    chunkLast += index + 1;
+                }
+                return Math.Abs(value) % 10;
+            }
         }
 
-        public static List<int> CheatMode(List<int> ogSig, int reps, int phases, int messageOffset)
+        public static IEnumerable<int> CheatMode(int[] originalSignal, int repetitions, int phases, int messageOffset)
         {
             //My solution works under the assumption that our message offset is past the halfway point of the signal digits
             //This makes our sum easy to compute (everything before becomes 0, everything after becomes 1)
@@ -78,33 +105,25 @@ namespace AoC.Day16
             //Or even with repetitions of the pattern for messageOffsets very early in the signal
             //Because this last part seems like a hassle, and I assume everyone has a messageOffset past the halfway point 
             //I will leave my limited solution as is
-            if (ogSig.Count * reps > 2 * messageOffset) throw new Exception("cheatmode is not fit for this messageOffset, requires offset to be at least half the inputsize");
-            List<int> signal = ogSig.Skip(messageOffset % ogSig.Count).ToList();
-            int remainingReps = reps - (messageOffset / ogSig.Count + 1);
+            if (originalSignal.Length * repetitions > 2 * messageOffset) throw new Exception("cheatmode is not fit for this messageOffset, requires offset to be at least half the inputsize");
 
-            for (int i = 0; i < remainingReps; i++)
-            {
-                signal.AddRange(ogSig);
-            }
+            var firstPart = originalSignal.Skip(messageOffset % originalSignal.Length);
+            int remainingReps = repetitions - (messageOffset / originalSignal.Length + 1);
+            var signal = firstPart.Concat(Enumerable.Repeat(originalSignal, remainingReps).SelectMany(d => d)).ToArray();
 
             for (int n = 0; n < phases; n++)
             {
-                List<int> newSignal = new List<int>();
-                int numSum = signal.Sum();
-                for (int j = 0; j < signal.Count; j++)
+                int sum = 0;
+                var newSignal = new int[signal.Length];
+                for (int index = signal.Length - 1; index >= 0; index--)
                 {
-                    newSignal.Add(numSum % 10);
-                    numSum -= signal[j];
+                    sum += signal[index];
+                    newSignal[index] = sum % 10;
                 }
                 signal = newSignal;
             }
             return signal;
         }
 
-        public static int MultiplyByPattern(int num, int j, int i, List<int> pattern)
-        {
-            int patNum = pattern[(j / i) % pattern.Count];
-            return patNum * num;
-        }
     }
 }

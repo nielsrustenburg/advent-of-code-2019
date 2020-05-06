@@ -8,16 +8,17 @@ namespace AoC.Utils
 {
     static class MathHelper
     {
+        //Avoid use if a is never negative, significant performance hit if used often compared to using %
         public static int Mod(int a, int modulus)
         {
-            int res = a % modulus;
-            return res + (res < 0 ? modulus : 0);
+            int remainder = a % modulus;
+            return remainder + (remainder < 0 ? modulus : 0);
         }
 
-        public static BigInteger Mod(BigInteger a, BigInteger b)
+        public static BigInteger Mod(BigInteger a, BigInteger modulus)
         {
-            BigInteger res = a % b;
-            return res + (res < 0 ? b : 0);
+            BigInteger remainder = a % modulus;
+            return remainder + (remainder < 0 ? modulus : 0);
         }
 
         public static int ManhattanDistance((int x, int y) pointA, (int x, int y) pointB)

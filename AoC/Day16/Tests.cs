@@ -15,7 +15,7 @@ namespace AoC.Day16
         [TestCase("69317163492948606335995924319873", 100, "52432133")]
         public void TestPartOne(string input, int phases, string expectedOutput)
         {
-            var signal = input.Select(digit => (int)char.GetNumericValue(digit)).ToList();
+            var signal = input.Select(digit => (int)char.GetNumericValue(digit)).ToArray();
             var digits = Solver.RunFFT(signal, phases).Take(8);
             var output = string.Join("",digits.Select(d => d.ToString()));
             Assert.AreEqual(expectedOutput, output);
@@ -26,7 +26,7 @@ namespace AoC.Day16
         [TestCase("03081770884921959731165446850517", "53553731")]
         public void TestPartTwo(string input, string expectedOutput)
         {
-            var signal = input.Select(digit => (int)char.GetNumericValue(digit)).ToList();
+            var signal = input.Select(digit => (int)char.GetNumericValue(digit)).ToArray();
             int messageOffset = signal.Take(7).Aggregate(0, (a, b) => a * 10 + b);
             var newSignal = Solver.CheatMode(signal, 10000, 100, messageOffset);
             var digits = newSignal.Take(8);
