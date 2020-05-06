@@ -8,10 +8,10 @@ namespace AoC.Utils
 {
     static class MathHelper
     {
-        public static int Mod(int a, int b)
+        public static int Mod(int a, int modulus)
         {
-            int res = a % b;
-            return res + (res < 0 ? b : 0);
+            int res = a % modulus;
+            return res + (res < 0 ? modulus : 0);
         }
 
         public static BigInteger Mod(BigInteger a, BigInteger b)
