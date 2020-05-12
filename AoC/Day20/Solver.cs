@@ -41,7 +41,7 @@ namespace AoC.Day20
         protected override void SolvePartTwo()
         {
             var aaStart = new RecursiveDonutSearchNode(graph, "AA:OUT", 0, "ZZ:OUT", 0);
-            var zzEnd = Search<NaivePriorityQueue<SearchNode>>.Execute(aaStart);
+            var zzEnd = Search<HeapPriorityQueue<SearchNode>>.Execute(aaStart);
             resultPartTwo = zzEnd.cost.ToString();
         }
 
