@@ -10,13 +10,47 @@ namespace AoC.Day24
 {
     class Tests
     {
-        const string testCase1 = @"....#
+
+        const string initialState = @"....#
 #..#.
 #..##
 ..#..
 #....";
 
-        [TestCase(testCase1, "2129920")]
+        const string stateAfterOneStep = @"#..#.
+####.
+###.#
+##.##
+.##..";
+
+        const string firstRepeatedState = @".....
+.....
+.....
+#....
+.#...";
+
+        [TestCase(firstRepeatedState, 2129920)]
+        public void TestBiodiversity(string input, int expectedOutput)
+        {
+            var inputWithoutNewLines = new string(input.Where(c => c == '#' || c == '.').ToArray());
+            var grid = new Solver.ErisGrid(inputWithoutNewLines, false);
+            Assert.AreEqual(expectedOutput, grid.GetBiodiversity());
+        }
+
+        [TestCase(initialState, stateAfterOneStep)]
+        public void TestUpdate(string input, string expectedState)
+        {
+            var inputWithoutNewLines = new string(input.Where(c => c == '#' || c == '.').ToArray());
+            var expectedWithoutNewLines = new string(expectedState.Where(c => c == '#' || c == '.').ToArray());
+            var expectedGrid = new Solver.ErisGrid(expectedWithoutNewLines, false);
+            var inputGrid = new Solver.ErisGrid(inputWithoutNewLines, false);
+            inputGrid.Step();
+            inputGrid.GetPrintableState().ToList().ForEach(s => System.Diagnostics.Trace.WriteLine(s));
+
+            Assert.AreEqual(expectedGrid.GetBiodiversity(), inputGrid.GetBiodiversity());
+        }
+
+        [TestCase(initialState, "2129920")]
         public void TestPartOne(string input, string expectedOutput)
         {
             var solver = new Solver(Input.InputMode.String, input);
@@ -24,13 +58,13 @@ namespace AoC.Day24
             Assert.AreEqual(expectedOutput, output);
         }
 
-        [TestCase(testCase1, 10, 99)]
+        [TestCase(initialState, 10, 99)]
         public void TestRecursive(string input, int steps, int expectedOutput)
         {
-            var inputString = Input.GetInput(Input.InputMode.String, input);
-            var rows = InputParser.Split(inputString);
-            var recursiveGoE = new RecursiveGameOfEris(rows);
-            var output = recursiveGoE.Run(10);
+            var inputWithoutNewLines = new string(input.Where(c => c == '#' || c == '.').ToArray());
+            var grid = new Solver.ErisGrid(inputWithoutNewLines, true);
+            grid.DoTimeSteps(steps);
+            var output = grid.CountAllBugs(true);
             Assert.AreEqual(expectedOutput, output);
         }
 

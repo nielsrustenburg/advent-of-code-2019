@@ -5,12 +5,15 @@ using System.Numerics;
 using System.Linq;
 using AoC.Common;
 using AoC.Utils;
+using System.Runtime.CompilerServices;
+using System.ComponentModel;
+using System.Collections;
 
 namespace AoC.Day24
 {
     class Solver : PuzzleSolver
     {
-        string[] rows;
+        string sanitizedInput;
         public Solver() : this(Input.InputMode.Embedded, "input")
         {
         }
@@ -21,7 +24,7 @@ namespace AoC.Day24
 
         protected override void ParseInput(string input)
         {
-            rows = InputParser.Split(input).ToArray();
+            sanitizedInput = new string(input.Where(c => c == '#' || c == '.').ToArray());
         }
 
         protected override void PrepareSolution()
@@ -31,336 +34,278 @@ namespace AoC.Day24
 
         protected override void SolvePartOne()
         {
-            GameOfEris goe = new GameOfEris(rows);
-            resultPartOne = goe.Run().ToString();
+            resultPartOne = GetFirstRepeatedBiodiversity().ToString();
         }
 
         protected override void SolvePartTwo()
         {
-            RecursiveGameOfEris rgoe = new RecursiveGameOfEris(rows);
-            resultPartTwo = rgoe.Run(200).ToString();
-        }
-    }
-
-    class GameOfEris
-    {
-        ErisGrid grid;
-        public int Width { get; private set; }
-        public int Height { get; private set; }
-        HashSet<string> prevStates;
-        public GameOfEris(IEnumerable<string> input)
-        {
-            grid = new ErisGrid(input);
-            Width = grid.Width;
-            Height = grid.Height;
-            prevStates = new HashSet<string>();
+            ErisGrid centerGrid = new ErisGrid(sanitizedInput, true);
+            centerGrid.DoTimeSteps(200);
+            resultPartTwo = centerGrid.CountAllBugs(true).ToString();
         }
 
-        public BigInteger Run()
+        public int GetFirstRepeatedBiodiversity()
         {
+            var grid = new ErisGrid(sanitizedInput, false);
+            HashSet<int> observedBiodiversities = new HashSet<int>() { grid.GetBiodiversity() };
             while (true)
             {
-                bool done = UpdatePrevStates();
-                if (done)
+                grid.Step();
+                var biodiversity = grid.GetBiodiversity();
+                if (observedBiodiversities.Contains(biodiversity)) return biodiversity;
+                observedBiodiversities.Add(biodiversity);
+            }
+        }
+
+        internal class ErisGrid
+        {
+            BitArray state;
+            ErisGrid gridInsideThis;
+            ErisGrid gridOutsideThis;
+            bool isRecursiveGrid;
+
+            public ErisGrid(bool recursive)
+            {
+                state = new BitArray(25);
+                isRecursiveGrid = recursive;
+            }
+
+            public ErisGrid(string hashesAndDots, bool recursive)
+            {
+                if (hashesAndDots.Length != 25) throw new ArgumentException("string representation must contain exactly 25 characters!");
+                state = new BitArray(hashesAndDots.Select(c => c == '#').ToArray());
+                isRecursiveGrid = recursive;
+                if (isRecursiveGrid) state[12] = false; //make sure center is empty (shouldn't be necessary if input is valid though)
+            }
+
+            public ErisGrid(ErisGrid other, bool thisInsideOther) : this(true)
+            {
+                if (thisInsideOther) gridOutsideThis = other;
+                else gridInsideThis = other;
+            }
+
+            public int GetBiodiversity()
+            {
+                int biodiversity = 0;
+                int bitvalue = 1;
+                for (int bit = 0; bit < state.Length; bit++)
                 {
-                    return BioDiversityScore();
+                    if (state[bit]) biodiversity += bitvalue;
+                    bitvalue = bitvalue << 1;
+                }
+                return biodiversity;
+            }
+
+            public int CountAllBugs(bool recursive)
+            {
+                if (recursive)
+                {
+                    int count = 0;
+                    var currentGrid = FindOutermostGrid();
+                    while(currentGrid != null)
+                    {
+                        count += currentGrid.CountAllBugs(false);
+                        currentGrid = currentGrid.gridInsideThis;
+                    }
+                    return count;
                 }
                 else
                 {
-                    GoNextState();
-                }
-            }
-        }
-
-        private void GoNextState()
-        {
-            ErisGrid newGrid = new ErisGrid();
-            for (int y = 0; y < Height; y++)
-            {
-                for (int x = 0; x < Width; x++)
-                {
-                    UpdateTile(x, y, newGrid);
-                }
-            }
-            grid = newGrid;
-        }
-
-        private void UpdateTile(int x, int y, ErisGrid newGrid)
-        {
-            bool bug = grid.GetTile(x, y) == "#";
-            int amountOfNeighbourBugs = grid.GetNeighbours(x, y).Values.Count(t => t == "#");
-            string tile = amountOfNeighbourBugs == 1 ||
-                          (amountOfNeighbourBugs == 2 && !bug) ? "#" : ".";
-            newGrid.SetTile(x, y, tile);
-        }
-
-        private bool UpdatePrevStates()
-        {
-            string current = ToString();
-            if (prevStates.Contains(current)) return true;
-            prevStates.Add(current);
-            return false;
-        }
-
-        private BigInteger BioDiversityScore()
-        {
-            return (BigInteger)Enumerable.Range(0, Width * Height).Where(i => grid.GetTile(i % 5, i / 5) == "#").Select(t => Math.Pow(2, t)).Aggregate((double)0, (a, b) => a + b);
-        }
-
-        public override string ToString()
-        {
-            return string.Join("", Enumerable.Range(0, Width * Height).Select(i => grid.GetTile(i % 5, i / 5)));
-        }
-    }
-
-    class RecursiveGameOfEris
-    {
-        List<ErisGrid> grids;
-        public int Width { get; private set; }
-        public int Height { get; private set; }
-
-        public RecursiveGameOfEris(IEnumerable<string> input)
-        {
-            ErisGrid middleGrid = new ErisGrid(input);
-            Width = middleGrid.Width;
-            Height = middleGrid.Height;
-            grids = new List<ErisGrid> { middleGrid };
-        }
-
-        public int Run(int iterations)
-        {
-            for (int i = 0; i < iterations; i++)
-            {
-                GoNextState();
-            }
-            return CountBugs();
-        }
-
-        public int CountBugs()
-        {
-            int count = 0;
-            foreach (ErisGrid g in grids)
-            {
-                count += g.Count("#");
-            }
-            return count;
-        }
-
-        public void GoNextState()
-        {
-            //Add the outer layer first, inner layer last (d == -1 / d == grids.Count)
-            List<ErisGrid> newGrids = new List<ErisGrid>();
-            for (int d = -1; d <= grids.Count; d++)
-            {
-                ErisGrid ng = new ErisGrid();
-                for (int x = 0; x < Width; x++)
-                {
-                    for (int y = 0; y < Height; y++)
+                    int count = 0;
+                    for (int i = 0; i < state.Length; i++)
                     {
-                        if (x != 2 || y != 2)//Never change the center tile
+                        if (state[i]) count++;
+                    }
+                    return count;
+                }
+            }
+
+            public IEnumerable<string> GetPrintableState()
+            {
+                for (int y = 0; y < 5; y++)
+                {
+                    var sb = new StringBuilder();
+                    for (int x = 0; x < 5; x++)
+                    {
+                        int index = y * 5 + x;
+                        if (!isRecursiveGrid || index != 12)
                         {
-                            ng.GetTile(x, y);
-                            ng.SetTile(x, y, GetUpdatedTileStatus(x, y, d));
+                            sb.Append(state[index] ? '#' : '.');
+                        } else
+                        {
+                            sb.Append('?');
+                        }
+                    }
+                    yield return sb.ToString();
+                }
+            }
+
+            public void DoTimeSteps(int numMinutes)
+            {
+                for (int n = 0; n < numMinutes; n++)
+                {
+                    Step();
+                }
+            }
+
+            public void Step()
+            {
+                if (isRecursiveGrid)
+                {
+                    //add grids to current outers
+                    var currentOuter = FindOutermostGrid();
+                    var currentInner = FindInnermostGrid();
+                    var newOuter = new ErisGrid(currentOuter, false);
+                    currentOuter.gridOutsideThis = newOuter;
+                    var newInner = new ErisGrid(currentInner, true);
+                    currentInner.gridInsideThis = newInner;
+
+                    //determine which indices to update for every grid
+                    var bitsToFlipPerGrid = new List<(ErisGrid, IEnumerable<int>)>();
+                    var currentGrid = newOuter;
+                    while (currentGrid != null)
+                    {
+                        bitsToFlipPerGrid.Add((currentGrid, currentGrid.DetermineWhichBitsToFlip()));
+                        currentGrid = currentGrid.gridInsideThis;
+                    }
+
+                    //update indices where necessary
+                    foreach (var (grid, indices) in bitsToFlipPerGrid)
+                    {
+                        foreach (var index in indices)
+                        {
+                            grid.state[index] = !grid.state[index];
+                        }
+                    }
+
+                    //delete empty grids on the edges
+                    currentGrid = newOuter;
+                    while (currentGrid != null && currentGrid.GetBiodiversity() == 0)
+                    {
+                        currentGrid = currentGrid.gridInsideThis;
+                        if (currentGrid != null)
+                        {
+                            currentGrid.gridOutsideThis.gridInsideThis = null;
+                            currentGrid.gridOutsideThis = null;
+                        }
+                    }
+                    currentGrid = newInner;
+                    while (currentGrid != null && currentGrid.GetBiodiversity() == 0)
+                    {
+                        currentGrid = currentGrid.gridOutsideThis;
+                        if (currentGrid != null)
+                        {
+                            currentGrid.gridInsideThis.gridOutsideThis = null;
+                            currentGrid.gridInsideThis = null;
                         }
                     }
                 }
-                newGrids.Add(ng);
-            }
-            grids = newGrids;
-        }
-
-        private string GetUpdatedTileStatus(int x, int y, int depth)
-        {
-            //If in a new grid OR previously not a bug: 1-2 neighbours --> bug
-            bool prevBug = depth != -1 && depth != grids.Count && grids[depth].GetTile(x, y) == "#";
-            int amountOfNeighbourBugs = GetNeighbours(x, y, depth).Count(nb => nb == "#");
-            if (prevBug)
-            {
-                return amountOfNeighbourBugs == 1 ? "#" : ".";
-            }
-            else
-            {
-                return amountOfNeighbourBugs == 1 || amountOfNeighbourBugs == 2 ? "#" : ".";
-            }
-        }
-
-        public List<string> GetNeighbours(int x, int y, int depth)
-        {
-            List<string> nbors = new List<string>();
-            nbors.AddRange(GetNorthNeighbours(x, y, depth));
-            nbors.AddRange(GetEastNeighbours(x, y, depth));
-            nbors.AddRange(GetSouthNeighbours(x, y, depth));
-            nbors.AddRange(GetWestNeighbours(x, y, depth));
-            return nbors;
-        }
-
-        public List<string> GetNorthNeighbours(int x, int y, int depth)
-        {
-            //If on upper border return 2,1 (8) at surrounding level (if that level existed previous step)
-            if (y == 0)
-            {
-                if (depth > 0)
+                else
                 {
-                    return new List<string> { grids[depth - 1].GetTile(2, 1) };
+                    foreach (var index in DetermineWhichBitsToFlip())
+                    {
+                        state[index] = !state[index];
+                    }
+                }
+            }
+
+            private List<int> DetermineWhichBitsToFlip()
+            {
+                List<int> bitsToFlip = new List<int>();
+                for (int i = 0; i < 25; i++)
+                {
+                    if (!isRecursiveGrid || i != 12) //don't update middle if recursive grid
+                    {
+                        int amountOfNeighbourBugs = CountNeighbourBugs(i);
+                        if (state[i])
+                        {
+                            if (amountOfNeighbourBugs != 1) bitsToFlip.Add(i);
+                        }
+                        else
+                        {
+                            if (amountOfNeighbourBugs == 1 || amountOfNeighbourBugs == 2) bitsToFlip.Add(i);
+                        }
+                    }
+                }
+                return bitsToFlip;
+            }
+
+            private int CountNeighbourBugs(int index)
+            {
+                int bugCount = GetDirectNeighbourIndices(index).Count(i => state[i]);
+                if (isRecursiveGrid)
+                {
+                    bool onWestOuterEdge = index % 5 == 0;
+                    bool onEastOuterEdge = index % 5 == 4;
+                    bool onNorthOuterEdge = index < 5;
+                    bool onSouthOuterEdge = index > 19;
+                    bool northInner = index == 7;
+                    bool westInner = index == 11;
+                    bool eastInner = index == 13;
+                    bool southInner = index == 17;
+                    //Count relevant bugs in neighbouring grids as well + directNeighbourBugCount
+                    if (gridInsideThis != null)
+                    {
+                        if (northInner) bugCount += gridInsideThis.CountEdgeBugs(false, Direction.North);
+                        else if (westInner) bugCount += gridInsideThis.CountEdgeBugs(false, Direction.West);
+                        else if (eastInner) bugCount += gridInsideThis.CountEdgeBugs(false, Direction.East);
+                        else if (southInner) bugCount += gridInsideThis.CountEdgeBugs(false, Direction.South);
+                    }
+
+                    if (gridOutsideThis != null)
+                    {
+                        if (onWestOuterEdge) bugCount += gridOutsideThis.CountEdgeBugs(true, Direction.West);
+                        else if (onEastOuterEdge) bugCount += gridOutsideThis.CountEdgeBugs(true, Direction.East);
+                        if (onNorthOuterEdge) bugCount += gridOutsideThis.CountEdgeBugs(true, Direction.North);
+                        else if (onSouthOuterEdge) bugCount += gridOutsideThis.CountEdgeBugs(true, Direction.South);
+                    }
+                }
+                return bugCount;
+            }
+
+            private int CountEdgeBugs(bool inner, Direction dir)
+            {
+                if (inner)
+                {
+                    if (dir == Direction.North) return state[7] ? 1 : 0;
+                    if (dir == Direction.East) return state[13] ? 1 : 0;
+                    if (dir == Direction.South) return state[17] ? 1 : 0;
+                    if (dir == Direction.West) return state[11] ? 1 : 0;
                 }
                 else
                 {
-                    return new List<string>();
+                    var zeroToFour = Enumerable.Range(0, 5);
+                    if (dir == Direction.North) return zeroToFour.Count(n => state[n]);
+                    if (dir == Direction.East) return zeroToFour.Count(n => state[(n * 5) + 4]);
+                    if (dir == Direction.South) return zeroToFour.Count(n => state[n + 20]);
+                    if (dir == Direction.West) return zeroToFour.Count(n => state[n * 5]);
                 }
+                throw new Exception("should never reach this");
             }
 
-            //If on bottom center return bottom border at encased level (if that level existed previous step)
-            if (x == 2 && y == 3)
+            private IEnumerable<int> GetDirectNeighbourIndices(int index)
             {
-                if (depth < grids.Count - 1)
-                {
-                    return Enumerable.Range(0, Width).Select(xcor => grids[depth + 1].GetTile(xcor, Height - 1)).ToList();
-                }
-                else
-                {
-                    return new List<string>();
-                }
+                var west = index - 1;
+                var east = index + 1;
+                var north = index - 5;
+                var south = index + 5;
+                if (index % 5 != 0) yield return west;
+                if (index % 5 != 4) yield return east;
+                if (north >= 0) yield return north;
+                if (south < 25) yield return south;
             }
 
-            if (depth == -1 || depth == grids.Count) return new List<string>();
-            //Return the one directly north of here
-            return new List<string> { grids[depth].GetTile(x, y - 1) };
-        }
-
-        public List<string> GetSouthNeighbours(int x, int y, int depth)
-        {
-            //If on upper border return 2,3 (18) at surrounding level (if that level existed previous step)
-            if (y == 4)
+            private ErisGrid FindInnermostGrid()
             {
-                if (depth > 0)
-                {
-                    return new List<string> { grids[depth - 1].GetTile(2, 3) };
-                }
-                else
-                {
-                    return new List<string>();
-                }
+                if (gridInsideThis == null) return this;
+                else return gridInsideThis.FindInnermostGrid();
             }
 
-            //If on top center return top border at encased level (if that level existed previous step)
-            if (x == 2 && y == 1)
+            private ErisGrid FindOutermostGrid()
             {
-                if (depth < grids.Count - 1)
-                {
-                    return Enumerable.Range(0, Width).Select(xcor => grids[depth + 1].GetTile(xcor, 0)).ToList();
-                }
-                else
-                {
-                    return new List<string>();
-                }
+                if (gridOutsideThis == null) return this;
+                else return gridOutsideThis.FindOutermostGrid();
             }
-
-            if (depth == -1 || depth == grids.Count) return new List<string>();
-            //Return the one directly south of here
-            return new List<string> { grids[depth].GetTile(x, y + 1) };
-        }
-
-        public List<string> GetWestNeighbours(int x, int y, int depth)
-        {
-            //If on left border return 1,2 (12) at surrounding level (if that level existed previous step)
-            if (x == 0)
-            {
-                if (depth > 0)
-                {
-                    return new List<string> { grids[depth - 1].GetTile(1, 2) };
-                }
-                else
-                {
-                    return new List<string>();
-                }
-            }
-
-            //If on right center return right border at encased level (if that level existed previous step)
-            if (x == 3 && y == 2)
-            {
-                if (depth < grids.Count - 1)
-                {
-                    return Enumerable.Range(0, Width).Select(ycor => grids[depth + 1].GetTile(Width - 1, ycor)).ToList();
-                }
-                else
-                {
-                    return new List<string>();
-                }
-            }
-
-            if (depth == -1 || depth == grids.Count) return new List<string>();
-            //Return the one directly west of here
-            return new List<string> { grids[depth].GetTile(x - 1, y) };
-        }
-
-        public List<string> GetEastNeighbours(int x, int y, int depth)
-        {
-            //If on left border return 3,2 (14) at surrounding level (if that level existed previous step)
-            if (x == 4)
-            {
-                if (depth > 0)
-                {
-                    return new List<string> { grids[depth - 1].GetTile(3, 2) };
-                }
-                else
-                {
-                    return new List<string>();
-                }
-            }
-
-            //If on left center return left border at encased level (if that level existed previous step)
-            if (x == 1 && y == 2)
-            {
-                if (depth < grids.Count - 1)
-                {
-                    return Enumerable.Range(0, Width).Select(ycor => grids[depth + 1].GetTile(0, ycor)).ToList();
-                }
-                else
-                {
-                    return new List<string>();
-                }
-            }
-
-            if (depth == -1 || depth == grids.Count) return new List<string>();
-            //Return the one directly east of here
-            return new List<string> { grids[depth].GetTile(x + 1, y) };
-        }
-    }
-
-    class ErisGrid : Grid<string>
-    {
-
-        public ErisGrid() : base(".")
-        {
-
-        }
-
-        public ErisGrid(IEnumerable<string> input) : this()
-        {
-            int nrow = 0;
-            foreach (string row in input)
-            {
-                int ncol = 0;
-                foreach (char tile in row)
-                {
-                    GetTile(ncol, nrow);
-                    SetTile(ncol, nrow, tile.ToString());
-                    ncol++;
-                }
-                nrow++;
-            }
-        }
-
-        public virtual List<string> Neighbours(int id)
-        {
-            int x = id % Width;
-            int y = id / Width;
-            return Neighbours(x, y);
-        }
-
-        public virtual List<string> Neighbours(int x, int y)
-        {
-            return GetNeighbours(x, y).Values.ToList();
         }
     }
 }
