@@ -101,10 +101,6 @@ namespace AoC.Day12
 
     public class JupiterMoon
     {
-        public int X { get; private set; }
-        public int Y { get; private set; }
-        public int Z { get; private set; }
-
         public readonly int initialX;
         public readonly int initialY;
         public readonly int initialZ;
@@ -123,6 +119,10 @@ namespace AoC.Day12
             velocity = (0, 0, 0);
             initialState = this.PosToString();
         }
+
+        public int X { get; private set; }
+        public int Y { get; private set; }
+        public int Z { get; private set; }
 
         public void UpdateVelocity(IEnumerable<JupiterMoon> moons)
         {

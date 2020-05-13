@@ -9,10 +9,10 @@ namespace AoC.Utils
     {
         public static List<List<T>> Permutations<T>(List<T> values)
         {
-            List<List<T>> result = values.Count == 0 ? new List<List<T>> { new List<T>() } : new List<List<T>>();
+            var result = values.Count == 0 ? new List<List<T>> { new List<T>() } : new List<List<T>>();
             foreach (T val in values)
             {
-                List<List<T>> without = Permutations(values.Where(x => !x.Equals(val)).ToList());
+                var without = Permutations(values.Where(x => !x.Equals(val)).ToList());
                 foreach (List<T> setWithout in without)
                 {
                     setWithout.Add(val);

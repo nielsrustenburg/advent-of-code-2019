@@ -85,6 +85,20 @@ namespace AoC.Day23
             FillEmptyQueues();
         }
 
+        public virtual void HandleIdleSystem(List<BigInteger> newPackages)
+        {
+
+        }
+
+        public virtual void HandleTwoFiftyFive(BigInteger x, BigInteger y)
+        {
+            if (!finished)
+            {
+                finished = true;
+                address255 = (x, y);
+            }
+        }
+
         private void CheckForIdleSystem(List<BigInteger> newPackages)
         {
             if (newPackages.Count > 0)
@@ -99,11 +113,6 @@ namespace AoC.Day23
                 }
                 idleCount++;
             }
-        }
-
-        public virtual void HandleIdleSystem(List<BigInteger> newPackages)
-        {
-
         }
 
         private void AddToQueue(int address, BigInteger x, BigInteger y)
@@ -123,15 +132,6 @@ namespace AoC.Day23
                     queues[address].Add(x);
                     queues[address].Add(y);
                 }
-            }
-        }
-
-        public virtual void HandleTwoFiftyFive(BigInteger x, BigInteger y)
-        {
-            if (!finished)
-            {
-                finished = true;
-                address255 = (x, y);
             }
         }
 

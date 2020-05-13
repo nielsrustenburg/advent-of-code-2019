@@ -48,13 +48,13 @@ namespace AoC.Day11
         {
             var cgrid = new Grid<char>('.', true);
             cgrid[0, 0] = '#';
-            EmergencyHullPaintingRobot bot = new EmergencyHullPaintingRobot(program, cgrid);
+            var bot = new EmergencyHullPaintingRobot(program, cgrid);
             while (bot.PerformStep())
             {
 
             }
-            List<string> image = cgrid.RowsAsStrings();
-            string imgString = string.Join("\r\n", image);
+            var image = cgrid.RowsAsStrings();
+            var imgString = string.Join("\r\n", image);
             resultPartTwo = imgString;
         }
     }
@@ -65,7 +65,6 @@ namespace AoC.Day11
         int yPos;
         Direction dir;
         IntCode brain;
-        public Grid<char> PaintGrid { get; private set; }
 
         public EmergencyHullPaintingRobot(List<BigInteger> programming, Grid<char> cgrid, int xPos = 0, int yPos = 0)
         {
@@ -75,6 +74,8 @@ namespace AoC.Day11
             PaintGrid = cgrid;
             brain = new IntCode(programming);
         }
+
+        public Grid<char> PaintGrid { get; private set; }
 
         public bool PerformStep()
         {

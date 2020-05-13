@@ -137,8 +137,6 @@ namespace AoC.Day17
 
     class MovementRoutine
     {
-        public bool IsWithinCharacterLimits { get; private set; }
-
         public const int characterLimit = 20;
         public const int maxPatternsInRoutine = (characterLimit + 1) / 2;
 
@@ -160,13 +158,14 @@ namespace AoC.Day17
             CheckCharacterLimits();
         }
 
-        private void CheckCharacterLimits()
+        enum MovementFunctionId
         {
-            IsWithinCharacterLimits = main.Length <= maxPatternsInRoutine && 
-                                      MovementFunctionIsWithinCharacterLimits(a) &&
-                                      MovementFunctionIsWithinCharacterLimits(b) &&
-                                      MovementFunctionIsWithinCharacterLimits(c);
+            A,
+            B,
+            C
         }
+
+        public bool IsWithinCharacterLimits { get; private set; }
 
         public bool TryMainRoutine(SimulationRobot robot)
         {
@@ -182,7 +181,7 @@ namespace AoC.Day17
 
         public string UploadToASCIIComputer(ASCIIComputer computer)
         {
-            computer.SetValAtMemIndex(0, 2); //Awaken robot
+            computer[0] = 2; //Awaken robot
             computer.Run(string.Join(',', main.Select(mf => mf.ToString())));
             computer.Run(string.Join(',', a));
             computer.Run(string.Join(',', b));
@@ -190,6 +189,14 @@ namespace AoC.Day17
             var result = computer.Run("n");//turn camera off
 
             return result.Last().ToString();
+        }
+
+        private void CheckCharacterLimits()
+        {
+            IsWithinCharacterLimits = main.Length <= maxPatternsInRoutine &&
+                                      MovementFunctionIsWithinCharacterLimits(a) &&
+                                      MovementFunctionIsWithinCharacterLimits(b) &&
+                                      MovementFunctionIsWithinCharacterLimits(c);
         }
 
         private bool PerformRoutine(SimulationRobot robot, string[] routine)
@@ -269,13 +276,6 @@ namespace AoC.Day17
                 if (characters > characterLimit) return false;
             }
             return true;
-        }
-
-        enum MovementFunctionId
-        {
-            A,
-            B,
-            C
         }
     }
 
@@ -394,7 +394,7 @@ namespace AoC.Day17
         public string[] GetImageStrings()
         {
             var image = layout.RowsAsStrings();
-            StringBuilder strBuilder = new StringBuilder(image[image.Count-1 - Y]);
+            var strBuilder = new StringBuilder(image[image.Count-1 - Y]);
             strBuilder[X] = IsDead ? 'X' : FacingAsChar();
             image[image.Count-1 - Y] = strBuilder.ToString();
             return image.ToArray();

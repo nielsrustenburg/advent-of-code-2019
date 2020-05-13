@@ -10,7 +10,6 @@ namespace AoC.Day5
 {
     class Tests
     {
-
         [Test]
         public static void TestOpcodes5Through8()
         {

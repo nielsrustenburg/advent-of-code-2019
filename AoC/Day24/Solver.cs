@@ -39,7 +39,7 @@ namespace AoC.Day24
 
         protected override void SolvePartTwo()
         {
-            ErisGrid centerGrid = new ErisGrid(sanitizedInput, true);
+            var centerGrid = new ErisGrid(sanitizedInput, true);
             centerGrid.DoTimeSteps(200);
             resultPartTwo = centerGrid.CountAllBugs(true).ToString();
         }
@@ -47,7 +47,7 @@ namespace AoC.Day24
         public int GetFirstRepeatedBiodiversity()
         {
             var grid = new ErisGrid(sanitizedInput, false);
-            HashSet<int> observedBiodiversities = new HashSet<int>() { grid.GetBiodiversity() };
+            var observedBiodiversities = new HashSet<int>() { grid.GetBiodiversity() };
             while (true)
             {
                 grid.Step();

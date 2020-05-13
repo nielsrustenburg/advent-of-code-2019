@@ -71,19 +71,19 @@ namespace AoC.Day21
         {
             outputToConsole = toConsole;
             brain = new ASCIIComputer(programming);
-            string prompt = brain.RunString();
+            var prompt = brain.RunString();
             if (outputToConsole) Console.Write(prompt);
         }
 
         public void AddInstruction(string instruction)
         {
-            string output = brain.RunString(instruction);
+            var output = brain.RunString(instruction);
             if (outputToConsole) Console.Write(output);
         }
 
         public BigInteger Walk()
         {
-            List<BigInteger> output = brain.Run("WALK");
+            var output = brain.Run("WALK");
             int takeN = output.Count;
             if (output.Last() > 255)
             {
@@ -95,7 +95,7 @@ namespace AoC.Day21
 
         public BigInteger Run()
         {
-            List<BigInteger> output = brain.Run("RUN");
+            var output = brain.Run("RUN");
             int takeN = output.Count;
             if (output.Last() > 255)
             {

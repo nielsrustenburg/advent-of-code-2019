@@ -11,6 +11,21 @@ namespace AoC.Common
         protected string resultPartOne;
         protected string resultPartTwo;
 
+        public string SolutionOne()
+        {
+            return resultPartOne;
+        }
+
+        public string SolutionTwo()
+        {
+            return resultPartTwo;
+        }
+
+        public void WriteSolutions()
+        {
+            Console.WriteLine($"{resultPartOne} \n{resultPartTwo} \n");
+        }
+
         protected abstract void ParseInput(string input);
 
         protected abstract void PrepareSolution();
@@ -26,21 +41,6 @@ namespace AoC.Common
             PrepareSolution();
             SolvePartOne();
             SolvePartTwo();
-        }
-
-        public string SolutionOne()
-        {
-            return resultPartOne;
-        }
-
-        public string SolutionTwo()
-        {
-            return resultPartTwo;
-        }
-
-        public void WriteSolutions()
-        {
-            Console.WriteLine($"{resultPartOne} \n{resultPartTwo} \n");
         }
     }
 }

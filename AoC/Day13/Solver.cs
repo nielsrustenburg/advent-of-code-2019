@@ -90,7 +90,7 @@ namespace AoC.Day13
         public void Play()
         {
             Restart();
-            backend.SetValAtMemIndex(0, 2);
+            backend[0] = 2;
             backend.Run();
             UpdateGameGrid();
 

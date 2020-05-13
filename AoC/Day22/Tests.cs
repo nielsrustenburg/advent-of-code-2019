@@ -7,13 +7,6 @@ namespace AoC.Day22
 {
     class Tests
     {
-        [TestCase("", "")]
-        public void Test(string input, string expectedOutput)
-        {
-            var output = "";
-            Assert.AreEqual(expectedOutput, output);
-        }
-
         [TestCase("5755", "42152620178084")]
         public void TestSolver(string expOut1, string expOut2)
         {

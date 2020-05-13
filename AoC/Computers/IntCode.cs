@@ -12,7 +12,6 @@ namespace AoC.Computers
         int pointer;
         List<BigInteger> output;
         int relativeBase;
-        public bool Halted { get; private set; }
         IEnumerator<BigInteger> inputEnum;
 
         public IntCode(IEnumerable<BigInteger> vals)
@@ -22,6 +21,8 @@ namespace AoC.Computers
             Halted = false;
             relativeBase = 0;
         }
+
+        public bool Halted { get; private set; }
 
         public List<BigInteger> Run(IEnumerable<BigInteger> input = null)
         {
@@ -52,6 +53,43 @@ namespace AoC.Computers
             if (opcode == 9) return AdjustRelativeBase(paramModes);
 
             throw new Exception($"IntCode encountered {memory[pointer]} at the pointer, expected [1-8] or 99");
+        }
+
+        public BigInteger this[int index]
+        {
+            get
+            {
+                return memory[index];
+            }
+            set
+            {
+                memory[index] = value;
+            }
+        }
+
+        public (BigInteger pointerIndex, List<BigInteger> memory) GetInternalState()
+        {
+            return (pointer, new List<BigInteger>(memory));
+        }
+
+        public override string ToString()
+        {
+            return $"IC[{String.Join(',', memory.Select(x => x.ToString()))}]";
+        }
+
+        internal void Write(BigInteger param, string mode, BigInteger value)
+        {
+            int index;
+            if (mode == "relative")
+            {
+                index = (int)param + relativeBase;
+            }
+            else
+            {
+                index = (int)param;
+            }
+            IncreaseMemoryIfNeeded(index);
+            memory[index] = value;
         }
 
         private bool Halt()
@@ -180,20 +218,6 @@ namespace AoC.Computers
             return true;
         }
 
-        internal void Write(BigInteger param, string mode, BigInteger value)
-        {
-            int index;
-            if(mode == "relative")
-            {
-                index = (int)param + relativeBase;
-            } else
-            {
-                index = (int)param;
-            }
-            IncreaseMemoryIfNeeded(index);
-            memory[index] = value;
-        }
-
         private BigInteger Read(BigInteger param, string mode)
         {
             if (mode == "immediate") return param;
@@ -210,22 +234,22 @@ namespace AoC.Computers
             throw new Exception($"Unexpected parameter mode {mode}");
         }
 
-        void MovePointer(int stepSize = 4)
+        private void MovePointer(int stepSize = 4)
         {
             pointer += stepSize;
         }
 
-        void JumpPointer(BigInteger address)
+        private void JumpPointer(BigInteger address)
         {
             pointer = (int) address;
         }
 
-        public List<BigInteger> GetParameters(int n)
+        private List<BigInteger> GetParameters(int n)
         {
             return memory.Skip(pointer + 1).Take(n).ToList();
         }
 
-        public List<string> GetParameterModes(BigInteger paramCode, int nParams)
+        private List<string> GetParameterModes(BigInteger paramCode, int nParams)
         {
             string CharToParamMode(Char c)
             {
@@ -240,12 +264,7 @@ namespace AoC.Computers
                                             ToList();
         }
 
-        public List<BigInteger> GetMemory()
-        {
-            return memory;
-        }
-
-        public void IncreaseMemoryIfNeeded(int upToIndex)
+        private void IncreaseMemoryIfNeeded(int upToIndex)
         {
             if (upToIndex < 0) throw new IndexOutOfRangeException("Attempting to read/write from/to negative index");
             if (upToIndex >= memory.Count)
@@ -253,26 +272,6 @@ namespace AoC.Computers
                 int difference = upToIndex - memory.Count + 1;
                 memory.AddRange(Enumerable.Repeat((BigInteger) 0, difference));
             }
-        }
-
-        public BigInteger GetValAtMemIndex(int index)
-        {
-            return memory[index];
-        }
-
-        public void SetValAtMemIndex(int index, BigInteger value)
-        {
-            memory[index] = value;
-        }
-
-        public (BigInteger pointerIndex, List<BigInteger> memory) GetInternalState()
-        {
-            return (pointer, new List<BigInteger>(memory));
-        }
-
-        public override string ToString()
-        {
-            return $"IC[{String.Join(',', memory.Select(x => x.ToString()))}]";
         }
     }
 }

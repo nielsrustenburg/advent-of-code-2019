@@ -51,7 +51,7 @@ namespace AoC.Day6
     {
         public OrbitTree(string rootName) : base()
         {
-            OrbitNode myRoot = new OrbitNode(rootName);
+            var myRoot = new OrbitNode(rootName);
             nodes.Add(rootName, myRoot);
             root = rootName;
             leaves.Add(rootName);
@@ -64,7 +64,7 @@ namespace AoC.Day6
 
         public void AddNode(string parent, string child)
         {
-            OrbitNode newChild = new OrbitNode(child);
+            var newChild = new OrbitNode(child);
             nodes.Add(child, newChild);
             AddChild(parent, child);
             leaves.Add(child);
@@ -84,8 +84,8 @@ namespace AoC.Day6
         public int DistanceBetweenNodes(string nodeA, string nodeB)
         {
             //Find common ancestor, or the other node
-            List<string> pathToRootA = Ancestors(nodeA).ToList();
-            List<string> pathToRootB = Ancestors(nodeB).ToList();
+            var pathToRootA = Ancestors(nodeA).ToList();
+            var pathToRootB = Ancestors(nodeB).ToList();
 
             int shortestPathCount = pathToRootA.Count < pathToRootB.Count ? pathToRootA.Count : pathToRootB.Count;
             int distance = -1;
@@ -119,10 +119,10 @@ namespace AoC.Day6
     {
         public static List<OrbitTree> MakeTrees(IEnumerable<(string, string)> pcRelations)
         {
-            List<(string, string)> relationsToAdd = pcRelations.ToList();
-            Dictionary<string, OrbitTree> trees = new Dictionary<string, OrbitTree>();
+            var relationsToAdd = pcRelations.ToList();
+            var trees = new Dictionary<string, OrbitTree>();
 
-            Dictionary<string, string> nodesToRoots = new Dictionary<string, string>();
+            var nodesToRoots = new Dictionary<string, string>();
 
             //Combine trees whenever we've encountered the parent or child before
             foreach ((string parent, string child) in relationsToAdd)
@@ -146,8 +146,8 @@ namespace AoC.Day6
 
                 if (trees.ContainsKey(child))
                 {
-                    OrbitTree childTree = trees[child];
-                    string childRoot = childTree.Root();
+                    var childTree = trees[child];
+                    var childRoot = childTree.Root();
                     tree.AddTreeAsChild(parent, childTree);
                     nodesToRoots[childRoot] = nodesToRoots[parent];
                     trees.Remove(childRoot);

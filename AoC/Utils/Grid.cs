@@ -8,13 +8,10 @@ namespace AoC.Utils
 {
     public class Grid<T> : IGrid<T>
     {
-        public T DefaultTile { get; private set; }
         int xMin, xMax, yMin, yMax;
         HashSet<T> allTileTypes;
         Dictionary<T, int> tileCount;
         Dictionary<int, Dictionary<int, T>> content;
-        public int Width { get { return xMax - xMin + 1; } }
-        public int Height { get { return yMax - yMin + 1; } }
         public readonly bool originAtBottom;
 
         public Grid(T defaultTile, bool originAtBottom)
@@ -54,6 +51,10 @@ namespace AoC.Utils
             }
         }
 
+        public T DefaultTile { get; private set; }
+        public int Width { get { return xMax - xMin + 1; } }
+        public int Height { get { return yMax - yMin + 1; } }
+
         public T this[int x, int y]
         {
             get
@@ -85,17 +86,6 @@ namespace AoC.Utils
             }
         }
 
-        private void UpdateTile(int x, int y, T tileType)
-        {
-            if (!content.ContainsKey(y)) content.Add(y, new Dictionary<int, T>());
-            if (content[y].TryGetValue(x, out T value))
-            {
-                UpdateTileCount(content[y][x], -1);
-            }
-            UpdateTileCount(tileType, 1);
-            content[y][x] = tileType;
-        }
-
         public IEnumerable<T> GetAllTileTypes()
         {
             return allTileTypes;
@@ -104,37 +94,6 @@ namespace AoC.Utils
         public Dictionary<T,int> GetTileCounts()
         {
             return new Dictionary<T, int>(tileCount);
-        }
-
-        private void UpdateTileCount(T tileType, int incBy)
-        {
-            if (!tileType.Equals(DefaultTile))
-            {
-                tileCount.TryGetValue(tileType, out int countVal);
-                countVal += incBy;
-                tileCount[tileType] = countVal;
-            }
-        }
-
-        private void RemoveTile(int x, int y)
-        {
-            //Potentially leaves empty columns in the Grid
-            if (content.ContainsKey(y))
-            {
-                if (content[y].ContainsKey(x))
-                {
-                    UpdateTileCount(content[y][x], -1);
-                    content[y].Remove(x);
-                }
-            }
-        }
-
-        private void EnsureBordersContain(int x, int y)
-        {
-            if (x < xMin) xMin = x;
-            if (x > xMax) xMax = x;
-            if (y < yMin) yMin = y;
-            if (y > yMax) yMax = y;
         }
 
         public int CountNonDefault()
@@ -160,19 +119,6 @@ namespace AoC.Utils
                 }
             }
             return neighbours;
-        }
-
-        public (int x, int y) ModifyCoordinates(int x, int y, string direction)
-        {
-            if (direction == "N") return (x, y + 1);
-            if (direction == "NE") return (x + 1, y + 1);
-            if (direction == "E") return (x + 1, y);
-            if (direction == "SE") return (x + 1, y - 1);
-            if (direction == "S") return (x, y - 1);
-            if (direction == "SW") return (x - 1, y - 1);
-            if (direction == "W") return (x - 1, y);
-            if (direction == "NW") return (x - 1, y + 1);
-            throw new Exception("direction not recognized, use N,E,S,W,NE,NW,SE,SW");
         }
 
         public (int x, int y)? FindFirstMatchingTile(T findMe)
@@ -225,6 +171,48 @@ namespace AoC.Utils
                 rows.Reverse();
             }
             return rows;
+        }
+
+        private void UpdateTile(int x, int y, T tileType)
+        {
+            if (!content.ContainsKey(y)) content.Add(y, new Dictionary<int, T>());
+            if (content[y].TryGetValue(x, out T value))
+            {
+                UpdateTileCount(content[y][x], -1);
+            }
+            UpdateTileCount(tileType, 1);
+            content[y][x] = tileType;
+        }
+
+        private void UpdateTileCount(T tileType, int incBy)
+        {
+            if (!tileType.Equals(DefaultTile))
+            {
+                tileCount.TryGetValue(tileType, out int countVal);
+                countVal += incBy;
+                tileCount[tileType] = countVal;
+            }
+        }
+
+        private void RemoveTile(int x, int y)
+        {
+            //Potentially leaves empty columns in the Grid
+            if (content.ContainsKey(y))
+            {
+                if (content[y].ContainsKey(x))
+                {
+                    UpdateTileCount(content[y][x], -1);
+                    content[y].Remove(x);
+                }
+            }
+        }
+
+        private void EnsureBordersContain(int x, int y)
+        {
+            if (x < xMin) xMin = x;
+            if (x > xMax) xMax = x;
+            if (y < yMin) yMin = y;
+            if (y > yMax) yMax = y;
         }
     }
 }

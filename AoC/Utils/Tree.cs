@@ -52,11 +52,11 @@ namespace AoC.Utils
         public Dictionary<string, int> Depths()
         {
             int d = 0;
-            Dictionary<string, int> depthDict = new Dictionary<string, int>();
-            List<string> currentLayer = new List<string> { root };
+            var depthDict = new Dictionary<string, int>();
+            var currentLayer = new List<string> { root };
             while (currentLayer.Any())
             {
-                List<string> nextLayer = new List<string>();
+                var nextLayer = new List<string>();
                 foreach (string node in currentLayer)
                 {
                     depthDict.Add(node, d);
@@ -122,7 +122,6 @@ namespace AoC.Utils
 
     abstract class TreeNode : ITreeNode
     {
-        public string Name { get; }
         protected string parent;
         protected HashSet<string> children;
 
@@ -137,6 +136,8 @@ namespace AoC.Utils
             parent = copyMe.parent;
             children.UnionWith(copyMe.children);
         }
+
+        public string Name { get; }
 
         public IEnumerable<string> Children()
         {

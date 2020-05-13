@@ -29,17 +29,17 @@ namespace AoC.Day14
             {
                 (string, int) SplitAmountIngredient(string amountIngredient)
                 {
-                    string[] spl = amountIngredient.Split(' ');
-                    return (spl[1], int.Parse(spl[0]));
+                    var split = amountIngredient.Split(' ');
+                    return (split[1], int.Parse(split[0]));
                 }
 
-                string[] ingrProdSplit = recipe.Split("=> ");
-                (string product, int batchSize) = SplitAmountIngredient(ingrProdSplit[1]);
+                var ingrProdSplit = recipe.Split("=> ");
+                var (product, batchSize) = SplitAmountIngredient(ingrProdSplit[1]);
 
-                string[] antecedent = ingrProdSplit[0].Split(", ");
-                List<(string, int)> ingredients = antecedent.Select(ing => SplitAmountIngredient(ing)).ToList();
+                var antecedent = ingrProdSplit[0].Split(", ");
+                var ingredientsAndAmounts = antecedent.Select(ing => SplitAmountIngredient(ing)).ToList();
 
-                return new ChemicalProductionRecipe(ingredients, product, batchSize);
+                return new ChemicalProductionRecipe(ingredientsAndAmounts, product, batchSize);
             }
         }
 
@@ -70,22 +70,22 @@ namespace AoC.Day14
 
         public static BigInteger OreRequiredToProduceFuel(BigInteger amount, ChemicalProductionGraph graph)
         {
-            Dictionary<string, BigInteger> amountRequired = graph.Nodes().ToDictionary(x => x, x => x == "FUEL" ? amount : 0);
-            HashSet<string> unfinishedNodes = graph.Nodes().ToHashSet();
+            var amountRequired = graph.Nodes().ToDictionary(x => x, x => x == "FUEL" ? amount : 0);
+            var unfinishedNodes = graph.Nodes().ToHashSet();
 
             while (unfinishedNodes.Any())
             {
-                HashSet<string> nextUnfinishedNodes = new HashSet<string>(unfinishedNodes);
-                foreach (string node in unfinishedNodes)
+                var nextUnfinishedNodes = new HashSet<string>(unfinishedNodes);
+                foreach (var node in unfinishedNodes)
                 {
                     var parents = graph.InNeighbours(node).Select(x => x.nb);
                     if (!unfinishedNodes.Intersect(parents).Any())
                     {
                         var children = graph.OutNeighbours(node);
-                        BigInteger batches = (amountRequired[node] - 1) / graph.BatchSize(node) + 1; //find smallest x s.t. x*batchsize > amountrequired
+                        BigInteger amountOfBatches = (amountRequired[node] - 1) / graph.BatchSize(node) + 1; //find smallest x s.t. x*batchsize > amountrequired
                         foreach ((string child, int perbatch) in children)
                         {
-                            amountRequired[child] += perbatch * batches;
+                            amountRequired[child] += perbatch * amountOfBatches;
                         }
                         nextUnfinishedNodes.Remove(node);
                     }
@@ -154,13 +154,13 @@ namespace AoC.Day14
 
     class ChemicalProductionNode : AdjacencyDiGraphNode
     {
-        public int BatchSize { get; }
-
         protected ChemicalProductionNode(string name) : base(name) { }
 
         public ChemicalProductionNode(string name, int batchSize) : this(name)
         {
             BatchSize = batchSize;
         }
+
+        public int BatchSize { get; }
     }
 }

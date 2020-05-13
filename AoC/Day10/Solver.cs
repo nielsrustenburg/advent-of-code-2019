@@ -51,7 +51,7 @@ namespace AoC.Day10
 
         public AsteroidField(IEnumerable<string> input)
         {
-            List<string> asteroidRows = input.Reverse().ToList(); //Y axis starts at bottom of input
+            var asteroidRows = input.Reverse().ToList(); //Y axis starts at bottom of input
 
             asteroids = new List<Asteroid>();
             for (int y = 0; y < asteroidRows.Count; y++)
@@ -68,7 +68,7 @@ namespace AoC.Day10
             List<AsteroidVisionSet> avsets = new List<AsteroidVisionSet>();
             for (int i = 0; i < asteroids.Count; i++)
             {
-                AsteroidVisionSet avset = new AsteroidVisionSet(asteroids[i], asteroids.Take(i).Concat(asteroids.Skip(i + 1)));
+                var avset = new AsteroidVisionSet(asteroids[i], asteroids.Take(i).Concat(asteroids.Skip(i + 1)));
                 avsets.Add(avset);
             }
             return avsets;
@@ -77,7 +77,7 @@ namespace AoC.Day10
 
     class AsteroidVisionSet
     {
-        public Asteroid Origin;
+        public Asteroid origin;
         List<Asteroid> otherRoids;
         List<(int x, int y)> distFromOrigin;
         List<(int x, int y)> smallestSteps;
@@ -87,12 +87,12 @@ namespace AoC.Day10
 
         public AsteroidVisionSet(Asteroid origin, IEnumerable<Asteroid> others)
         {
-            this.Origin = origin;
+            this.origin = origin;
             otherRoids = new List<Asteroid>(others);
 
             smallestSteps = otherRoids.Select(a => SmallestStepBetweenAsteroids(origin, a)).ToList();
             angles = smallestSteps.Select(x => StepTo360Angle(x)).ToList();
-            Dictionary<double, List<int>> buckets = new Dictionary<double, List<int>>();
+            var buckets = new Dictionary<double, List<int>>();
             for (int i = 0; i < otherRoids.Count; i++)
             {
                 if (!buckets.ContainsKey(angles[i]))
@@ -104,7 +104,7 @@ namespace AoC.Day10
 
             //Sort buckets by distance from origin
             distFromOrigin = otherRoids.Select(a => (origin.X - a.X, origin.Y - a.Y)).ToList();
-            foreach (List<int> bucket in buckets.Values)
+            foreach (var bucket in buckets.Values)
             {
                 bucket.Sort((a, b) => Math.Abs(distFromOrigin[a].x).CompareTo(Math.Abs(distFromOrigin[b].x)));
             }
@@ -121,7 +121,7 @@ namespace AoC.Day10
         public Asteroid NthAsteroidHitByLaser(int n)
         {
             int bucketsRemaining = bucketSizes.Count;
-            HashSet<int> breakPoints = bucketSizes.Distinct().ToHashSet();
+            var breakPoints = bucketSizes.Distinct().ToHashSet();
 
             int asteroidsToVaporize = n;
 
@@ -179,7 +179,6 @@ namespace AoC.Day10
         public int InvertedY { get; }
         public int X { get; }
         public int Y { get; }
-
 
         public override string ToString() => $"({X}, {Y})";
     }

@@ -191,7 +191,6 @@ namespace AoC.Day20
     }
     class DonutGraphNode : AdjacencyGraphNode
     {
-        public bool IsInnerPortal { get; }
         public readonly string label;
 
         public DonutGraphNode(string name) : base(name)
@@ -200,6 +199,8 @@ namespace AoC.Day20
             label = split[0];
             IsInnerPortal = split[1] == "IN";
         }
+
+        public bool IsInnerPortal { get; }
     }
     class RecursiveDonutSearchNode : SearchNode
     {

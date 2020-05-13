@@ -12,12 +12,13 @@ namespace AoC.Day25
 {
     class Solver : PuzzleSolver
     {
-        List<BigInteger> program;
         public static readonly string[] blacklistItems = { "giant electromagnet",
                                                            "escape pod",
                                                             "infinite loop",
                                                             "photons",
                                                             "molten lava"};
+
+        List<BigInteger> program;
 
         public Solver() : this(Input.InputMode.Embedded, "input")
         {
@@ -25,6 +26,13 @@ namespace AoC.Day25
 
         public Solver(Input.InputMode mode, string input) : base(mode, input)
         {
+        }
+
+        enum RequiredWeightAdjustment
+        {
+            Heavier,
+            Lighter,
+            None
         }
 
         protected override void ParseInput(string input)
@@ -48,13 +56,6 @@ namespace AoC.Day25
         protected override void SolvePartTwo()
         {
             resultPartTwo = "no part two";
-        }
-
-        enum RequiredWeightAdjustment
-        {
-            Heavier,
-            Lighter,
-            None
         }
 
         private string BreachSecurity(Droid droid, ShipGraph shipGraph)
@@ -204,13 +205,6 @@ namespace AoC.Day25
             private HashSet<string> _floorItems;
             private HashSet<string> _inventory;
 
-            public string Room { get; private set; }
-
-            public string LastResponse { get; private set; }
-            public HashSet<Direction> Doors { get => _doors.ToHashSet(); private set { _doors = value; } }
-            public HashSet<string> FloorItems { get => _floorItems.ToHashSet(); private set { _floorItems = value; } }
-            public HashSet<string> Inventory { get => _inventory.ToHashSet(); private set { _inventory = value; } }
-
             public Droid(IEnumerable<BigInteger> program)
             {
                 computer = new ASCIIComputer(program);
@@ -218,6 +212,12 @@ namespace AoC.Day25
                 UpdateRoomStatus(description);
                 UpdateInventory();
             }
+
+            public string Room { get; private set; }
+            public string LastResponse { get; private set; }
+            public HashSet<Direction> Doors { get => _doors.ToHashSet(); private set { _doors = value; } }
+            public HashSet<string> FloorItems { get => _floorItems.ToHashSet(); private set { _floorItems = value; } }
+            public HashSet<string> Inventory { get => _inventory.ToHashSet(); private set { _inventory = value; } }
 
             public void TakeItems(IEnumerable<string> items)
             {

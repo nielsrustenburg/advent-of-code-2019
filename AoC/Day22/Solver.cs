@@ -32,8 +32,8 @@ namespace AoC.Day22
 
         protected override void SolvePartOne()
         {
-            ShuffleSequence shufSeq = new ShuffleSequence(shuffleMoves, 10007);
-            resultPartOne = shufSeq.CardPositionAfterShuffle(2019).ToString();
+            var shuffleSequence = new ShuffleSequence(shuffleMoves, 10007);
+            resultPartOne = shuffleSequence.CardPositionAfterShuffle(2019).ToString();
         }
 
         protected override void SolvePartTwo()
@@ -42,10 +42,10 @@ namespace AoC.Day22
             BigInteger shuffleNtimes = BigInteger.Parse("101741582076661");
             BigInteger findCard = 2020;
 
-            ShuffleSequence shufSeq = new ShuffleSequence(shuffleMoves, deckSize);
-            shufSeq.CompressSequence();
+            var shuffleSequence = new ShuffleSequence(shuffleMoves, deckSize);
+            shuffleSequence.CompressSequence();
 
-            ShuffleSequence repeatedShuffles = SequenceAfterNRepetitions(shufSeq, shuffleNtimes);
+            var repeatedShuffles = SequenceAfterNRepetitions(shuffleSequence, shuffleNtimes);
 
             resultPartTwo = repeatedShuffles.CardPositionBeforeShuffle(findCard).ToString();
         }
@@ -60,7 +60,7 @@ namespace AoC.Day22
             //Create shufflesequences for each bit value up to and including the largest bit value smaller than "reps"
             while (bitValue < reps)
             {
-                ShuffleSequence next = new ShuffleSequence(shufflesPerBit[bitsNeeded]);
+                var next = new ShuffleSequence(shufflesPerBit[bitsNeeded]);
                 next.AddToSequence(next);
                 next.CompressSequence();
                 shufflesPerBit.Add(next);
@@ -70,7 +70,7 @@ namespace AoC.Day22
             }
 
             //Combine shufflesequences for each activated bit in the bit-representation of "reps"
-            ShuffleSequence repeatedShuffleSequence = new ShuffleSequence(shufSeq.DeckSize);
+            var repeatedShuffleSequence = new ShuffleSequence(shufSeq.DeckSize);
             BigInteger remaining = reps;
 
             for (int i = shufflesPerBit.Count - 1; i >= 0; i--)
@@ -91,8 +91,6 @@ namespace AoC.Day22
     class ShuffleSequence
     {
         List<IShuffleAction> shuffleActions;
-        public BigInteger DeckSize { get; set; }
-
         public ShuffleSequence(BigInteger deckSize)
         {
             this.DeckSize = deckSize;
@@ -111,6 +109,8 @@ namespace AoC.Day22
                 shuffleActions.Add(action.Copy());
             }
         }
+
+        public BigInteger DeckSize { get; set; }
 
         public BigInteger CardPositionAfterShuffle(BigInteger currentPos)
         {
@@ -238,12 +238,12 @@ namespace AoC.Day22
 
     class DealWithIncrement : IShuffleAction
     {
-        public BigInteger Increment { get; }
-
         public DealWithIncrement(BigInteger increment)
         {
             this.Increment = increment;
         }
+
+        public BigInteger Increment { get; }
 
         public IEnumerable<IShuffleAction> MergeWithBelow(IShuffleAction below, BigInteger deckSize)
         {
@@ -276,12 +276,12 @@ namespace AoC.Day22
 
     class Cut : IShuffleAction
     {
-        public BigInteger CutFrom { get; }
-
         public Cut(BigInteger cutFrom)
         {
             this.CutFrom = cutFrom;
         }
+
+        public BigInteger CutFrom { get; }
 
         public IEnumerable<IShuffleAction> MergeWithBelow(IShuffleAction below, BigInteger deckSize)
         {

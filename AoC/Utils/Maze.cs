@@ -25,18 +25,18 @@ namespace AoC.Utils
 
         public (int totalSteps, List<(T tile, int distance)> poi) FloodFillDistanceFinder(int xStart, int yStart, IEnumerable<T> pointsOfInterest)
         {
-            HashSet<T> poi = pointsOfInterest.ToHashSet();
-            List<(T tile, int distance)> poiFound = new List<(T, int)>();
+            var poi = pointsOfInterest.ToHashSet();
+            var poiFound = new List<(T, int)>();
 
-            List<(int x, int y)> frontier = new List<(int x, int y)> { (xStart, yStart) };
-            Grid<bool> floodedGrid = new Grid<bool>(false, this.originAtBottom);
+            var frontier = new List<(int x, int y)> { (xStart, yStart) };
+            var floodedGrid = new Grid<bool>(false, originAtBottom);
             floodedGrid[xStart, yStart] = true;
 
             int steps = 0;
 
             while (frontier.Any())
             {
-                List<(int x, int y)> nextFrontier = new List<(int x, int y)>();
+                var nextFrontier = new List<(int x, int y)>();
                 foreach ((int x, int y) in frontier)
                 {
                     var neighbours = GetNeighbours(x, y);
@@ -66,21 +66,21 @@ namespace AoC.Utils
 
         public void EliminateDeadEnds(HashSet<T> checkTilesOfType, T turnInto, HashSet<T> killerTiles)
         {
-            IEnumerable<(int, int)> positionsToCheck = FindAllMatchingTiles(checkTilesOfType);
+            var positionsToCheck = FindAllMatchingTiles(checkTilesOfType);
             EliminateDeadEnds(positionsToCheck, turnInto, killerTiles);
         }
 
         public void EliminateDeadEnds(IEnumerable<(int x, int y)> checkPositions, T turnInto, HashSet<T> killerTiles)
         {
-            List<(int x, int y)> originalCandidates = checkPositions.ToList();
+            var originalCandidates = checkPositions.ToList();
             bool requiresDoubleCheck = killerTiles.Contains(turnInto);
 
-            List<(int x, int y)> eliminationCandidates = new List<(int x, int y)>(originalCandidates);
+            var eliminationCandidates = new List<(int x, int y)>(originalCandidates);
 
             while (eliminationCandidates.Any())
             {
-                List<(int x, int y)> tilesToEliminate = new List<(int x, int y)>();
-                List<(int, int)> potentialNewDeadEnds = new List<(int, int)>();
+                var tilesToEliminate = new List<(int x, int y)>();
+                var potentialNewDeadEnds = new List<(int, int)>();
 
                 foreach ((int x, int y) in eliminationCandidates)
                 {

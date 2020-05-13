@@ -41,8 +41,8 @@ namespace AoC.Day15
 
         protected override void SolvePartTwo()
         {
-            var (oxyX,oxyY) = ((int,int)) robot.mazeMap.FindFirstMatchingTile("O");
-            var (totalSteps, _) = robot.mazeMap.FloodFillDistanceFinder(oxyX,oxyY, new List<string>());
+            var (oxyX, oxyY) = ((int, int))robot.mazeMap.FindFirstMatchingTile("O");
+            var (totalSteps, _) = robot.mazeMap.FloodFillDistanceFinder(oxyX, oxyY, new List<string>());
             resultPartTwo = totalSteps.ToString();
         }
     }
@@ -50,9 +50,6 @@ namespace AoC.Day15
     class RepairBot
     {
         IntCode brain;
-        public int X { get; private set; }
-        public int Y { get; private set; }
-        public bool Finished { get; private set; }
         public Grid<string> mentalMap;
         public Maze<string> mazeMap;
 
@@ -66,10 +63,14 @@ namespace AoC.Day15
             Finished = false;
         }
 
+        public int X { get; private set; }
+        public int Y { get; private set; }
+        public bool Finished { get; private set; }
+
         public void ExploreMaze(bool draw = false)
         {
-            List<Direction> validDirections = new List<Direction> { Direction.North, Direction.South, Direction.West, Direction.East };
-            List<Direction> pathTaken = new List<Direction>();
+            var validDirections = new List<Direction> { Direction.North, Direction.South, Direction.West, Direction.East };
+            var pathTaken = new List<Direction>();
 
             if (draw) Console.Clear();
             do
@@ -88,7 +89,7 @@ namespace AoC.Day15
                 tileKnowledge = LookAround();
                 if (tileKnowledge.Where(x => !x).Any())
                 {
-                    Direction moveDirection = validDirections[tileKnowledge.FindIndex(x => !x)];
+                    var moveDirection = validDirections[tileKnowledge.FindIndex(x => !x)];
                     Move(moveDirection, true);
                     pathTaken.Add(moveDirection);
                 }
@@ -134,7 +135,7 @@ namespace AoC.Day15
             }
             else
             {
-                (int mentalX, int mentalY) = DirectionHelper.NeighbourInDirection(direction, X, Y);
+                var (mentalX, mentalY) = DirectionHelper.NeighbourInDirection(direction, X, Y);
                 SetMapTiles(mentalX, mentalY, "\u2588");
                 return false;
             }
@@ -153,10 +154,10 @@ namespace AoC.Day15
 
         public List<bool> LookAround()
         {
-            string north = mentalMap[X, Y + 1];
-            string south = mentalMap[X, Y - 1];
-            string west = mentalMap[X - 1, Y];
-            string east = mentalMap[X + 1, Y];
+            var north = mentalMap[X, Y + 1];
+            var south = mentalMap[X, Y - 1];
+            var west = mentalMap[X - 1, Y];
+            var east = mentalMap[X + 1, Y];
             List<string> knownTiles = new List<string> { "\u2588", "#", "O" };
             return new List<bool> { knownTiles.Contains(north),
                                     knownTiles.Contains(south),

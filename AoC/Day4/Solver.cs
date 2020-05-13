@@ -66,7 +66,7 @@ namespace AoC.Day4
 
         public static bool MatchingDigits(int number)
         {
-            string numString = number.ToString();
+            var numString = number.ToString();
             for (int i = 1; i < numString.Length; i++)
             {
                 if (numString[i] == numString[i - 1]) return true;
@@ -76,7 +76,7 @@ namespace AoC.Day4
 
         public static bool ContainsDigitPair(int number)
         {
-            string numString = number.ToString();
+            var numString = number.ToString();
             int nSameDigits = 1;
 
             for (int i = 1; i < numString.Length; i++)

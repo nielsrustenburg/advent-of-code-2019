@@ -58,10 +58,10 @@ namespace AoC.Day2
         public static BigInteger RunIntCodewithNounVerb(IEnumerable<BigInteger> code, int noun, int verb)
         {
             var program = new IntCode(code);
-            program.SetValAtMemIndex(1, noun);
-            program.SetValAtMemIndex(2, verb);
+            program[1] = noun;
+            program[2] = verb;
             program.Run();
-            return program.GetValAtMemIndex(0);
+            return program[0];
         }
     }
 }
