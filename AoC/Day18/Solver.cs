@@ -57,12 +57,12 @@ namespace AoC.Day18
             var floorsAndDoors = floors.Concat(doors).Select(tile => tile.ToString()).ToHashSet();
             maze.EliminateDeadEnds(floorsAndDoors, "#", walls.Select(tile => tile.ToString()).ToHashSet());
 
-            var remainingKeysAndDoors = maze.GetAllTileTypes();
+            var remainingKeysAndDoors = maze.GetAllTileTypes().ToHashSet();
             remainingKeysAndDoors.ExceptWith(new string[] { "@", ".", "#" });
 
             var quadRoots = new Dictionary<string, (int, int)>();
-            var centerTile = maze.FindFirstMatchingTile("@");
-            maze.SetTile(centerTile.x, centerTile.y, "#");
+            var centerTile = ((int x,int y)) maze.FindFirstMatchingTile("@");
+            maze[centerTile.x, centerTile.y] = "#";
             int intersectionCounter = 0;
 
             //Mark the corners around the center as intersections
@@ -71,11 +71,11 @@ namespace AoC.Day18
                 var (x, y) = DirectionHelper.NeighbourInDirection(direction, centerTile.x, centerTile.y);
                 if (x == centerTile.x || y == centerTile.y)
                 {
-                    maze.SetTile(x, y, "#");
+                    maze[x, y] = "#";
                 }
                 else
                 {
-                    maze.SetTile(x, y, intersectionCounter.ToString());
+                    maze[x, y] = intersectionCounter.ToString();
                     quadRoots.Add(intersectionCounter.ToString(), (x, y));
                     intersectionCounter++;
                 }
@@ -95,20 +95,20 @@ namespace AoC.Day18
 
                 foreach (var (x, y) in frontiers)
                 {
-                    var currentTileType = maze.GetTile(x, y);
+                    var currentTileType = maze[x, y];
                     var relevantNeighbours = maze.GetNeighbours(x, y).Where(nb => walkableTiles.Contains(nb.Value));
                     var keysOrDoors = relevantNeighbours.Where(nb => keys.Contains(nb.Value) || doors.Contains(nb.Value)).ToList();
 
                     if (relevantNeighbours.Count() > 1)
                     {
                         //this is an intersection an edge ends here, and 2 or 3 new edges start
-                        maze.SetTile(x, y, $"{currentTileType}.");
+                        maze[x, y] = $"{currentTileType}.";
                         int branchCounter = 0;
                         foreach (var nb in relevantNeighbours)
                         {
                             var (nbx, nby) = DirectionHelper.NeighbourInDirection(nb.Key, x, y);
                             var intersectionBranch = $"{currentTileType}.{intersectionCounter}:{branchCounter}";
-                            maze.SetTile(nbx, nby, intersectionBranch);
+                            maze[nbx, nby] =  intersectionBranch;
                             branchCounter++;
                             nextFrontiers.Add((nbx, nby));
                             intersectionBranches.Add(intersectionBranch);
@@ -120,7 +120,7 @@ namespace AoC.Day18
                         if (relevantNeighbours.Any())
                         {
                             var (nbx, nby) = DirectionHelper.NeighbourInDirection(relevantNeighbours.First().Key, x, y);
-                            maze.SetTile(nbx, nby, currentTileType);
+                            maze[nbx, nby] = currentTileType;
                             nextFrontiers.Add((nbx, nby));
                         }
                     }
@@ -129,8 +129,8 @@ namespace AoC.Day18
                     {
                         //next tile will be a key or door, meaning the edge of this frontier will end there
                         var (nbx, nby) = DirectionHelper.NeighbourInDirection(nb.Key, x, y);
-                        var updatedCurrentTileType = maze.GetTile(nbx, nby);
-                        maze.SetTile(nbx, nby, $"{updatedCurrentTileType}.{nb.Value}");
+                        var updatedCurrentTileType = maze[nbx, nby];
+                        maze[nbx, nby] = $"{updatedCurrentTileType}.{nb.Value}";
                     }
                 }
                 frontiers = nextFrontiers;

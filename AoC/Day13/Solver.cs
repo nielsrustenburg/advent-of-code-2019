@@ -51,13 +51,16 @@ namespace AoC.Day13
         bool drawGame;
 
         IntCode backend;
-        Grid<string> gameGrid;
+        IGrid<string> gameGrid;
         List<BigInteger> gameState;
 
         public int Blocks { get; private set; }
         public int Score { get; private set; }
         int paddleX;
         int ballX;
+
+        int width;
+        int height;
 
 
         enum PaddleMove
@@ -71,15 +74,17 @@ namespace AoC.Day13
         {
             factorySettings = program.ToArray();
             drawGame = draw;
-            Restart();
+            backend = new IntCode(factorySettings);
             gameState = backend.Run();
+            width = Enumerable.Range(0, gameState.Count).Where(n => n % 3 == 0).Max(n => (int) gameState[n])+1;
+            height = Enumerable.Range(0, gameState.Count).Where(n => n % 3 == 1).Max(n => (int) gameState[n])+1;
+            gameGrid = new ArrayGrid<string>(" ", width, height, false);
             UpdateGameGrid();
         }
 
         public void Restart()
         {
             backend = new IntCode(factorySettings);
-            gameGrid = new Grid<string>(" ");
         }
 
         public void Play()
@@ -110,7 +115,7 @@ namespace AoC.Day13
 
         private void MovePaddle(PaddleMove move)
         {
-            gameState = backend.Run(new BigInteger[] {(int) move });
+            gameState = backend.Run(new BigInteger[] { (int)move });
         }
 
         private void DrawGameState()
@@ -118,7 +123,7 @@ namespace AoC.Day13
             Console.SetCursorPosition(0, 0);
             IEnumerable<string> gameScreen = gameGrid.RowsAsStrings();
             Console.WriteLine($"Score: {Score}");
-            foreach (string row in gameScreen.Reverse())
+            foreach (string row in gameScreen)
             {
                 Console.WriteLine(row);
             }
@@ -135,8 +140,7 @@ namespace AoC.Day13
                 if (!(x == -1 && y == 0))
                 {
                     int val = (int)gameState[i + 2];
-                    gameGrid.GetTile(x, y);
-                    gameGrid.SetTile(x, y, tiles[val]);
+                    gameGrid[x, y] = tiles[val];
                     if (val == 4) ballX = x;
                     if (val == 3) paddleX = x;
                     if (val == 2) Blocks++;

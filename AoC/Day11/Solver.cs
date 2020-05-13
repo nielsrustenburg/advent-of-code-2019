@@ -33,7 +33,7 @@ namespace AoC.Day11
 
         protected override void SolvePartOne()
         {
-            Grid<char> cgrid = new Grid<char>(' '); //Using different defaultTile so we can count all tiles that have been changed
+            var cgrid = new Grid<char>(' ', true); //Using different defaultTile so we can count all tiles that have been changed
             EmergencyHullPaintingRobot bot = new EmergencyHullPaintingRobot(program, cgrid);
 
             while (bot.PerformStep())
@@ -46,8 +46,8 @@ namespace AoC.Day11
 
         protected override void SolvePartTwo()
         {
-            Grid<char> cgrid = new Grid<char>('.');
-            cgrid.SetTile(0, 0, '#');
+            var cgrid = new Grid<char>('.', true);
+            cgrid[0, 0] = '#';
             EmergencyHullPaintingRobot bot = new EmergencyHullPaintingRobot(program, cgrid);
             while (bot.PerformStep())
             {
@@ -91,12 +91,12 @@ namespace AoC.Day11
 
         private int InspectPanel()
         {
-            return PaintGrid.GetTile(xPos, yPos) == '#' ? 1 : 0;
+            return PaintGrid[xPos, yPos] == '#' ? 1 : 0;
         }
 
         private void ChangePaint(char color)
         {
-            PaintGrid.SetTile(xPos, yPos, color);
+            PaintGrid[xPos, yPos] = color;
         }
 
         private void TurnAndMove(bool turnRight)

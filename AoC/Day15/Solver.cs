@@ -41,8 +41,8 @@ namespace AoC.Day15
 
         protected override void SolvePartTwo()
         {
-            var oxy = robot.mazeMap.FindFirstMatchingTile("O");
-            var (totalSteps, _) = robot.mazeMap.FloodFillDistanceFinder(oxy.x, oxy.y, new List<string>());
+            var (oxyX,oxyY) = ((int,int)) robot.mazeMap.FindFirstMatchingTile("O");
+            var (totalSteps, _) = robot.mazeMap.FloodFillDistanceFinder(oxyX,oxyY, new List<string>());
             resultPartTwo = totalSteps.ToString();
         }
     }
@@ -61,8 +61,8 @@ namespace AoC.Day15
             brain = new IntCode(programming);
             X = 0;
             Y = 0;
-            mentalMap = new Grid<string>(" ");
-            mazeMap = new Maze<string>("\u2588", new List<string> { "#", "O", "D" });
+            mentalMap = new Grid<string>(" ", true);
+            mazeMap = new Maze<string>("\u2588", new List<string> { "#", "O", "D" }, true);
             Finished = false;
         }
 
@@ -101,7 +101,7 @@ namespace AoC.Day15
                 if (draw)
                 {
                     Console.SetCursorPosition(0, 0);
-                    var lines = mentalMap.RowsAsStrings(true);
+                    var lines = mentalMap.RowsAsStrings();
                     foreach (string line in lines)
                     {
                         Console.WriteLine(line);
@@ -122,7 +122,7 @@ namespace AoC.Day15
             int response = (int)brain.Run(new List<BigInteger> { dirCode })[0];
             if (response > 0)
             {
-                if (mentalMap.GetTile(X, Y) == "D")
+                if (mentalMap[X, Y] == "D")
                 {
                     SetMapTiles(X, Y, closePrev ? "#" : " ");
                 }
@@ -142,8 +142,8 @@ namespace AoC.Day15
 
         public void SetMapTiles(int x, int y, string tile)
         {
-            mentalMap.SetTile(x, y, tile);
-            mazeMap.SetTile(x, y, tile);
+            mentalMap[x, y] = tile;
+            mazeMap[x, y] = tile;
         }
 
         public void ExploreNeighbours(Direction dir)
@@ -153,10 +153,10 @@ namespace AoC.Day15
 
         public List<bool> LookAround()
         {
-            string north = mentalMap.GetTile(X, Y + 1);
-            string south = mentalMap.GetTile(X, Y - 1);
-            string west = mentalMap.GetTile(X - 1, Y);
-            string east = mentalMap.GetTile(X + 1, Y);
+            string north = mentalMap[X, Y + 1];
+            string south = mentalMap[X, Y - 1];
+            string west = mentalMap[X - 1, Y];
+            string east = mentalMap[X + 1, Y];
             List<string> knownTiles = new List<string> { "\u2588", "#", "O" };
             return new List<bool> { knownTiles.Contains(north),
                                     knownTiles.Contains(south),

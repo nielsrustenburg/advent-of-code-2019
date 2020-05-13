@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using System.Net.NetworkInformation;
 
 namespace AoC.Utils
 {
-    public class Grid<T>
+    public class Grid<T> : IGrid<T>
     {
         public T DefaultTile { get; private set; }
         int xMin, xMax, yMin, yMax;
@@ -14,75 +15,74 @@ namespace AoC.Utils
         Dictionary<int, Dictionary<int, T>> content;
         public int Width { get { return xMax - xMin + 1; } }
         public int Height { get { return yMax - yMin + 1; } }
+        public readonly bool originAtBottom;
 
-        public Grid(T defaultTile)
+        public Grid(T defaultTile, bool originAtBottom)
         {
             xMin = xMax = yMin = yMax = 0;
+            this.originAtBottom = originAtBottom;
             DefaultTile = defaultTile;
             allTileTypes = new HashSet<T> { DefaultTile };
             content = new Dictionary<int, Dictionary<int, T>>();
             tileCount = new Dictionary<T, int>();
         }
 
-        public Grid(IEnumerable<IEnumerable<T>> filledGrid, T defaultTile, bool yDecreasing = true) : this(defaultTile)
+        public Grid(IEnumerable<IEnumerable<T>> filledGrid, T defaultTile, bool originAtBottom) : this(defaultTile, originAtBottom)
         {
+            if (originAtBottom) filledGrid = filledGrid.Reverse();
             int y = 0;
             foreach (IEnumerable<T> row in filledGrid)
             {
                 int x = 0;
                 foreach (T tile in row)
                 {
-                    SetTile(x, y, tile);
+                    this[x, y] = tile;
                     x++;
                 }
-                if (yDecreasing)
-                {
-                    y--;
-                } else
-                {
-                    y++;
-                } 
+                y++;
             }
         }
 
-        public Grid(Grid<T> copyMe) : this(copyMe.DefaultTile)
+        public Grid(Grid<T> copyMe) : this(copyMe.DefaultTile, copyMe.originAtBottom)
         {
             foreach (var kvp in copyMe.content)
             {
                 foreach (var kvp2 in kvp.Value)
                 {
-                    SetTile(kvp.Key, kvp2.Key, kvp2.Value);
+                    this[kvp.Key, kvp2.Key] = kvp2.Value;
                 }
             }
         }
 
-        public T GetTile(int x, int y)
+        public T this[int x, int y]
         {
-            if (content.ContainsKey(y))
+            get
             {
-                if (content[y].ContainsKey(x))
+                if (content.ContainsKey(y))
                 {
-                    return content[y][x];
+                    if (content[y].ContainsKey(x))
+                    {
+                        return content[y][x];
+                    }
                 }
+                return DefaultTile;
             }
-            return DefaultTile;
-        }
-
-        public void SetTile(int x, int y, T tileType)
-        {
-            EnsureBordersContain(x, y);
-            bool addingDefault = tileType.Equals(DefaultTile);
-
-            if (!addingDefault)
+            set
             {
-                UpdateTile(x, y, tileType);
-            }
-            else
-            {
-                RemoveTile(x, y);
-            }
+                EnsureBordersContain(x, y);
+                bool addingDefault = value.Equals(DefaultTile);
 
-            allTileTypes.Add(tileType);
+                if (!addingDefault)
+                {
+                    UpdateTile(x, y, value);
+                }
+                else
+                {
+                    RemoveTile(x, y);
+                }
+
+                allTileTypes.Add(value);
+            }
         }
 
         private void UpdateTile(int x, int y, T tileType)
@@ -96,9 +96,9 @@ namespace AoC.Utils
             content[y][x] = tileType;
         }
 
-        public HashSet<T> GetAllTileTypes()
+        public IEnumerable<T> GetAllTileTypes()
         {
-            return new HashSet<T>(allTileTypes);
+            return allTileTypes;
         }
 
         public Dictionary<T,int> GetTileCounts()
@@ -156,7 +156,7 @@ namespace AoC.Utils
                 if(includeDiagonal || ((int) dir % 2) == 0)
                 {
                     var (modX, modY) = DirectionHelper.StepInDirection(dir, x, y, 1);
-                    neighbours.Add(dir, GetTile(modX, modY));
+                    neighbours.Add(dir, this[modX, modY]);
                 }
             }
             return neighbours;
@@ -175,7 +175,7 @@ namespace AoC.Utils
             throw new Exception("direction not recognized, use N,E,S,W,NE,NW,SE,SW");
         }
 
-        public (bool found, int x, int y) FindFirstMatchingTile(T findMe)
+        public (int x, int y)? FindFirstMatchingTile(T findMe)
         {
             if (findMe.Equals(DefaultTile)) throw new ArgumentException("Trying to find the DefaultTile, which is every unfilled Tile");
             foreach (var row in content)
@@ -184,45 +184,43 @@ namespace AoC.Utils
                 {
                     if (findMe.Equals(tile.Value))
                     {
-                        return (true, tile.Key, row.Key);
+                        return (tile.Key, row.Key);
                     }
                 }
             }
-            return (false, 0, 0);
+            return null;
         }
 
-        public List<(int x, int y)> FindAllMatchingTiles(T tile)
+        public IEnumerable<(int x, int y)> FindAllMatchingTiles(T tile)
         {
             return FindAllMatchingTiles(new HashSet<T> { tile });
         }
 
-        public List<(int x, int y)> FindAllMatchingTiles(HashSet<T> findUs)
+        public IEnumerable<(int x, int y)> FindAllMatchingTiles(HashSet<T> findUs)
         {
             if (findUs.Contains(DefaultTile)) throw new ArgumentException("Trying to find the DefaultTile, which is every unfilled Tile not this methods intended purpose");
-            List<(int, int)> results = new List<(int, int)>();
             foreach (var row in content)
             {
                 foreach (var tile in row.Value)
                 {
                     if (findUs.Contains(tile.Value))
                     {
-                        results.Add((tile.Key, row.Key));
+                        yield return (tile.Key, row.Key);
                     }
                 }
             }
-            return results;
         }
 
-        public List<string> RowsAsStrings(bool invert = false)
+        public List<string> RowsAsStrings()
         {
             List<string> rows = new List<string>();
             List<int> xCoords = Enumerable.Range(xMin, Width).ToList();
             for (int y = yMax; y >= yMin; y--)
             {
-                string row = string.Concat(xCoords.Select(x => GetTile(x, y).ToString()));
+                string row = string.Concat(xCoords.Select(x => this[x, y].ToString()));
                 rows.Add(row);
             }
-            if (invert)
+            if (!originAtBottom)
             {
                 rows.Reverse();
             }

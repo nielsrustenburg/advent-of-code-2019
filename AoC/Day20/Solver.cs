@@ -63,13 +63,13 @@ namespace AoC.Day20
             int innerTop = outerTop - thickness;
             int innerBot = outerBot + thickness;
 
-            HashSet<int> innerXBorder = new HashSet<int> { innerLeft, innerRight };
-            HashSet<int> innerYBorder = new HashSet<int> { innerTop, innerBot };
-            HashSet<int> outerXBorder = new HashSet<int> { outerLeft, outerRight };
-            HashSet<int> outerYBorder = new HashSet<int> { outerTop, outerBot };
+            var innerXBorder = new HashSet<int> { innerLeft, innerRight };
+            var innerYBorder = new HashSet<int> { innerTop, innerBot };
+            var outerXBorder = new HashSet<int> { outerLeft, outerRight };
+            var outerYBorder = new HashSet<int> { outerTop, outerBot };
 
             //Locate the portals
-            List<(int x, int y)> floors = maze.FindAllMatchingTiles(".");
+            var floors = maze.FindAllMatchingTiles(".").ToList();
 
             HashSet<string> nonPortalLabels = new HashSet<string> { ".", " ", "#" };
             HashSet<string> portals = new HashSet<string>();
@@ -84,34 +84,34 @@ namespace AoC.Day20
                     string portalName;
                     if (part1.Key == Direction.North)
                     {
-                        portalName = maze.GetTile(x, y + 2) + maze.GetTile(x, y + 1);
-                        maze.SetTile(x, y + 2, " ");
-                        maze.SetTile(x, y + 1, " ");
+                        portalName = maze[x, y + 2] + maze[x, y + 1];
+                        maze[x, y + 2] = " ";
+                        maze[x, y + 1] = " ";
                     }
                     else if (part1.Key == Direction.East)
                     {
-                        portalName = maze.GetTile(x + 1, y) + maze.GetTile(x + 2, y);
-                        maze.SetTile(x + 1, y, " ");
-                        maze.SetTile(x + 2, y, " ");
+                        portalName = maze[x + 1, y] + maze[x + 2, y];
+                        maze[x + 1, y] = " ";
+                        maze[x + 2, y] = " ";
                     }
                     else if (part1.Key == Direction.South)
                     {
-                        portalName = maze.GetTile(x, y - 1) + maze.GetTile(x, y - 2);
-                        maze.SetTile(x, y - 2, " ");
-                        maze.SetTile(x, y - 1, " ");
+                        portalName = maze[x, y - 1] + maze[x, y - 2];
+                        maze[x, y - 2] = " ";
+                        maze[x, y - 1] = " ";
                     }
                     else if (part1.Key == Direction.West)
                     {
-                        portalName = maze.GetTile(x - 2, y) + maze.GetTile(x - 1, y);
-                        maze.SetTile(x - 1, y, " ");
-                        maze.SetTile(x - 2, y, " ");
+                        portalName = maze[x - 2, y] + maze[x - 1, y];
+                        maze[x - 1, y] = " ";
+                        maze[x - 2, y] = " ";
                     }
                     else
                     {
                         throw new Exception("Shouldn't reach this");
                     }
                     portals.Add(portalName);
-                    maze.SetTile(x, y, isInnerPortal ? portalName + ":IN" : portalName + ":OUT");
+                    maze[x, y] = isInnerPortal ? portalName + ":IN" : portalName + ":OUT";
                 }
             }
 
@@ -136,7 +136,7 @@ namespace AoC.Day20
             //For every portal set up the reachable locations
             foreach (string portal in existingPortals)
             {
-                (bool _, int x, int y) = maze.FindFirstMatchingTile(portal);
+                (int x, int y) = ((int,int)) maze.FindFirstMatchingTile(portal);
                 (int _, List<(string tile, int distance)> reachablePortals) = maze.FloodFillDistanceFinder(x, y, existingPortals);
                 foreach ((string reachable, int distance) in reachablePortals)
                 {

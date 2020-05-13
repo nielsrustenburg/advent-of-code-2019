@@ -8,7 +8,7 @@ namespace AoC.Utils
     class Maze<T> : Grid<T>
     {
         HashSet<T> passableTerrain;
-        public Maze(T defaultTile, IEnumerable<T> passable) : base(defaultTile)
+        public Maze(T defaultTile, IEnumerable<T> passable, bool originAtBottom) : base(defaultTile, originAtBottom)
         {
             passableTerrain = passable.ToHashSet();
         }
@@ -29,8 +29,8 @@ namespace AoC.Utils
             List<(T tile, int distance)> poiFound = new List<(T, int)>();
 
             List<(int x, int y)> frontier = new List<(int x, int y)> { (xStart, yStart) };
-            Grid<bool> floodedGrid = new Grid<bool>(false);
-            floodedGrid.SetTile(xStart, yStart, true);
+            Grid<bool> floodedGrid = new Grid<bool>(false, this.originAtBottom);
+            floodedGrid[xStart, yStart] = true;
 
             int steps = 0;
 
@@ -54,7 +54,7 @@ namespace AoC.Utils
                             {
                                 nextFrontier.Add(neighbourCoords);
                             }
-                            floodedGrid.SetTile(neighbourCoords.x, neighbourCoords.y, true);
+                            floodedGrid[neighbourCoords.x, neighbourCoords.y] = true;
                         }
                     }
                 }
@@ -107,7 +107,7 @@ namespace AoC.Utils
 
                 foreach ((int x, int y) in tilesToEliminate)
                 {
-                    SetTile(x, y, turnInto);
+                    this[x, y] = turnInto;
                 }
 
                 eliminationCandidates = potentialNewDeadEnds;

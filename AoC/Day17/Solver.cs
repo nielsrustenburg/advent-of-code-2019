@@ -281,24 +281,17 @@ namespace AoC.Day17
 
     class SimulationRobot
     {
-        public int X { get; private set; }
-        public int Y { get; private set; }
-        public Direction Facing { get; private set; }
-        public bool IsDead { get; private set; }
-
-        private Grid<bool> visited;
-
+        private IGrid<bool> visited;
         private readonly int _initialX, _initialY;
         private readonly Direction _initialFacing;
-        private Grid<char> layout;
-
+        private IGrid<char> layout;
 
         public SimulationRobot(IEnumerable<string> layoutRows)
         {
-            layout = new Grid<char>(layoutRows, '.', true);
+            layout = new ArrayGrid<char>(layoutRows, '.', true);
 
             var robotState = layout.GetAllTileTypes().Intersect(new List<char> { 'v', '^', '>', '<' }).First();
-            (_, _initialX, _initialY) = layout.FindFirstMatchingTile(robotState);
+            (_initialX, _initialY) = ((int,int)) layout.FindFirstMatchingTile(robotState);
             switch (robotState)
             {
                 case 'v':
@@ -317,10 +310,10 @@ namespace AoC.Day17
                     throw new Exception($"ruh roh, robotState is an unexpected charValue: {robotState}");
             }
 
-            layout.SetTile(_initialX, _initialY, '#'); //separate the robot-tile from the scaffolds
+            layout[_initialX, _initialY] = '#';//separate the robot-tile from the scaffolds
 
-            visited = new Grid<bool>(false);
-            visited.SetTile(_initialX, _initialY, true);
+            visited = new ArrayGrid<bool>(false,layout.Width, layout.Height, true);
+            visited[_initialX, _initialY] = true;
 
             X = _initialX;
             Y = _initialY;
@@ -328,11 +321,16 @@ namespace AoC.Day17
             IsDead = false;
         }
 
+        public int X { get; private set; }
+        public int Y { get; private set; }
+        public Direction Facing { get; private set; }
+        public bool IsDead { get; private set; }
+
         public void StepForward()
         {
             (X, Y) = DirectionHelper.StepInDirection(Facing, X, Y, 1);
-            visited.SetTile(X, Y, true);
-            IsDead = IsDead || layout.GetTile(X, Y) != '#';
+            visited[X, Y] = true;
+            IsDead = IsDead || layout[X,Y] != '#';
         }
 
         public void TurnLeft()
@@ -354,7 +352,7 @@ namespace AoC.Day17
 
             while (!finished)
             {
-                var neighbourTiles = layout.GetNeighbours(X, Y);
+                var neighbourTiles = layout.GetNeighbours(X, Y, false);
                 if (neighbourTiles[Facing] == '#')
                 {
                     StepForward();
@@ -390,15 +388,15 @@ namespace AoC.Day17
 
         public bool HasVisitedAllScaffolds()
         {
-            return layout.FindAllMatchingTiles('#').All(scaffold => visited.GetTile(scaffold.x, scaffold.y));
+            return layout.FindAllMatchingTiles('#').All(scaffold => visited[scaffold.x, scaffold.y]);
         }
 
         public string[] GetImageStrings()
         {
             var image = layout.RowsAsStrings();
-            StringBuilder strBuilder = new StringBuilder(image[Math.Abs(Y)]);
+            StringBuilder strBuilder = new StringBuilder(image[image.Count-1 - Y]);
             strBuilder[X] = IsDead ? 'X' : FacingAsChar();
-            image[Math.Abs(Y)] = strBuilder.ToString();
+            image[image.Count-1 - Y] = strBuilder.ToString();
             return image.ToArray();
         }
 
@@ -407,8 +405,8 @@ namespace AoC.Day17
             X = _initialX;
             Y = _initialY;
             Facing = _initialFacing;
-            visited = new Grid<bool>(false);
-            visited.SetTile(X, Y, true);
+            visited = new ArrayGrid<bool>(false,layout.Width,layout.Height,true);
+            visited[X, Y] = true;
             IsDead = false;
         }
 
