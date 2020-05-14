@@ -11,6 +11,15 @@ namespace AoC.Common
         protected string resultPartOne;
         protected string resultPartTwo;
 
+        protected PuzzleSolver(Input.InputMode mode, string input)
+        {
+            var inputString = Input.GetInput(mode, input);
+            ParseInput(inputString);
+            PrepareSolution();
+            SolvePartOne();
+            SolvePartTwo();
+        }
+
         public string SolutionOne()
         {
             return resultPartOne;
@@ -33,15 +42,6 @@ namespace AoC.Common
         protected abstract void SolvePartOne();
 
         protected abstract void SolvePartTwo();
-
-        protected PuzzleSolver(Input.InputMode mode, string input)
-        {
-            var inputString = Input.GetInput(mode, input);
-            ParseInput(inputString);
-            PrepareSolution();
-            SolvePartOne();
-            SolvePartTwo();
-        }
     }
 }
 

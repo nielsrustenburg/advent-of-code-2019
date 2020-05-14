@@ -55,6 +55,7 @@ namespace AoC.Common
 
                 var options = new string[]
                 {
+                    Path.Join(dir, "inputs", input),
                     Path.Join(dir, nameSpace.Last(), input),
                     Path.Join(dir, nameSpace.Last(), inputDotTxt),
                     Path.Join(dir, input),

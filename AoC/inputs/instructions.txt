@@ -1,0 +1,2 @@
+﻿Make sure your input files are named [dayNumber].txt
+for example "18.txt" should contain your input file for Day 18
